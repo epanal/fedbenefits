@@ -7,7 +7,7 @@ st.title("Federal Benefits Calculator")
 tab1, tab2 = st.tabs(["Annual Leave Lump Sum", "Pension Estimator"])
 
 with tab1:
-    st.header("Annual Leave Lump Sum Calculator")
+    st.header("Annual Leave Lump Sum Calculator 📝", help="Learn more about lump sum payments: https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/lump-sum-payments-for-annual-leave/")
     hourly_rate = st.number_input("Hourly Pay Rate ($)", min_value=0.0, step=0.01, key="hourly_rate")
     leave_balance_hours = st.number_input("Unused Annual Leave Balance (hours)", min_value=0.0, step=0.1, key="leave_balance")
     
@@ -15,6 +15,9 @@ with tab1:
         lump_sum_payment = calculate_lump_sum_payment(hourly_rate, leave_balance_hours)
         st.subheader("Lump Sum Payment Calculation")
         st.write(f"**Estimated Lump Sum Payment:** ${lump_sum_payment:,.2f}")
+    
+    # Adding the source link at the bottom of the section
+    st.markdown("[Source: OPM Lump Sum Payments for Annual Leave](https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/lump-sum-payments-for-annual-leave/)")
 
 with tab2:
     st.header("Pension Estimator")
