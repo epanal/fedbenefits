@@ -8,14 +8,13 @@ tab1, tab2 = st.tabs(["Annual Leave Lump Sum", "Pension Estimator"])
 
 with tab1:
     st.header("Annual Leave Lump Sum Calculator")
-    name = st.text_input("Employee Name", key="leave_name")
     hourly_rate = st.number_input("Hourly Pay Rate ($)", min_value=0.0, step=0.01, key="hourly_rate")
-    leave_balance = st.number_input("Unused Annual Leave Balance (days)", min_value=0.0, step=0.1, key="leave_balance")
+    leave_balance_hours = st.number_input("Unused Annual Leave Balance (hours)", min_value=0.0, step=0.1, key="leave_balance")
     
-    if hourly_rate > 0 and leave_balance > 0:
-        lump_sum_payment = calculate_lump_sum_payment(hourly_rate, leave_balance)
+    if hourly_rate > 0 and leave_balance_hours > 0:
+        lump_sum_payment = calculate_lump_sum_payment(hourly_rate, leave_balance_hours)
         st.subheader("Lump Sum Payment Calculation")
-        st.write(f"**{name}'s Estimated Lump Sum Payment:** ${lump_sum_payment:,.2f}")
+        st.write(f"**Estimated Lump Sum Payment:** ${lump_sum_payment:,.2f}")
 
 with tab2:
     st.header("Pension Estimator")
