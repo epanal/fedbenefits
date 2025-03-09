@@ -43,3 +43,6 @@ elif option == "📅 Annual Leave Accrual":
         st.write(f"**Annual Leave Accrued:** {accrued_leave:,.2f} hours")
     else:
         st.write("Please enter valid values for both fields.")
+    
+    # Add reference link for Annual Leave Accrual
+    st.markdown("[Source: OPM Annual Leave Information](https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/annual-leave/)")
