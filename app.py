@@ -3,6 +3,13 @@ from calculations import calculate_lump_sum_payment, calculate_annual_leave_accr
 
 st.title("Federal Benefits Calculator")
 
+# Add your donation button using Buy Me a Coffee link
+st.markdown("""
+<a href="https://buymeacoffee.com/vetfed" target="_blank">
+    <button style="background-color: #FF5F5F; color: white; padding: 10px 20px; font-size: 16px; border-radius: 5px;">Support Me on Buy Me a Coffee</button>
+</a>
+""", unsafe_allow_html=True)
+
 # Create a radio button to switch between the tabs (Annual Leave Lump Sum, Annual Leave Accrual)
 option = st.radio("Select a Calculator", ["🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual"])
 
