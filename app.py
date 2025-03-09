@@ -3,14 +3,7 @@ import streamlit as st
 # Title
 st.title("Federal Benefits Calculator")
 
-# Add spacing after the title
-st.markdown("<br>", unsafe_allow_html=True)
 
-# Radio button selection
-option = st.radio("Select a Calculator", ["🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual"])
-
-# Add some spacing before the radio button section
-st.markdown("<br><br>", unsafe_allow_html=True)
 
 # Add your donation button using Buy Me a Coffee link
 st.markdown("""
@@ -18,6 +11,14 @@ st.markdown("""
     <button style="background-color: #FF5F5F; color: white; padding: 10px 20px; font-size: 16px; border-radius: 5px; margin-bottom: 20px;">Support Me on Buy Me a Coffee</button>
 </a>
 """, unsafe_allow_html=True)
+
+# Add spacing after the title
+st.markdown("<br>", unsafe_allow_html=True)
+
+# Radio button selection
+option = st.radio("Select a Calculator", ["🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual"])
+
+
 
 # Add some spacing after the donation button
 st.markdown("<br><br>", unsafe_allow_html=True)
