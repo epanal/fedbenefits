@@ -1,7 +1,7 @@
 import streamlit as st
 
 # Title
-st.title("Federal Benefits Calculator")
+st.title("Federal Benefits Calculators")
 
 
 
