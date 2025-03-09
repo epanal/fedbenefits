@@ -19,10 +19,6 @@ st.markdown("<br>", unsafe_allow_html=True)
 option = st.radio("Select a Calculator", ["🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual"])
 
 
-
-# Add some spacing after the donation button
-st.markdown("<br><br>", unsafe_allow_html=True)
-
 # Conditional content based on the radio button selection
 if option == "🏖️ Annual Leave Lump Sum":
     st.header("Annual Leave Lump Sum Calculator 📝", help="Learn more about lump sum payments: https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/lump-sum-payments-for-annual-leave/")
