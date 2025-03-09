@@ -24,7 +24,7 @@ if tab1:
 elif tab2:
     st.header("Annual Leave Accrual Calculator 📅")
     
-    years_of_service = st.number_input("Years of Federal Service", min_value=0.0, step=0.1, key="years_of_service")
+    years_of_service = st.number_input("Years of Federal Service", min_value=0, step=1, key="years_of_service")
     
     if years_of_service > 0:
         accrued_leave = calculate_annual_leave_accrual(years_of_service)
