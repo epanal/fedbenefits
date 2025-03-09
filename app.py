@@ -25,8 +25,9 @@ elif tab2:
     st.header("Annual Leave Accrual Calculator 📅")
     
     years_of_service = st.number_input("Years of Federal Service", min_value=0, step=1, key="years_of_service")
+    pay_periods = st.number_input("Number of Pay Periods", min_value=1, step=1, key="pay_periods")
     
-    if years_of_service > 0:
-        accrued_leave = calculate_annual_leave_accrual(years_of_service)
+    if years_of_service > 0 and pay_periods > 0:
+        accrued_leave = calculate_annual_leave_accrual(years_of_service, pay_periods)
         st.subheader("Annual Leave Accrued")
         st.write(f"**Annual Leave Accrued:** {accrued_leave:,.2f} hours")
