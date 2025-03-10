@@ -116,9 +116,10 @@ def severance_pay_estimation():
     add_general_disclaimer()
     st.markdown("[Source: OPM Severance Pay Estimation Worksheet](https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/)")
 
+# Select box option
+option = st.selectbox("Select a Calculator", 
+                      ["🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual", "💼 Severance Pay Estimation"])
 
-# Radio button selection
-option = st.radio("Select a Calculator", ["🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual", "💼 Severance Pay Estimation"])
 
 if option == "🏖️ Annual Leave Lump Sum":
     annual_leave_lump_sum()
