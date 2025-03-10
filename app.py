@@ -120,6 +120,9 @@ elif option == "📅 Annual Leave Accrual":
 elif option == "💼 Severance Pay Estimation":
     severance_pay_estimation()
 
+# Add spacing after the title
+st.markdown("<br>", unsafe_allow_html=True)
+
 # Add donation button
 st.markdown("""
 <a href="https://buymeacoffee.com/vetfed" target="_blank">
