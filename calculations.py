@@ -47,11 +47,14 @@ def calculate_severance_pay(annual_salary, years_of_service, age_years, age_mont
     # Use 52.175 as divisor to compute weekly pay (per OPM convention)
     weekly_pay = annual_salary / 52.175
 
+    adj_years_of_service = years_of_service
     # Basic severance pay calculation
     if years_of_service < 10:
-        basic_severance = years_of_service * weekly_pay
+        adj_years_of_service = years_of_service
     else:
-        basic_severance = (10 * weekly_pay) + ((years_of_service - 10) * 2 * weekly_pay)
+        adj_years_of_service = ((years_of_service - 10) * 2 ) + 10
+
+    basic_severance = weekly_pay * adj_years_of_service    
 
     # Combine years and months into a decimal age
     age = age_years + age_months / 12.0
@@ -78,7 +81,7 @@ def calculate_severance_pay(annual_salary, years_of_service, age_years, age_mont
     biweekly_severance = 2 * weekly_pay
 
     # **NEW: Cap the weeks of severance to a maximum of 52 weeks**
-    weeks_of_severance = min(52, basic_severance / weekly_pay)
+    weeks_of_severance = min(52, adjusted_severance / weekly_pay)
 
     # Age adjustment amount (difference between adjusted and basic)
     age_adjustment = adjusted_severance - basic_severance
