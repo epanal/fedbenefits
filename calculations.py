@@ -44,22 +44,24 @@ def calculate_severance_pay(annual_pay, years_of_service, age_years, age_months)
         basic_severance_pay = (10 * weekly_pay) + ((years_of_service - 10) * 2 * weekly_pay)
     
     # Step 3: Calculate Age Factor
-    age_factor = 1.0  # Default for under 40
+    # For ages 65 or more, age factor is capped at 3.5
     if age_years >= 65:
-        age_factor = 3.5  # Capped at 3.5 for 65+
+        age_factor = 3.5
     elif age_years >= 50:
-        # For ages between 50-64, the factor increases progressively
+        # For ages 50-64, age factor increases progressively from 2.0 to 3.0
         age_factor = 2 + 0.05 * (age_years - 50)
     elif age_years >= 40:
-        # For ages between 40-49, the factor increases progressively
+        # For ages 40-49, age factor increases progressively from 1.0 to 2.0
         age_factor = 1 + 0.025 * (age_years - 40)
+    else:
+        age_factor = 1.0  # Default for ages under 40
     
     # Step 4: Calculate Adjusted Severance Pay
     adjusted_severance_pay = basic_severance_pay * age_factor
     
-    # Step 5: Total Severance Pay (assume no cap here, else add the cap logic)
-    total_severance_pay = adjusted_severance_pay  # Adjust if cap is present
-    
+    # Step 5: Total Severance Pay (No cap applied, but you can add one if needed)
+    total_severance_pay = adjusted_severance_pay  # Assuming no cap
+
     # Step 6: Biweekly Severance Pay
     biweekly_severance_pay = total_severance_pay / 26
     
