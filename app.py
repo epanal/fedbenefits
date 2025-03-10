@@ -42,8 +42,14 @@ def annual_leave_accrual():
     years_of_service = st.number_input("Years of Federal Service", min_value=0, step=1, key="years_of_service")
     pay_periods = st.number_input("Number of Pay Periods", min_value=1, step=1, key="pay_periods")
     
+    if employee_type == "Part-time Employee":
+        hours_in_pay_status = st.number_input("Enter Hours in Pay Status per Pay Period", min_value=0, step=1, key="hours_in_pay_status")
+    
+    if employee_type == "Uncommon Tours of Duty":
+        avg_hours_per_pay_period = st.number_input("Enter Average Hours per Biweekly Pay Period", min_value=0, step=1, key="avg_hours_per_pay_period")
+    
     if years_of_service > 0 and pay_periods > 0:
-        accrued_leave = calculate_annual_leave_accrual(employee_type, years_of_service, pay_periods)
+        accrued_leave = calculate_annual_leave_accrual(employee_type, years_of_service, pay_periods, hours_in_pay_status, avg_hours_per_pay_period)
         st.subheader("Annual Leave Accrued")
         st.write(f"**Annual Leave Accrued:** {accrued_leave:,.2f} hours")
     else:
