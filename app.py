@@ -31,6 +31,7 @@ if option == "🏖️ Annual Leave Lump Sum":
         st.write(f"**Estimated Lump Sum Payment:** ${lump_sum_payment:,.2f}")
     else:
         st.write("Please enter valid values for both fields.")
+    st.markdown("[Source: OPM Annual Leave Lump Sum Payment](https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/lump-sum-payments-for-annual-leave/)")
 
 elif option == "📅 Annual Leave Accrual":
     st.header("Annual Leave Accrual Calculator 📅")
@@ -48,6 +49,8 @@ elif option == "📅 Annual Leave Accrual":
         st.write(f"**Annual Leave Accrued:** {accrued_leave:,.2f} hours")
     else:
         st.write("Please enter valid values for both fields.")
+    st.markdown("[Source: OPM Annual Leave Fact Sheet](https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/annual-leave/)")
+    
 
 elif option == "💼 Severance Pay Estimation":
     st.header("Severance Pay Estimation Calculator 💼", help="Learn more about severance pay: https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/")
