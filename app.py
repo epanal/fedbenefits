@@ -16,8 +16,7 @@ st.markdown("""
 st.markdown("<br>", unsafe_allow_html=True)
 
 # Radio button selection
-option = st.radio("Select a Calculator", ["🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual"])
-
+option = st.radio("Select a Calculator", ["🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual", "💼 Severance Pay Estimation"])
 
 # Conditional content based on the radio button selection
 if option == "🏖️ Annual Leave Lump Sum":
@@ -60,3 +59,21 @@ elif option == "📅 Annual Leave Accrual":
 
     st.markdown("[Source: OPM Annual Leave Fact Sheet](https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/annual-leave/)")
 
+elif option == "💼 Severance Pay Estimation":
+    st.header("Severance Pay Estimation Calculator 💼", help="Learn more about severance pay: https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/")
+
+    # Input fields for the calculator
+    annual_salary = st.number_input("Annual Basic Pay ($)", min_value=0.0, step=1000.0, key="annual_salary")
+    years_of_service = st.number_input("Years of Creditable Federal Service", min_value=0, step=1, key="years_of_service")
+    age = st.number_input("Age at Separation", min_value=0, step=1, key="age")
+
+    if annual_salary > 0 and years_of_service > 0 and age > 0:
+        total_severance, basic_severance, age_adjustment = calculate_severance_pay(annual_salary, years_of_service, age)
+        st.subheader("Severance Pay Calculation")
+        st.write(f"**Basic Severance Allowance:** ${basic_severance:,.2f}")
+        st.write(f"**Age Adjustment Allowance:** ${age_adjustment:,.2f}")
+        st.write(f"**Total Estimated Severance Pay:** ${total_severance:,.2f}")
+    else:
+        st.write("Please enter valid values for all fields.")
+
+    st.markdown("[Source: OPM Severance Pay Estimation Worksheet](https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/)")
