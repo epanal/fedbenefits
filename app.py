@@ -18,6 +18,14 @@ st.markdown("""
 # Add spacing after the title
 st.markdown("<br>", unsafe_allow_html=True)
 
+def add_general_disclaimer():
+    st.markdown("""
+        <p style="color:gray; font-size: 12px; text-align:center;">
+        *Note: These calculations are estimates based on available data and may not account for all variables. Please refer to the official <a href="https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/" target="_blank">OPM policies</a> for precise guidelines and calculations.*
+        </p>
+    """, unsafe_allow_html=True)
+
+
 def annual_leave_lump_sum():
     st.header("Annual Leave Lump Sum Calculator 📝", help="Learn more about lump sum payments: https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/lump-sum-payments-for-annual-leave/")
     hourly_rate = st.number_input("Hourly Pay Rate ($)", min_value=0.0, step=0.01, key="hourly_rate")
@@ -42,9 +50,6 @@ def annual_leave_accrual():
     years_of_service = st.number_input("Years of Federal Service", min_value=0, step=1, key="years_of_service")
     pay_periods = st.number_input("Number of Pay Periods", min_value=1, step=1, key="pay_periods")
     
-    hours_in_pay_status = None
-    avg_hours_per_pay_period = None
-    
     if employee_type == "Part-time Employee":
         hours_in_pay_status = st.number_input("Enter Hours in Pay Status per Pay Period", min_value=0, step=1, key="hours_in_pay_status")
     
@@ -52,19 +57,24 @@ def annual_leave_accrual():
         avg_hours_per_pay_period = st.number_input("Enter Average Hours per Biweekly Pay Period", min_value=0, step=1, key="avg_hours_per_pay_period")
     
     if years_of_service > 0 and pay_periods > 0:
-        if employee_type == "Part-time Employee" and hours_in_pay_status is not None:
-            accrued_leave = calculate_annual_leave_accrual(employee_type, years_of_service, pay_periods, hours_in_pay_status=hours_in_pay_status)
-        elif employee_type == "Uncommon Tours of Duty" and avg_hours_per_pay_period is not None:
-            accrued_leave = calculate_annual_leave_accrual(employee_type, years_of_service, pay_periods, avg_hours_per_pay_period=avg_hours_per_pay_period)
-        else:
-            accrued_leave = calculate_annual_leave_accrual(employee_type, years_of_service, pay_periods)
-        
+        accrued_leave = calculate_annual_leave_accrual(employee_type, years_of_service, pay_periods, hours_in_pay_status, avg_hours_per_pay_period)
         st.subheader("Annual Leave Accrued")
         st.write(f"**Annual Leave Accrued:** {accrued_leave:,.2f} hours")
+        
+        # Footnote for special case
+        if employee_type == "Full-time Employee" and 3 <= years_of_service < 15:
+            st.markdown("""
+                <p style="color:gray; font-size: 12px;">
+                *Note: For full-time employees with 3 years but less than 15 years of service, the last pay period accrual may be adjusted to 1¼ days (10 hours) instead of ¾ day (6 hours). This is an estimate and does not reflect this adjustment.*
+                </p>
+            """, unsafe_allow_html=True)
+        
+        # General disclaimer
+        add_general_disclaimer()
     else:
         st.write("Please enter valid values for both fields.")
-    
     st.markdown("[Source: OPM Annual Leave Fact Sheet](https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/annual-leave/)")
+
 
 def severance_pay_estimation():
     st.header("Severance Pay Estimation Calculator 💼", help="Learn more about severance pay: https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/")
