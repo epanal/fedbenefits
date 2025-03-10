@@ -50,14 +50,15 @@ elif option == "📅 Annual Leave Accrual":
         st.write("Please enter valid values for both fields.")
 
 elif option == "💼 Severance Pay Estimation":
-    st.header("Severance Pay Estimation Calculator 💼", help="Learn more about severance pay: https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/")
+    st.header("Severance Pay Estimation Calculator 💼", 
+              help="Learn more about severance pay: https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/")
     # Input fields for the calculator
     annual_salary = st.number_input("Annual Basic Pay ($)", min_value=0.0, step=1000.0, key="annual_salary")
     years_of_service = st.number_input("Years of Creditable Federal Service", min_value=0, step=1, key="years_of_service")
-    st.write("Enter your age in full years (e.g., 43 years) and the remaining months (e.g., 5 months).")
+    st.write("Enter your age in full years (e.g., 41 years) and the remaining months (e.g., 3 months).")
     age_years = st.number_input("Age at Separation (Years)", min_value=0, step=1, key="age_years")
     age_months = st.number_input("Additional Months (0 to 11)", min_value=0, max_value=11, step=1, key="age_months", 
-                                 help="Enter the remaining months of your age beyond the full years. For example, if you are 43 years and 5 months old, input 5.")
+                                 help="Enter the remaining months of your age beyond the full years. For example, if you are 41 years and 3 months old, input 3.")
     if annual_salary > 0 and years_of_service > 0 and age_years > 0:
         total_severance, basic_severance, age_adjustment, biweekly_severance, weeks_of_severance = calculate_severance_pay(
             annual_salary, years_of_service, age_years, age_months
