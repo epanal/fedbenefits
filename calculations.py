@@ -36,27 +36,26 @@ def calculate_annual_leave_accrual(employee_type, years_of_service, pay_periods)
 def calculate_severance_pay(annual_salary, years_of_service, age_years, age_months):
     """Calculate Severance Pay based on annual salary, years of service, and age at separation."""
 
-    # Basic severance pay calculation
+    # Basic severance pay calculation (assuming 1 week per year for first 10 years, and 2 weeks per year after)
     if years_of_service < 10:
         basic_severance = years_of_service * (annual_salary / 52)  # one week per year
     else:
         basic_severance = (10 * (annual_salary / 52)) + ((years_of_service - 10) * 2 * (annual_salary / 52))  # first 10 years + 2 weeks per year after 10
 
-    # Age adjustment calculation
+    # Age adjustment calculation (a more gradual approach)
     if age_years < 40:
         age_factor = 1.0
     elif 40 <= age_years < 50:
-        # For ages 40-49, apply a slight increment for months
-        age_factor = 1.0 + (age_months * 0.025)
+        age_factor = 1.1 + (age_months * 0.025)  # Slight increase for age and months
     elif 50 <= age_years < 65:
-        age_factor = 2.0  # Example, can increase based on exact age range
+        age_factor = 1.2  # Adjusted for ages above 50
     else:
-        age_factor = 3.5  # For age 65 and above
+        age_factor = 1.4  # Adjusted for ages above 65
 
     # Adjusted severance pay (applying age factor)
     adjusted_severance = basic_severance * age_factor
     
-    # Total severance pay (no cap unless explicitly needed)
+    # Total severance pay (no cap applied in this case)
     total_severance = adjusted_severance
 
     # Biweekly and weeks of severance pay
