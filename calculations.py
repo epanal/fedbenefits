@@ -75,13 +75,13 @@ def calculate_severance_pay(annual_salary, years_of_service, months_of_service, 
     adjusted_severance = basic_severance * age_factor
 
     # Apply salary cap (max severance = 1 year of salary)
-    total_severance = min(adjusted_severance, annual_salary)
+    total_severance = min(adjusted_severance, weekly_pay * 52)
 
     # Biweekly Severance Pay
     biweekly_severance = 2 * weekly_pay
 
     # Cap the weeks of severance to a max of 52
-    weeks_of_severance = min(52, adjusted_severance / weekly_pay)
+    weeks_of_severance = min(52, (total_severance / biweekly_severance) * 2 )
 
     # Calculate age adjustment amount (how much age factor increases severance)
     age_adjustment = adjusted_severance - basic_severance
