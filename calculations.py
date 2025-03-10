@@ -1,4 +1,4 @@
-def calculate_lump_sum_payment(hourly_rate, leave_balance_hours):
+def calculate_lump_sum_payment(hourly_rate: float, leave_balance_hours: float) -> float:
     """Calculate lump sum payment for unused annual leave."""
     return hourly_rate * leave_balance_hours  # Use leave hours directly
 
@@ -35,55 +35,55 @@ def calculate_annual_leave_accrual(employee_type, years_of_service, pay_periods,
     total_accrued_leave = accrual_rate * pay_periods
     return total_accrued_leave
 
-def calculate_severance_pay(annual_salary, years_of_service, age_years, age_months):
+def calculate_severance_pay(annual_salary, years_of_service, months_of_service, age_years, age_months):
     """
-    Calculate Severance Pay using:
-      - Basic Severance Pay: 1 week per year for first 10 years; 2 weeks per year thereafter.
-      - Age Factor: Linear interpolation from 1.0 at age 40 to 3.5 at age 65.
-        For age < 40, factor = 1.0; for age >= 65, factor = 3.5.
-      - Biweekly Severance Pay is defined as 2 * weekly pay.
-      - Weeks of Severance Pay = total severance / weekly pay.
+    Calculate Severance Pay considering additional months of service.
+    
+    - Basic Severance: 1 week per year for first 10 years; 2 weeks per year thereafter.
+    - Age Factor: 1.0 at age 40 to 3.5 at age 65 (linear interpolation).
+    - Biweekly Severance: 2 * weekly pay.
+    - Weeks of Severance Pay: Total severance / weekly pay.
+    - Caps: Max severance is 1 year's salary; max weeks is 52.
     """
-    # Use 52.175 as divisor to compute weekly pay (per OPM convention)
-    weekly_pay = annual_salary / 52.175
 
-    adj_years_of_service = years_of_service
-    # Basic severance pay calculation
-    if years_of_service < 10:
-        adj_years_of_service = years_of_service
+    # Convert total service into fractional years
+    total_years_of_service = years_of_service + (months_of_service / 12.0)
+
+    # Use OPM convention of 52.175 weeks in a year
+    weekly_pay = annual_salary / 52.175  
+
+    # Adjust years for severance calculation
+    if total_years_of_service < 10:
+        adj_years_of_service = total_years_of_service
     else:
-        adj_years_of_service = ((years_of_service - 10) * 2 ) + 10
+        adj_years_of_service = ((total_years_of_service - 10) * 2 ) + 10
 
     basic_severance = weekly_pay * adj_years_of_service    
 
     # Combine years and months into a decimal age
     age = age_years + age_months / 12.0
 
-    # Linear interpolation for age factor between 40 and 65:
+    # Linear interpolation for age factor
     if age < 40:
         age_factor = 1.0
     elif age < 65:
-        age_factor = 1.0 + ((age - 40) / (65 - 40)) * (3.5 - 1.0)
+        age_factor = 1.0 + ((age - 40) / 25) * 2.5  # (3.5 - 1.0) spread over 25 years
     else:
         age_factor = 3.5
 
-    # Adjusted severance pay using age factor
+    # Adjust severance with age factor
     adjusted_severance = basic_severance * age_factor
 
-    # Total severance pay (no cap applied here)
-    total_severance = adjusted_severance
+    # Apply salary cap (max severance = 1 year of salary)
+    total_severance = min(adjusted_severance, annual_salary)
 
-    # **NEW: Apply the salary cap of 1 year's salary**
-    salary_cap = annual_salary
-    total_severance = min(total_severance, salary_cap)
-
-    # Biweekly Severance Pay: Defined as 2 * weekly pay per the worksheet
+    # Biweekly Severance Pay
     biweekly_severance = 2 * weekly_pay
 
-    # **NEW: Cap the weeks of severance to a maximum of 52 weeks**
+    # Cap the weeks of severance to a max of 52
     weeks_of_severance = min(52, adjusted_severance / weekly_pay)
 
-    # Age adjustment amount (difference between adjusted and basic)
+    # Calculate age adjustment amount (how much age factor increases severance)
     age_adjustment = adjusted_severance - basic_severance
 
     return total_severance, basic_severance, age_adjustment, biweekly_severance, weeks_of_severance

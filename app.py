@@ -85,17 +85,21 @@ def annual_leave_accrual():
 
 def severance_pay_estimation():
     st.header("Severance Pay Estimation Calculator 💼", help="Learn more about severance pay: https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/")
+    
     # Input fields for the calculator
     annual_salary = st.number_input("Annual Basic Pay ($)", min_value=0.0, step=1000.0, key="annual_salary")
     years_of_service = st.number_input("Years of Creditable Federal Service", min_value=0, step=1, key="years_of_service")
+    months_of_service = st.number_input("Additional Months of Service (0 to 11)", min_value=0, max_value=11, step=1, key="months_of_service",
+                                        help="Enter the remaining months of service beyond the full years. For example, if you worked for 5 years and 6 months, input 6.")
+
     st.write("Enter your age in full years (e.g., 43 years) and the remaining months (e.g., 5 months).")
     age_years = st.number_input("Age at Separation (Years)", min_value=0, step=1, key="age_years")
     age_months = st.number_input("Additional Months (0 to 11)", min_value=0, max_value=11, step=1, key="age_months", 
                                  help="Enter the remaining months of your age beyond the full years. For example, if you are 43 years and 5 months old, input 5.")
-    
-    if annual_salary > 0 and years_of_service > 0 and age_years > 0:
+
+    if annual_salary > 0 and (years_of_service > 0 or months_of_service > 0) and age_years > 0:
         total_severance, basic_severance, age_adjustment, biweekly_severance, weeks_of_severance = calculate_severance_pay(
-            annual_salary, years_of_service, age_years, age_months
+            annual_salary, years_of_service, months_of_service, age_years, age_months
         )
         st.subheader("Severance Pay Calculation")
         st.write(f"**Basic Severance Pay:** ${basic_severance:,.2f}")
@@ -105,9 +109,11 @@ def severance_pay_estimation():
         st.write(f"**Weeks of Severance Pay:** {weeks_of_severance:.2f} weeks")
     else:
         st.write("Please enter valid values for all fields.")
+    
     # General disclaimer
     add_general_disclaimer()
     st.markdown("[Source: OPM Severance Pay Estimation Worksheet](https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/)")
+
 
 # Radio button selection
 option = st.radio("Select a Calculator", ["🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual", "💼 Severance Pay Estimation"])
