@@ -88,7 +88,7 @@ def severance_pay_estimation():
     
     # Input fields for the calculator
     annual_salary = st.number_input("Annual Basic Pay ($)", min_value=0.0, step=1000.0, key="annual_salary")
-    years_of_service = st.number_input("Years of Creditable Federal Service", min_value=0, step=1, key="years_of_service")
+    years_of_service = st.number_input("Full Years of Creditable Federal Service", min_value=0, step=1, key="years_of_service")
     months_of_service = st.number_input("Additional Months of Service (0 to 11)", min_value=0, max_value=11, step=1, key="months_of_service",
                                         help="Enter the remaining months of service beyond the full years. For example, if you worked for 5 years and 6 months, input 6.")
 
