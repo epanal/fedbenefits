@@ -34,31 +34,31 @@ def calculate_annual_leave_accrual(employee_type, years_of_service, pay_periods)
     return total_accrued_leave
 
 def calculate_severance_pay(annual_salary, years_of_service, age_years, age_months):
-    """Calculate severance pay with an age adjustment allowance for each full 3-month period over 40 years."""
+    # Convert age into total years including fractional months
+    age_in_years = age_years + (age_months / 12)
+
+    # Determine the age adjustment factor based on the age (capped at 65)
+    if age_years >= 65:
+        age_adjustment_factor = 3.5
+    else:
+        # Lookup the age adjustment factor based on the age
+        # (This is your existing logic for age adjustment based on the age_in_years, for example)
+        if age_in_years > 40:
+            age_adjustment_factor = ((age_in_years - 40) // 0.25) * 0.025  # 2.5% for each full 3 months over 40
+        else:
+            age_adjustment_factor = 0
+
+    # Basic Severance Pay calculation (assuming 2 weeks per year of service)
+    basic_severance = (annual_salary / 26) * years_of_service
     
-    # Calculate weekly pay rate
-    weekly_pay = annual_salary / 52.175
-
-    # Calculate basic severance allowance
-    if years_of_service <= 10:
-        basic_severance = years_of_service * weekly_pay
-    else:
-        basic_severance = (10 * weekly_pay) + ((years_of_service - 10) * 2 * weekly_pay)
-
-    # Calculate age adjustment allowance (2.5% of basic severance for each full 3 months over age 40)
-    if age_years > 40 or (age_years == 40 and age_months >= 3):
-        full_quarters_over_40 = ((age_years - 40) * 4) + (age_months // 3)
-        age_adjustment = (full_quarters_over_40 * 0.025) * basic_severance
-    else:
-        age_adjustment = 0
-
-    # Total severance pay
+    # Age Adjustment
+    age_adjustment = basic_severance * age_adjustment_factor
+    
+    # Total Severance Pay is the sum of basic severance and age adjustment
     total_severance = basic_severance + age_adjustment
-
-    # Calculate weeks of severance pay
-    weeks_of_severance = total_severance / weekly_pay
-
-    # Calculate biweekly severance pay
-    biweekly_severance = (total_severance / weeks_of_severance) * 2
-
-    return total_severance, basic_severance, age_adjustment, biweekly_severance, weeks_of_severance
+    
+    # Biweekly Severance Pay
+    biweekly_severance = total_severance / 26  # Divide by 26 pay periods per year
+    
+    # Calculate the weeks of severance pay
+    weeks_of_severance = total_severance / (annual_salary / 52) 
