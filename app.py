@@ -15,16 +15,6 @@ st.markdown("""
 </a>
 """, unsafe_allow_html=True)
 
-st.markdown(
-    """
-    <style>
-    div[data-baseweb="input"] {
-        max-width: 300px;  /* Adjust the width */
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 # Add spacing after the title
 st.markdown("<br>", unsafe_allow_html=True)
 
