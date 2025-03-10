@@ -4,7 +4,6 @@ def calculate_lump_sum_payment(hourly_rate, leave_balance_hours):
 
 def calculate_annual_leave_accrual(employee_type, years_of_service, pay_periods):
     """Calculate annual leave accrual based on employee type, years of service, and pay periods."""
-    
     if employee_type == "Full-time Employee":
         if years_of_service < 3:
             accrual_rate = 4  # ½ day (4 hours) per pay period
@@ -14,52 +13,60 @@ def calculate_annual_leave_accrual(employee_type, years_of_service, pay_periods)
             accrual_rate = 8  # 1 day (8 hours) per pay period
     elif employee_type == "Part-time Employee":
         if years_of_service < 3:
-            accrual_rate = (1 / 20) * 1  # 1 hour for each 20 hours in a pay status
+            accrual_rate = (1 / 20)  # 1 hour for each 20 hours in a pay status
         elif 3 <= years_of_service < 15:
-            accrual_rate = (1 / 13) * 1  # 1 hour for each 13 hours in a pay status
+            accrual_rate = (1 / 13)  # 1 hour for each 13 hours in a pay status
         else:
-            accrual_rate = (1 / 10) * 1  # 1 hour for each 10 hours in a pay status
+            accrual_rate = (1 / 10)  # 1 hour for each 10 hours in a pay status
     elif employee_type == "Uncommon Tours of Duty":
         if years_of_service < 3:
-            accrual_rate = (4 * (pay_periods * 40 / 80))  # 4 hours times average # of hours per pay period divided by 80
+            accrual_rate = (4 * (pay_periods * 40 / 80))
         elif 3 <= years_of_service < 15:
-            accrual_rate = (6 * (pay_periods * 40 / 80))  # 6 hours times average # of hours per pay period divided by 80
+            accrual_rate = (6 * (pay_periods * 40 / 80))
         else:
-            accrual_rate = (8 * (pay_periods * 40 / 80))  # 8 hours times average # of hours per pay period divided by 80
+            accrual_rate = (8 * (pay_periods * 40 / 80))
     elif employee_type == "SES, Senior Level, Scientific/Professional Positions":
         accrual_rate = 8  # 8 hours for each pay period, regardless of years of service
 
-    # Calculate total leave accrual
     total_accrued_leave = accrual_rate * pay_periods
     return total_accrued_leave
 
 def calculate_severance_pay(annual_salary, years_of_service, age_years, age_months):
-    """Calculate Severance Pay based on annual salary, years of service, and age at separation."""
-
-    # Basic severance pay calculation (assuming 1 week per year for first 10 years, and 2 weeks per year after)
-    if years_of_service < 10:
-        basic_severance = years_of_service * (annual_salary / 52)  # one week per year
-    else:
-        basic_severance = (10 * (annual_salary / 52)) + ((years_of_service - 10) * 2 * (annual_salary / 52))  # first 10 years + 2 weeks per year after 10
-
-    # Age adjustment calculation (a more gradual approach)
-    if age_years < 40:
-        age_factor = 1.0
-    elif 40 <= age_years < 50:
-        age_factor = 1.1 + (age_months * 0.025)  # Slight increase for age and months
-    elif 50 <= age_years < 65:
-        age_factor = 1.2  # Adjusted for ages above 50
-    else:
-        age_factor = 1.4  # Adjusted for ages above 65
-
-    # Adjusted severance pay (applying age factor)
-    adjusted_severance = basic_severance * age_factor
+    """Calculate severance pay based on annual salary, years of service, and age.
     
-    # Total severance pay (no cap applied in this case)
+    - Basic Severance Pay: 1 week of pay per year for the first 10 years, then 2 weeks per year thereafter.
+    - Age Factor: For ages 40 to 65, linearly interpolate from 1.0 at age 40 to 3.5 at age 65. For ages under 40, factor = 1.0; for 65 and older, factor = 3.5.
+    - Biweekly Severance Pay: Defined as 2 times the weekly pay.
+    - Weeks of Severance Pay: Total severance divided by weekly pay.
+    """
+    # Weekly pay calculation
+    weekly_pay = annual_salary / 52.0
+
+    # Basic Severance Pay calculation
+    if years_of_service < 10:
+        basic_severance = years_of_service * weekly_pay
+    else:
+        basic_severance = (10 * weekly_pay) + ((years_of_service - 10) * 2 * weekly_pay)
+
+    # Age factor calculation using linear interpolation between age 40 and 65
+    age = age_years + age_months / 12.0
+    if age < 40:
+        age_factor = 1.0
+    elif age < 65:
+        age_factor = 1.0 + ((age - 40) / (65 - 40)) * (3.5 - 1.0)
+    else:
+        age_factor = 3.5
+
+    # Adjusted Severance Pay calculation
+    adjusted_severance = basic_severance * age_factor
+
+    # Total Severance Pay (no cap applied)
     total_severance = adjusted_severance
 
-    # Biweekly and weeks of severance pay
-    biweekly_severance = total_severance / 26  # Biweekly payments (26 pay periods in a year)
-    weeks_of_severance = total_severance / (annual_salary / 52)  # Total weeks of severance pay
+    # Weeks of Severance Pay calculation
+    weeks_of_severance = total_severance / weekly_pay
+
+    # Biweekly Severance Pay: expected to be 2 * weekly pay
+    biweekly_severance = 2 * weekly_pay
 
     return total_severance, basic_severance, adjusted_severance - basic_severance, biweekly_severance, weeks_of_severance
