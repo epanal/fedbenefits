@@ -77,12 +77,8 @@ def calculate_severance_pay(annual_salary, years_of_service, age_years, age_mont
     # Biweekly Severance Pay: Defined as 2 * weekly pay per the worksheet
     biweekly_severance = 2 * weekly_pay
 
-    # Weeks of Severance Pay (Ensure it matches the weeks calculated by the statute)
-    # For first 10 years of service, it's 1 week per year; for 10+ years, it's 2 weeks per year
-    if years_of_service < 10:
-        weeks_of_severance = years_of_service
-    else:
-        weeks_of_severance = 10 + (years_of_service - 10) * 2
+    # **NEW: Cap the weeks of severance to a maximum of 52 weeks**
+    weeks_of_severance = min(52, basic_severance / weekly_pay)
 
     # Age adjustment amount (difference between adjusted and basic)
     age_adjustment = adjusted_severance - basic_severance
