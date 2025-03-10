@@ -21,7 +21,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 def add_general_disclaimer():
     st.markdown("""
         <p style="color:gray; font-size: 12px; text-align:center;">
-        *Note: These calculations are estimates based on available data and may not account for all variables. Please refer to the official <a href="https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/" target="_blank">OPM policies</a> for precise guidelines and calculations.*
+        *Note: These calculations are estimates based on available data and may not account for all variables. Please refer to the official OPM policies for precise guidelines and calculations.*
         </p>
     """, unsafe_allow_html=True)
 
@@ -37,6 +37,8 @@ def annual_leave_lump_sum():
         st.write(f"**Estimated Lump Sum Payment:** ${lump_sum_payment:,.2f}")
     else:
         st.write("Please enter valid values for both fields.")
+    # General disclaimer
+    add_general_disclaimer()
     st.markdown("[Source: OPM Annual Leave Lump Sum Payment](https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/lump-sum-payments-for-annual-leave/)")
 
 def annual_leave_accrual():
@@ -75,10 +77,10 @@ def annual_leave_accrual():
                 </p>
             """, unsafe_allow_html=True)
         
-        # General disclaimer
-        add_general_disclaimer()
     else:
         st.write("Please enter valid values for both fields.")
+    # General disclaimer
+    add_general_disclaimer()
     st.markdown("[Source: OPM Annual Leave Fact Sheet](https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/annual-leave/)")
 
 def severance_pay_estimation():
@@ -103,6 +105,8 @@ def severance_pay_estimation():
         st.write(f"**Weeks of Severance Pay:** {weeks_of_severance:.2f} weeks")
     else:
         st.write("Please enter valid values for all fields.")
+    # General disclaimer
+    add_general_disclaimer()
     st.markdown("[Source: OPM Severance Pay Estimation Worksheet](https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/)")
 
 # Radio button selection
