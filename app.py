@@ -8,15 +8,6 @@ from calculations import (
 # Title
 st.title("Federal Benefits Calculators")
 
-# Add donation button
-st.markdown("""
-<a href="https://buymeacoffee.com/vetfed" target="_blank">
-    <button style="background-color: #FF5F5F; color: white; padding: 10px 20px; font-size: 16px; border-radius: 5px; margin-bottom: 20px;">
-        ☕ Buy Me a Coffee
-    </button>
-</a>
-""", unsafe_allow_html=True)
-
 # Add spacing after the title
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -128,3 +119,12 @@ elif option == "📅 Annual Leave Accrual":
 
 elif option == "💼 Severance Pay Estimation":
     severance_pay_estimation()
+
+# Add donation button
+st.markdown("""
+<a href="https://buymeacoffee.com/vetfed" target="_blank">
+    <button style="background-color: #FF5F5F; color: white; padding: 10px 20px; font-size: 16px; border-radius: 5px; margin-bottom: 20px;">
+        ☕ Buy Me a Coffee
+    </button>
+</a>
+""", unsafe_allow_html=True)
