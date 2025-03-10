@@ -37,12 +37,11 @@ def calculate_severance_pay(annual_salary, years_of_service, age_years, age_mont
     # Convert age into total years including fractional months
     age_in_years = age_years + (age_months / 12)
 
-    # Determine the age adjustment factor based on the age (capped at 65)
-    if age_years >= 65:
+    # Determine the age adjustment factor based on the age (capped at 3.5)
+    if age_in_years >= 65:
         age_adjustment_factor = 3.5
     else:
-        # Lookup the age adjustment factor based on the age
-        # (This is your existing logic for age adjustment based on the age_in_years, for example)
+        # 2.5% per each full 3 months (0.25 years) over 40 years
         if age_in_years > 40:
             age_adjustment_factor = ((age_in_years - 40) // 0.25) * 0.025  # 2.5% for each full 3 months over 40
         else:
@@ -61,4 +60,6 @@ def calculate_severance_pay(annual_salary, years_of_service, age_years, age_mont
     biweekly_severance = total_severance / 26  # Divide by 26 pay periods per year
     
     # Calculate the weeks of severance pay
-    weeks_of_severance = total_severance / (annual_salary / 52) 
+    weeks_of_severance = total_severance / (annual_salary / 52)  # Weeks of severance based on annual salary
+    
+    return total_severance, basic_severance, age_adjustment, biweekly_severance, weeks_of_severance
