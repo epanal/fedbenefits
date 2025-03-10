@@ -57,15 +57,25 @@ elif option == "📅 Annual Leave Accrual":
 elif option == "💼 Severance Pay Estimation":
     st.header("Severance Pay Estimation Calculator 💼", help="Learn more about severance pay: https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/")
 
+    # Input fields for the calculator
     annual_salary = st.number_input("Annual Basic Pay ($)", min_value=0.0, step=1000.0, key="annual_salary")
     years_of_service = st.number_input("Years of Creditable Federal Service", min_value=0, step=1, key="years_of_service")
-    age = st.number_input("Age at Separation", min_value=0, step=1, key="age")
+    age_years = st.number_input("Age at Separation (Years)", min_value=0, step=1, key="age_years")
+    age_months = st.number_input("Additional Months", min_value=0, max_value=11, step=1, key="age_months")
 
-    if annual_salary > 0 and years_of_service > 0 and age > 0:
-        total_severance, basic_severance, age_adjustment = calculate_severance_pay(annual_salary, years_of_service, age)
+    if annual_salary > 0 and years_of_service > 0 and age_years > 0:
+        total_severance, basic_severance, age_adjustment, biweekly_severance, weeks_of_severance = calculate_severance_pay(
+            annual_salary, years_of_service, age_years, age_months
+        )
+
         st.subheader("Severance Pay Calculation")
-        st.write(f"**Basic Severance Allowance:** ${basic_severance:,.2f}")
-        st.write(f"**Age Adjustment Allowance:** ${age_adjustment:,.2f}")
-        st.write(f"**Total Estimated Severance Pay:** ${total_severance:,.2f}")
+        st.write(f"**Basic Severance Pay:** ${basic_severance:,.2f}")
+        st.write(f"**Adjusted Severance Pay:** ${basic_severance + age_adjustment:,.2f}")
+        st.write(f"**Total Severance Pay:** ${total_severance:,.2f}")
+        st.write(f"**Biweekly Severance Pay:** ${biweekly_severance:,.2f}")
+        st.write(f"**Weeks of Severance Pay:** {weeks_of_severance:.2f} weeks")
+
     else:
         st.write("Please enter valid values for all fields.")
+
+    st.markdown("[Source: OPM Severance Pay Estimation Worksheet](https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/)")

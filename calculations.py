@@ -33,7 +33,9 @@ def calculate_annual_leave_accrual(employee_type, years_of_service, pay_periods)
     total_accrued_leave = accrual_rate * pay_periods
     return total_accrued_leave
 
-def calculate_severance_pay(annual_salary, years_of_service, age):
+def calculate_severance_pay(annual_salary, years_of_service, age_years, age_months):
+    """Calculate severance pay with an age adjustment allowance for each full 3-month period over 40 years."""
+    
     # Calculate weekly pay rate
     weekly_pay = annual_salary / 52.175
 
@@ -43,13 +45,18 @@ def calculate_severance_pay(annual_salary, years_of_service, age):
     else:
         basic_severance = (10 * weekly_pay) + ((years_of_service - 10) * 2 * weekly_pay)
 
-    # Calculate age adjustment allowance
-    if age > 40:
-        age_adjustment = ((age - 40) * 0.1) * basic_severance
+    # Calculate age adjustment allowance (2.5% of basic severance for each full 3 months over age 40)
+    if age_years > 40 or (age_years == 40 and age_months >= 3):
+        full_quarters_over_40 = ((age_years - 40) * 4) + (age_months // 3)
+        age_adjustment = (full_quarters_over_40 * 0.025) * basic_severance
     else:
         age_adjustment = 0
 
     # Total severance pay
     total_severance = basic_severance + age_adjustment
-    return total_severance, basic_severance, age_adjustment
 
+    # Calculate biweekly severance pay and weeks of severance pay
+    biweekly_severance = total_severance / 2
+    weeks_of_severance = total_severance / weekly_pay
+
+    return total_severance, basic_severance, age_adjustment, biweekly_severance, weeks_of_severance
