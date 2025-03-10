@@ -28,14 +28,8 @@ def add_general_disclaimer():
 
 def annual_leave_lump_sum():
     st.header("Annual Leave Lump Sum Calculator 📝", help="Learn more about lump sum payments: https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/lump-sum-payments-for-annual-leave/")
-    
-    col1, col2 = st.columns([1, 2])  # Create two narrower columns
-
-    with col1:
-        hourly_rate = st.number_input("Hourly Pay Rate ($)", min_value=0.0, step=0.01, key="hourly_rate")
-    
-    with col2:
-        leave_balance_hours = st.number_input("Unused Annual Leave Balance (hours)", min_value=0.0, step=0.1, key="leave_balance")
+    hourly_rate = st.number_input("Hourly Pay Rate ($)", min_value=0.0, step=0.01, key="hourly_rate")
+    leave_balance_hours = st.number_input("Unused Annual Leave Balance (hours)", min_value=0.0, step=0.1, key="leave_balance")
     
     if hourly_rate > 0 and leave_balance_hours > 0:
         lump_sum_payment = calculate_lump_sum_payment(hourly_rate, leave_balance_hours)
@@ -43,28 +37,21 @@ def annual_leave_lump_sum():
         st.write(f"**Estimated Lump Sum Payment:** ${lump_sum_payment:,.2f}")
     else:
         st.write("Please enter valid values for both fields.")
-    
+    # General disclaimer
     add_general_disclaimer()
     st.markdown("[Source: OPM Annual Leave Lump Sum Payment](https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/lump-sum-payments-for-annual-leave/)")
 
 def annual_leave_accrual():
     st.header("Annual Leave Accrual Calculator 📅")
-    
-    col1, col2 = st.columns([1, 2])
-
-    with col1:
-        employee_type = st.selectbox("Select Employee Type", [
-            "Full-time Employee",
-            "Part-time Employee",
-            "Uncommon Tours of Duty",
-            "SES, Senior Level, Scientific/Professional Positions"
-        ])
-    
-    with col2:
-        years_of_service = st.number_input("Years of Federal Service", min_value=0, step=1, key="years_of_service")
-
+    employee_type = st.selectbox("Select Employee Type", [
+        "Full-time Employee",
+        "Part-time Employee",
+        "Uncommon Tours of Duty",
+        "SES, Senior Level, Scientific/Professional Positions"
+    ])
+    years_of_service = st.number_input("Years of Federal Service", min_value=0, step=1, key="years_of_service")
     pay_periods = st.number_input("Number of Pay Periods", min_value=1, step=1, key="pay_periods")
-
+    
     hours_in_pay_status = None
     avg_hours_per_pay_period = None
 
@@ -82,6 +69,7 @@ def annual_leave_accrual():
         except ValueError as e:
             st.error(str(e))
         
+        # Footnote for special case
         if employee_type == "Full-time Employee" and 3 <= years_of_service < 15:
             st.markdown("""
                 <p style="color:gray; font-size: 12px;">
@@ -91,30 +79,23 @@ def annual_leave_accrual():
         
     else:
         st.write("Please enter valid values for both fields.")
-    
+    # General disclaimer
     add_general_disclaimer()
     st.markdown("[Source: OPM Annual Leave Fact Sheet](https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/annual-leave/)")
 
 def severance_pay_estimation():
     st.header("Severance Pay Estimation Calculator 💼", help="Learn more about severance pay: https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/")
     
-    col1, col2 = st.columns([1, 2]) 
+    # Input fields for the calculator
+    annual_salary = st.number_input("Annual Basic Pay ($)", min_value=0, step=1000, key="annual_salary")
+    years_of_service = st.number_input("Full Years of Creditable Federal Service", min_value=0, step=1, key="years_of_service")
+    months_of_service = st.number_input("Additional Months of Service (0 to 11)", min_value=0, max_value=11, step=1, key="months_of_service",
+                                        help="Enter the remaining months of service beyond the full years. For example, if you worked for 5 years and 6 months, input 6.")
 
-    with col1:
-        annual_salary = st.number_input("Annual Basic Pay ($)", min_value=0, step=1000, key="annual_salary")
-    
-    with col2:
-        years_of_service = st.number_input("Full Years of Creditable Federal Service", min_value=0, step=1, key="years_of_service")
-
-    col3, col4 = st.columns([1, 2])  
-
-    with col3:
-        months_of_service = st.number_input("Additional Months of Service (0 to 11)", min_value=0, max_value=11, step=1, key="months_of_service")
-    
-    with col4:
-        age_years = st.number_input("Age at Separation (Years)", min_value=0, step=1, key="age_years")
-
-    age_months = st.number_input("Additional Months (0 to 11)", min_value=0, max_value=11, step=1, key="age_months")
+    st.write("Enter your age in full years (e.g., 43 years) and the remaining months (e.g., 5 months).")
+    age_years = st.number_input("Age at Separation (Years)", min_value=0, step=1, key="age_years")
+    age_months = st.number_input("Additional Months (0 to 11)", min_value=0, max_value=11, step=1, key="age_months", 
+                                 help="Enter the remaining months of your age beyond the full years. For example, if you are 43 years and 5 months old, input 5.")
 
     if annual_salary > 0 and (years_of_service > 0 or months_of_service > 0) and age_years > 0:
         total_severance, basic_severance, age_adjustment, biweekly_severance, weeks_of_severance = calculate_severance_pay(
@@ -129,8 +110,10 @@ def severance_pay_estimation():
     else:
         st.write("Please enter valid values for all fields.")
     
+    # General disclaimer
     add_general_disclaimer()
     st.markdown("[Source: OPM Severance Pay Estimation Worksheet](https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/)")
+
 
 # Radio button selection
 option = st.radio("Select a Calculator", ["🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual", "💼 Severance Pay Estimation"])
