@@ -11,6 +11,7 @@ st.title("Federal Benefits Calculators")
 # Add spacing after the title
 st.markdown("<br>", unsafe_allow_html=True)
 
+# Function to add general disclaimer
 def add_general_disclaimer():
     st.markdown("""
         <p style="color:gray; font-size: 12px; text-align:center;">
@@ -18,7 +19,10 @@ def add_general_disclaimer():
         </p>
     """, unsafe_allow_html=True)
 
+# Tab-like behavior with selectbox
+tab = st.selectbox("Select a Calculator", ["🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual", "💼 Severance Pay Estimation"])
 
+# Functions for calculators
 def annual_leave_lump_sum():
     st.header("Annual Leave Lump Sum Calculator 📝", help="Learn more about lump sum payments: https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/lump-sum-payments-for-annual-leave/")
     hourly_rate = st.number_input("Hourly Pay Rate ($)", min_value=0.0, step=0.01, key="hourly_rate")
@@ -107,20 +111,17 @@ def severance_pay_estimation():
     add_general_disclaimer()
     st.markdown("[Source: OPM Severance Pay Estimation Worksheet](https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/)")
 
-
-# Radio button selection
-option = st.radio("Select a Calculator", ["🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual", "💼 Severance Pay Estimation"])
-
-if option == "🏖️ Annual Leave Lump Sum":
+# Display the selected tab's content
+if tab == "🏖️ Annual Leave Lump Sum":
     annual_leave_lump_sum()
 
-elif option == "📅 Annual Leave Accrual":
+elif tab == "📅 Annual Leave Accrual":
     annual_leave_accrual()
 
-elif option == "💼 Severance Pay Estimation":
+elif tab == "💼 Severance Pay Estimation":
     severance_pay_estimation()
 
-# Add spacing after the title
+# Add spacing after the content
 st.markdown("<br>", unsafe_allow_html=True)
 
 # Add donation button
