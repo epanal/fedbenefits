@@ -6,7 +6,7 @@ from calculations import (
 )
 
 # Title
-st.title("Federal Benefits Calculators")
+st.title("Fed Benefits Calculators")
 
 # Add spacing after the title
 st.markdown("<br>", unsafe_allow_html=True)
