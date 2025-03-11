@@ -97,4 +97,4 @@ def calculate_severance_pay(annual_salary, years_of_service, months_of_service, 
     # Calculate age adjustment amount (how much age factor increases severance)
     age_adjustment = adjusted_severance - total_severance
 
-    return total_severance, basic_severance, partial_severance, age_adjustment, biweekly_severance, weeks_of_severance
+    return total_severance, basic_severance, age_adjustment, biweekly_severance, weeks_of_severance
