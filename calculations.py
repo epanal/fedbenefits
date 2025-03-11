@@ -61,12 +61,10 @@ def calculate_severance_pay(annual_salary, years_of_service, months_of_service, 
     # Calculate basic severance based on full years
     basic_severance = weekly_pay * adj_years_of_service    
 
-    # Add prorated severance for partial months
-    partial_months = months_of_service % 12
-    partial_severance = 0
-    if partial_months > 0:
-        # Calculate additional severance for every 3 months beyond a full year
-        partial_severance = (weekly_pay * 2) * (partial_months / 3.0) * 0.25
+    # Round the months of service into multiples of 3 months
+    full_periods_of_3_months = months_of_service // 3
+    # We can add the severance only for full 3-month periods
+    partial_severance = (weekly_pay * 2) * full_periods_of_3_months * 0.25
 
     # Combine basic severance and partial severance
     total_severance = basic_severance + partial_severance
