@@ -40,7 +40,7 @@ def calculate_severance_pay(annual_salary, years_of_service, months_of_service, 
     Calculate Severance Pay considering additional months of service.
     
     - Basic Severance: 1 week per year for first 10 years; 2 weeks per year thereafter.
-    - Age Factor: 1.0 at age 40 to 3.5 at age 65 (linear interpolation).
+    - Age Adjustment: 2.5% of basic severance for each full 3 months of age over 40.
     - Biweekly Severance: 2 * weekly pay.
     - Weeks of Severance Pay: Total severance / weekly pay.
     - Caps: Max severance is 1 year's salary; max weeks is 52.
@@ -72,16 +72,18 @@ def calculate_severance_pay(annual_salary, years_of_service, months_of_service, 
     # Combine years and months into a decimal age
     age = age_years + age_months / 12.0
 
-    # Linear interpolation for age factor
-    if age < 40:
-        age_factor = 1.0
-    elif age < 65:
-        age_factor = 1.0 + ((age - 40) / 25) * 2.5  # (3.5 - 1.0) spread over 25 years
+    # Calculate the number of full 3-month periods of age over 40
+    if age > 40:
+        full_3_months_over_40 = int((age - 40) * 12 // 3)  # Number of full 3-month periods over 40
     else:
-        age_factor = 3.5
+        full_3_months_over_40 = 0
+
+    # Age adjustment (2.5% for each full 3-month period over 40)
+    age_adjustment_percentage = 0.025 * full_3_months_over_40
+    age_adjustment = basic_severance * age_adjustment_percentage
 
     # Adjust severance with age factor
-    adjusted_severance = total_severance * age_factor
+    adjusted_severance = total_severance + age_adjustment
 
     # Apply salary cap (max severance = 1 year of salary)
     total_severance = min(adjusted_severance, weekly_pay * 52)
@@ -91,8 +93,5 @@ def calculate_severance_pay(annual_salary, years_of_service, months_of_service, 
 
     # Cap the weeks of severance to a max of 52
     weeks_of_severance = min(52, (total_severance / biweekly_severance) * 2)
-
-    # Calculate age adjustment amount (how much age factor increases severance)
-    age_adjustment = adjusted_severance - total_severance
 
     return total_severance, basic_severance, age_adjustment, biweekly_severance, weeks_of_severance
