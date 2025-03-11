@@ -20,7 +20,7 @@ def add_general_disclaimer():
     """, unsafe_allow_html=True)
 
 # Tab-like behavior with selectbox
-tab = st.selectbox("Select a Calculator", ["🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual", "💼 Severance Pay Estimation"])
+tab = st.selectbox("Select a Calculator", ["💼 Severance Pay Estimation","🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual"])
 
 # Functions for calculators
 def annual_leave_lump_sum():
