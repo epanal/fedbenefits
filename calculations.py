@@ -80,6 +80,6 @@ def calculate_severance_pay(annual_salary, years_of_service, months_of_service, 
     biweekly_severance = 2 * weekly_pay
 
     # Step 10: Calculate weeks of severance (max 52)
-    weeks_of_severance = min(52, (total_severance / biweekly_severance) * 2)
+    weeks_of_severance = min(52, adj_years_of_service)
 
     return total_severance, basic_severance, age_adjustment, biweekly_severance, weeks_of_severance
