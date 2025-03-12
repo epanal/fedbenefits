@@ -100,8 +100,9 @@ def severance_pay_estimation():
         )
         st.subheader("Severance Pay Calculation")
         st.write(f"**Basic Severance Pay:** ${basic_severance:,.2f}")
+        st.write(f"**Age Adjustment Allowance:** ${age_adjustment:,.2f}")
         st.write(f"**Adjusted Severance Pay:** ${basic_severance + age_adjustment:,.2f}")
-        st.write(f"**Total Severance Pay:** ${total_severance:,.2f}")
+        st.info(f"### 💰 Total Severance Pay: **${total_severance:,.2f}**")
         #st.write(f"**Biweekly Severance Pay:** ${biweekly_severance:,.2f}")
         st.write(f"**Weeks of Severance Pay:** {weeks_of_severance:.2f} weeks")
     else:
