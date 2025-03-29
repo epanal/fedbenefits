@@ -117,6 +117,15 @@ def severance_pay_estimation():
 # DRP vs Severance Comparison Function
 def compare_severance_vs_drp():
     st.header("Severance Pay vs. DRP ⚖️")
+
+    # Add disclaimer
+    st.markdown("""
+    <p style="font-size: 14px; color: gray;">
+    **Disclaimer:** This tool compares the estimated severance pay, including the period when the RIF notice is served, with the actual severance, and compares that with the length of the DRP and estimated pay during that period. 
+    It does not account for a wide range of personal factors or other benefits, such as lump sum leave payouts, TSP matching, or tax implications. 
+    Please consult with a financial advisor or HR for a more comprehensive evaluation of your specific situation.
+    </p>
+    """, unsafe_allow_html=True)
     
     # Inputs for Severance Pay
     severance_estimate = st.number_input("Total Estimated Severance Pay ($)", min_value=0.0, step=1000.0, key="severance_estimate")
