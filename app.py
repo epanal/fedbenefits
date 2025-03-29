@@ -119,7 +119,7 @@ def compare_severance_vs_drp():
     st.header("Severance Pay vs. DRP ⚖️")
     
     # Inputs for Severance Pay
-    severance_estimate = st.number_input("Estimated Severance Pay ($)", min_value=0.0, step=1000.0, key="severance_estimate")
+    severance_estimate = st.number_input("Total Estimated Severance Pay ($)", min_value=0.0, step=1000.0, key="severance_estimate")
     
     # Inputs for DRP Calculation
     biweekly_salary = st.number_input("Biweekly Salary ($)", min_value=0.0, step=100.0, key="biweekly_salary")
