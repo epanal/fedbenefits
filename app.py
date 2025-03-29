@@ -141,7 +141,7 @@ def compare_severance_vs_drp():
     
     # Calculate pay periods remaining based on DRP start date
     pay_periods_remaining = max(0, (sep_30 - drp_start_date).days // 14)
-    st.write(f"**Pay Periods Remaining Until Sep 30, 2025:** {pay_periods_remaining}")
+    st.write(f"**Pay Periods From DRP Start Until Sep 30, 2025:** {pay_periods_remaining}")
     
     # New input: Pay periods between RIF notice and RIF severance
     rif_pay_periods = st.number_input("Pay Periods Between RIF Notice and Actual RIF", min_value=0, step=1, key="rif_pay_periods")
