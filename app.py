@@ -124,10 +124,12 @@ def compare_severance_vs_drp():
     # Inputs for DRP Calculation
     biweekly_salary = st.number_input("Biweekly Salary ($)", min_value=0.0, step=100.0, key="biweekly_salary")
     
-    # Pay periods remaining until September 30
-    today = date.today()
-    sep_30 = date(today.year, 9, 30)
-    pay_periods_remaining = max(0, (sep_30 - today).days // 14)
+    # Input for DRP start date
+    drp_start_date = st.date_input("Select DRP Start Date", min_value=today, max_value=date(2025, 9, 30), value=today)
+
+    # Calculate pay periods remaining from DRP start date until September 30, 2025
+    sep_30 = date(2025, 9, 30)
+    pay_periods_remaining = max(0, (sep_30 - drp_start_date).days // 14)
     st.write(f"**Pay Periods Remaining Until Sep 30, 2025:** {pay_periods_remaining}")
     
     # New input: Pay periods between RIF notice and RIF severance
