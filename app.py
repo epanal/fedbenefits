@@ -153,8 +153,8 @@ def compare_severance_vs_drp():
         
         # Display Results
         st.subheader("Comparison Results")
-        st.markdown(f"**Total Severance Pay Estimate:** ${severance_estimate:,.2f}", unsafe_allow_html=True)
         st.markdown(f"<p style='font-size: 16px;'><strong>Earnings Under DRP Until Sep 30, 2025:</strong> ${total_drp_earnings:,.2f} ({pay_periods_remaining} pay periods * ${biweekly_salary:,.2f})</p>", unsafe_allow_html=True)
+        st.markdown(f"**Total Severance Pay Estimate:** ${severance_estimate:,.2f}", unsafe_allow_html=True)
         st.markdown(f"<p style='font-size: 16px;'><strong>Earnings During RIF Notice Period to Actual RIF:</strong> ${total_rif_earnings:,.2f} ({rif_pay_periods} pay periods * ${biweekly_salary:,.2f})</p>", unsafe_allow_html=True)
         st.markdown(f"**Total Adjusted RIF Severance (Severance Estimate + RIF notice period earnings):** ${adjusted_severance:,.2f}", unsafe_allow_html=True)
 
