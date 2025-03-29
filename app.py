@@ -17,7 +17,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 def add_general_disclaimer():
     st.markdown("""
         <p style="color:gray; font-size: 12px; text-align:center;">
-        *Note: These calculations are estimates based on available data and may not account for all variables. Please refer to the official OPM policies for precise guidelines and calculations.*
+        *Note: These calculations are estimates based on available data and may not account for all variables. Please refer to the official OPM and agency policies for precise guidelines and calculations.*
         </p>
     """, unsafe_allow_html=True)
 
