@@ -128,7 +128,7 @@ def compare_severance_vs_drp():
     today = date.today()
     sep_30 = date(today.year, 9, 30)
     pay_periods_remaining = max(0, (sep_30 - today).days // 14)
-    st.write(f"**Pay Periods Remaining Until Sep 30:** {pay_periods_remaining}")
+    st.write(f"**Pay Periods Remaining Until Sep 30, 2025:** {pay_periods_remaining}")
     
     # New input: Pay periods between RIF notice and RIF severance
     rif_pay_periods = st.number_input("Pay Periods Between RIF Notice and Actual RIF", min_value=0, step=1, key="rif_pay_periods")
@@ -143,7 +143,7 @@ def compare_severance_vs_drp():
         st.write(f"**Total Severance Pay Estimate:** ${severance_estimate:,.2f}")
         st.write(f"**Earnings Under DRP Until Sep 30, 2025:** ${total_drp_earnings:,.2f} ({pay_periods_remaining} pay periods * ${biweekly_salary:,.2f})", unsafe_allow_html=True)
         st.write(f"**Earnings During RIF Notice Period to Actual RIF:** ${total_rif_earnings:,.2f} ({rif_pay_periods} pay periods * ${biweekly_salary:,.2f})", unsafe_allow_html=True)
-        st.write(f"**Total Adjusted Severance (Severance Estimate + RIF Earnings):** ${adjusted_severance:,.2f}")
+        st.write(f"**Total Adjusted RIF Severance (Severance Estimate + RIF notice earnings):** ${adjusted_severance:,.2f}")
 
         # Highlight which option is better
         if total_drp_earnings > adjusted_severance:
