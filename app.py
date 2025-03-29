@@ -1,5 +1,4 @@
 import streamlit as st
-from dateutil.relativedelta import relativedelta
 from calculations import (
     calculate_severance_pay, 
     calculate_lump_sum_payment, 
@@ -119,41 +118,31 @@ def compare_severance_vs_drp():
     
     # Inputs for Severance Pay
     severance_estimate = st.number_input("Estimated Severance Pay ($)", min_value=0.0, step=1000.0, key="severance_estimate")
-    
+
     # Inputs for DRP Calculation
     biweekly_salary = st.number_input("Biweekly Salary ($)", min_value=0.0, step=100.0, key="biweekly_salary")
-    
-    # Pay periods remaining until September 30
-    today = date.today()
-    sep_30 = date(today.year, 9, 30)
-    pay_periods_remaining = max(0, (sep_30 - today).days // 14)
-    st.write(f"**Pay Periods Remaining Until Sep 30:** {pay_periods_remaining}")
-    
-    # New input: Pay periods between RIF notice and RIF severance
-    rif_pay_periods = st.number_input("Pay Periods Between RIF Notice and RIF Severance", min_value=0, step=1, key="rif_pay_periods")
-    
+
+    # Number of pay periods remaining until Sep 30
+    pay_periods_remaining = 14  # Fixed based on our previous count
+
     if severance_estimate > 0 and biweekly_salary > 0:
         total_drp_earnings = biweekly_salary * pay_periods_remaining
-        total_rif_earnings = biweekly_salary * rif_pay_periods
-        adjusted_severance = severance_estimate + total_rif_earnings
         
         # Display Results
         st.subheader("Comparison Results")
         st.write(f"**Severance Pay Estimate:** ${severance_estimate:,.2f}")
-        st.write(f"**Earnings Under DRP Until Sep 30:** ${total_drp_earnings:,.2f} ({pay_periods_remaining} pay periods * ${biweekly_salary:,.2f})")
-        st.write(f"**Earnings During RIF Notice Period:** ${total_rif_earnings:,.2f} ({rif_pay_periods} pay periods * ${biweekly_salary:,.2f})")
-        st.write(f"**Total Adjusted Severance (Severance Estimate + RIF Earnings):** ${adjusted_severance:,.2f}")
+        st.write(f"**Earnings Under DRP (Until Sep 30):** ${total_drp_earnings:,.2f}")
 
         # Highlight which option is better
-        if total_drp_earnings > adjusted_severance:
-            st.success(f"✅ **Staying until September 30 (DRP) provides ${total_drp_earnings - adjusted_severance:,.2f} more than taking severance.**")
-        elif adjusted_severance > total_drp_earnings:
-            st.warning(f"⚠️ **Taking severance provides ${adjusted_severance - total_drp_earnings:,.2f} more than staying until September 30.**")
+        if total_drp_earnings > severance_estimate:
+            st.success(f"✅ **Staying until September 30 (DRP) provides ${total_drp_earnings - severance_estimate:,.2f} more than taking severance.**")
+        elif severance_estimate > total_drp_earnings:
+            st.warning(f"⚠️ **Taking severance provides ${severance_estimate - total_drp_earnings:,.2f} more than staying until September 30.**")
         else:
             st.info("💰 **Both options provide the same total payout. Consider other benefits such as retirement service credit, health insurance, and tax implications.**")
 
     else:
-        st.write("Please enter valid values for all fields.")
+        st.write("Please enter valid values for both fields.")
     
     # General disclaimer
     add_general_disclaimer()
