@@ -123,7 +123,6 @@ def compare_severance_vs_drp():
     <p style="font-size: 14px; color: gray;">
     **Disclaimer:** This tool compares the estimated severance pay, including the period when the RIF notice is served, with the actual severance, and compares that with the length of the DRP and estimated pay during that period. 
     It does not account for a wide range of personal factors or other benefits, such as lump sum leave payouts, TSP matching, or tax implications. 
-    Please consult with a financial advisor or HR for a more comprehensive evaluation of your specific situation.
     </p>
     """, unsafe_allow_html=True)
     
