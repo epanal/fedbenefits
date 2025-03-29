@@ -116,7 +116,7 @@ def severance_pay_estimation():
 
 # DRP vs Severance Comparison Function
 def compare_severance_vs_drp():
-    st.header("Severance Pay vs. Designated Resignation Pay (DRP) ⚖️")
+    st.header("Severance Pay vs. DRP ⚖️")
     
     # Inputs for Severance Pay
     severance_estimate = st.number_input("Estimated Severance Pay ($)", min_value=0.0, step=1000.0, key="severance_estimate")
@@ -131,7 +131,7 @@ def compare_severance_vs_drp():
     st.write(f"**Pay Periods Remaining Until Sep 30:** {pay_periods_remaining}")
     
     # New input: Pay periods between RIF notice and RIF severance
-    rif_pay_periods = st.number_input("Pay Periods Between RIF Notice and RIF Severance", min_value=0, step=1, key="rif_pay_periods")
+    rif_pay_periods = st.number_input("Pay Periods Between RIF Notice and Actual RIF", min_value=0, step=1, key="rif_pay_periods")
     
     if severance_estimate > 0 and biweekly_salary > 0:
         total_drp_earnings = biweekly_salary * pay_periods_remaining
@@ -140,9 +140,9 @@ def compare_severance_vs_drp():
         
         # Display Results
         st.subheader("Comparison Results")
-        st.write(f"**Severance Pay Estimate:** ${severance_estimate:,.2f}")
-        st.write(f"**Earnings Under DRP Until Sep 30:** ${total_drp_earnings:,.2f} ({pay_periods_remaining} pay periods * ${biweekly_salary:,.2f})")
-        st.write(f"**Earnings During RIF Notice Period:** ${total_rif_earnings:,.2f} ({rif_pay_periods} pay periods * ${biweekly_salary:,.2f})")
+        st.write(f"**Total Severance Pay Estimate:** ${severance_estimate:,.2f}")
+        st.write(f"**Earnings Under DRP Until Sep 30, 2025:** ${total_drp_earnings:,.2f} ({pay_periods_remaining} pay periods * ${biweekly_salary:,.2f})")
+        st.write(f"**Earnings During RIF Notice Period to Actual RIF:** ${total_rif_earnings:,.2f} ({rif_pay_periods} pay periods * ${biweekly_salary:,.2f})")
         st.write(f"**Total Adjusted Severance (Severance Estimate + RIF Earnings):** ${adjusted_severance:,.2f}")
 
         # Highlight which option is better
