@@ -162,7 +162,7 @@ def compare_severance_vs_drp():
         if total_drp_earnings > adjusted_severance:
             st.info(f"✅ **Delayed Resignated Program from DRP start date until September 30, 2025 provides an estimate of ${total_drp_earnings - adjusted_severance:,.2f} more than taking severance.**")
         elif adjusted_severance > total_drp_earnings:
-            st.info(f"⚠️ **Taking severance provides ${adjusted_severance - total_drp_earnings:,.2f} more than the DRP from its start date until September 30, 2025.**")
+            st.info(f"⚠️ **Taking severance provides ${adjusted_severance - total_drp_earnings:,.2f} more than the DRP.**")
         else:
             st.warning("💰 **Both options provide the same total payout. Consider other benefits such as retirement service credit, health insurance, and tax implications.**")
 
