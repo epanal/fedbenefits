@@ -144,7 +144,7 @@ def compare_severance_vs_drp():
     severance_estimate = st.number_input("Total Estimated Severance Pay ($)", min_value=0.0, step=1000.0, key="severance_estimate")   
 
     # New input: Pay periods between RIF notice and RIF severance
-    rif_pay_periods = st.number_input("Pay Periods Between RIF Notice and Actual RIF", min_value=0, step=1, key="rif_pay_periods")
+    rif_pay_periods = st.number_input("Pay Periods Until Actual RIF", min_value=0, step=1, key="rif_pay_periods")
     
     if severance_estimate > 0 and biweekly_salary > 0:
         total_drp_earnings = biweekly_salary * pay_periods_remaining
@@ -155,8 +155,8 @@ def compare_severance_vs_drp():
         st.subheader("Comparison Results")
         st.markdown(f"<p style='font-size: 16px;'><strong>Earnings Under DRP Until Sep 30, 2025:</strong> ${total_drp_earnings:,.0f} ({pay_periods_remaining} pay periods * ${biweekly_salary:,.0f})</p>", unsafe_allow_html=True)
         st.markdown(f"**Total Severance Pay Estimate:** ${severance_estimate:,.0f}", unsafe_allow_html=True)
-        st.markdown(f"<p style='font-size: 16px;'><strong>Earnings During RIF Notice Period to Actual RIF:</strong> ${total_rif_earnings:,.0f} ({rif_pay_periods} pay periods * ${biweekly_salary:,.0f})</p>", unsafe_allow_html=True)
-        st.markdown(f"**Total Adjusted RIF Severance (Severance Estimate + RIF notice period earnings):** ${adjusted_severance:,.0f}", unsafe_allow_html=True)
+        st.markdown(f"<p style='font-size: 16px;'><strong>Earnings until Actual RIF:</strong> ${total_rif_earnings:,.0f} ({rif_pay_periods} pay periods * ${biweekly_salary:,.0f})</p>", unsafe_allow_html=True)
+        st.markdown(f"**Total Adjusted RIF Severance (Severance Estimate + earnings until RIF):** ${adjusted_severance:,.0f}", unsafe_allow_html=True)
 
         # Highlight which option is better
         if total_drp_earnings > adjusted_severance:
