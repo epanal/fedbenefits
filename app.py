@@ -127,7 +127,7 @@ def compare_severance_vs_drp():
     """, unsafe_allow_html=True)
     
     # Inputs for DRP Calculation
-    biweekly_salary = st.number_input("Biweekly Salary ($)", min_value=0.0, step=100.0, key="biweekly_salary")
+    biweekly_salary = st.number_input("Enter Biweekly Salary ($)", min_value=0, step=100, key="biweekly_salary")
     
     # Pay periods remaining until September 30
     today = date.today()
@@ -141,10 +141,10 @@ def compare_severance_vs_drp():
     st.write(f"**Pay Periods From DRP Start Until Sep 30, 2025:** {pay_periods_remaining}")
 
     # Inputs for Severance Pay
-    severance_estimate = st.number_input("Total Estimated Severance Pay ($)", min_value=0.0, step=1000.0, key="severance_estimate")   
+    severance_estimate = st.number_input("Enter Total Estimated Severance Pay ($)", min_value=0, step=1000, key="severance_estimate")   
 
     # New input: Pay periods between RIF notice and RIF severance
-    rif_pay_periods = st.number_input("Pay Periods Until Actual RIF", min_value=0, step=1, key="rif_pay_periods")
+    rif_pay_periods = st.number_input("Enter Pay Periods Until Actual RIF", min_value=0, step=1, key="rif_pay_periods")
     
     if severance_estimate > 0 and biweekly_salary > 0:
         total_drp_earnings = biweekly_salary * pay_periods_remaining
