@@ -20,7 +20,7 @@ def add_general_disclaimer():
     """, unsafe_allow_html=True)
 
 # Tab-like behavior with selectbox
-tab = st.selectbox("Select a Calculator", ["💼 Severance Pay Estimation","🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual"])
+tab = st.selectbox("Select a Calculator", ["💼 Severance Pay Estimation","⚖️ Severance vs. DRP Comparison","🏖️ Annual Leave Lump Sum", "📅 Annual Leave Accrual"])
 
 # Functions for calculators
 def annual_leave_lump_sum():
@@ -81,7 +81,7 @@ def annual_leave_accrual():
     st.markdown("[Source: OPM Annual Leave Fact Sheet](https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/annual-leave/)")
 
 def severance_pay_estimation():
-    st.header("Severance Pay Estimation Calculator 💼", help="Learn more about severance pay: https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/")
+    st.header("Severance Pay Estimator 💼", help="Learn more about severance pay: https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/")
     
     # Input fields for the calculator
     annual_salary = st.number_input("Annual Basic Pay ($)", min_value=0, step=1000, key="annual_salary")
@@ -112,9 +112,47 @@ def severance_pay_estimation():
     add_general_disclaimer()
     st.markdown("[Source: OPM Severance Pay Estimation Worksheet](https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/)")
 
+# DRP vs Severance Comparison Function
+def compare_severance_vs_drp():
+    st.header("Severance Pay vs. Designated Resignation Pay (DRP) ⚖️")
+    
+    # Inputs for Severance Pay
+    severance_estimate = st.number_input("Estimated Severance Pay ($)", min_value=0.0, step=1000.0, key="severance_estimate")
+
+    # Inputs for DRP Calculation
+    biweekly_salary = st.number_input("Biweekly Salary ($)", min_value=0.0, step=100.0, key="biweekly_salary")
+
+    # Number of pay periods remaining until Sep 30
+    pay_periods_remaining = 14  # Fixed based on our previous count
+
+    if severance_estimate > 0 and biweekly_salary > 0:
+        total_drp_earnings = biweekly_salary * pay_periods_remaining
+        
+        # Display Results
+        st.subheader("Comparison Results")
+        st.write(f"**Severance Pay Estimate:** ${severance_estimate:,.2f}")
+        st.write(f"**Earnings Under DRP (Until Sep 30):** ${total_drp_earnings:,.2f}")
+
+        # Highlight which option is better
+        if total_drp_earnings > severance_estimate:
+            st.success(f"✅ **Staying until September 30 (DRP) provides ${total_drp_earnings - severance_estimate:,.2f} more than taking severance.**")
+        elif severance_estimate > total_drp_earnings:
+            st.warning(f"⚠️ **Taking severance provides ${severance_estimate - total_drp_earnings:,.2f} more than staying until September 30.**")
+        else:
+            st.info("💰 **Both options provide the same total payout. Consider other benefits such as retirement service credit, health insurance, and tax implications.**")
+
+    else:
+        st.write("Please enter valid values for both fields.")
+    
+    # General disclaimer
+    add_general_disclaimer()
+
 # Display the selected tab's content
 if tab == "🏖️ Annual Leave Lump Sum":
     annual_leave_lump_sum()
+
+elif tab == "⚖️ Severance vs. DRP Comparison":
+    compare_severance_vs_drp()
 
 elif tab == "📅 Annual Leave Accrual":
     annual_leave_accrual()
