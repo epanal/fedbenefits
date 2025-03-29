@@ -153,16 +153,16 @@ def compare_severance_vs_drp():
         
         # Display Results
         st.subheader("Comparison Results")
-        st.markdown(f"<p style='font-size: 16px;'><strong>Earnings Under DRP Until Sep 30, 2025:</strong> ${total_drp_earnings:,.2f} ({pay_periods_remaining} pay periods * ${biweekly_salary:,.2f})</p>", unsafe_allow_html=True)
-        st.markdown(f"**Total Severance Pay Estimate:** ${severance_estimate:,.2f}", unsafe_allow_html=True)
-        st.markdown(f"<p style='font-size: 16px;'><strong>Earnings During RIF Notice Period to Actual RIF:</strong> ${total_rif_earnings:,.2f} ({rif_pay_periods} pay periods * ${biweekly_salary:,.2f})</p>", unsafe_allow_html=True)
-        st.markdown(f"**Total Adjusted RIF Severance (Severance Estimate + RIF notice period earnings):** ${adjusted_severance:,.2f}", unsafe_allow_html=True)
+        st.markdown(f"<p style='font-size: 16px;'><strong>Earnings Under DRP Until Sep 30, 2025:</strong> ${total_drp_earnings:,.0f} ({pay_periods_remaining} pay periods * ${biweekly_salary:,.0f})</p>", unsafe_allow_html=True)
+        st.markdown(f"**Total Severance Pay Estimate:** ${severance_estimate:,.0f}", unsafe_allow_html=True)
+        st.markdown(f"<p style='font-size: 16px;'><strong>Earnings During RIF Notice Period to Actual RIF:</strong> ${total_rif_earnings:,.0f} ({rif_pay_periods} pay periods * ${biweekly_salary:,.0f})</p>", unsafe_allow_html=True)
+        st.markdown(f"**Total Adjusted RIF Severance (Severance Estimate + RIF notice period earnings):** ${adjusted_severance:,.0f}", unsafe_allow_html=True)
 
         # Highlight which option is better
         if total_drp_earnings > adjusted_severance:
-            st.info(f"✅ **Delayed Resignated Program from DRP start date until September 30, 2025 provides an estimate of ${total_drp_earnings - adjusted_severance:,.2f} more than taking severance.**")
+            st.info(f"✅ **Delayed Resignated Program from DRP start date until September 30, 2025 provides an estimate of ${total_drp_earnings - adjusted_severance:,.0f} more than taking severance.**")
         elif adjusted_severance > total_drp_earnings:
-            st.info(f"⚠️ **Taking severance provides ${adjusted_severance - total_drp_earnings:,.2f} more than the DRP.**")
+            st.info(f"⚠️ **Taking severance provides ${adjusted_severance - total_drp_earnings:,.0f} more than the DRP.**")
         else:
             st.warning("💰 **Both options provide the same total payout. Consider other benefits such as retirement service credit, health insurance, and tax implications.**")
 
