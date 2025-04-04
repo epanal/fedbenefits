@@ -121,7 +121,7 @@ def compare_severance_vs_drp():
     # Add disclaimer
     st.markdown("""
     <p style="font-size: 14px; color: gray;">
-    **Disclaimer:** This tool compares the estimated severance pay, including the period between RIF notice and actual RIF, and compares that with the estimated DRP pay. 
+    **Disclaimer:** This tool compares the estimated severance pay, including the period between DRP start and actual RIF, and compares that with the estimated DRP pay. 
     It does not account for a wide range of personal factors or other benefits, such as lump sum leave payouts, TSP matching, or tax implications. 
     </p>
     """, unsafe_allow_html=True)
@@ -144,7 +144,7 @@ def compare_severance_vs_drp():
     severance_estimate = st.number_input("Enter Total Estimated Severance Pay ($)", min_value=0, step=1000, key="severance_estimate")   
 
     # New input: Pay periods between RIF notice and RIF severance
-    rif_pay_periods = st.number_input("Enter Pay Periods Until Actual RIF", min_value=0, step=1, key="rif_pay_periods")
+    rif_pay_periods = st.number_input("Enter Pay Periods From DRP Start to Actual RIF", min_value=0, step=1, key="rif_pay_periods")
     
     if severance_estimate > 0 and biweekly_salary > 0:
         total_drp_earnings = biweekly_salary * pay_periods_remaining
