@@ -10,13 +10,15 @@ from calculations import (
 # Title
 st.title("Fed Benefits Calculators")
 
-# New site announcement banner
+# New site announcement banner 
 st.markdown("""
-<div style="background-color:#D1ECF1; padding: 10px 15px; border-left: 5px solid #0C5460; margin-top: 10px; margin-bottom: 15px; border-radius: 4px;">
-    <strong>🚀 New Site Available:</strong> Visit the new and improved version at 
-    <a href="https://www.fedbenefits.app" target="_blank" style="text-decoration: underline; color: #0C5460;">
-        www.fedbenefits.app
-    </a>
+<div style="background-color:#D1ECF1; padding: 20px 25px; border-left: 6px solid #0C5460; margin-top: 15px; margin-bottom: 25px; border-radius: 6px;">
+    <p style="font-size: 18px; margin: 0;">
+        <strong>🚀 New Site Available:</strong> Visit the new and improved version at 
+        <a href="https://www.fedbenefits.app" target="_blank" style="text-decoration: underline; color: #0C5460; font-size: 18px;">
+            www.fedbenefits.app
+        </a>
+    </p>
 </div>
 """, unsafe_allow_html=True)
 
