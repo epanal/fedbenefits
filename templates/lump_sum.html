@@ -1,0 +1,26 @@
+<!-- templates/lump_sum.html -->
+{% extends "base.html" %}
+{% block title %}Annual Leave Lump Sum Calculator{% endblock %}
+{% block content %}
+<h2 class="mb-3">Annual Leave Lump Sum Calculator 📝</h2>
+<form method="post" action="/lump_sum">
+  <div class="mb-3">
+    <label for="hourly_rate" class="form-label">Hourly Pay Rate ($)</label>
+    <input type="number" class="form-control" name="hourly_rate" id="hourly_rate" value="{{ values.hourly_rate }}" min="0" step="0.01" required>
+  </div>
+  <div class="mb-3">
+    <label for="leave_hours" class="form-label">Unused Annual Leave Balance (hours)</label>
+    <input type="number" class="form-control" name="leave_hours" id="leave_hours" value="{{ values.leave_hours }}" min="0" step="0.1" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Calculate</button>
+</form>
+<a href="/" class="btn btn-outline-secondary mt-3">Back to Home</a>
+<p class="text-muted mt-3" style="font-size: 12px;">
+  *Note: These calculations are estimates based on available data and may not account for all variables. Please refer to the official OPM and agency policies for precise guidelines and calculations.*
+</p>
+<p>
+  <a href="https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/lump-sum-payments-for-annual-leave/" target="_blank">
+    Source: OPM Annual Leave Lump Sum Payment
+  </a>
+</p>
+{% endblock %}

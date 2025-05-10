@@ -1,0 +1,51 @@
+<!-- templates/result_leave_accrual.html -->
+{% extends "base.html" %}
+{% block title %}Annual Leave Accrual Result{% endblock %}
+{% block content %}
+<h2 class="mb-3">Annual Leave Accrual Result 📅</h2>
+
+{% if error %}
+  <div class="alert alert-warning">{{ error }}</div>
+  <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+    <a href="/leave_accrual" class="btn btn-outline-secondary">Back to Calculator</a>
+    <a href="/" class="btn btn-outline-primary">Back to Home</a>
+  </div>
+{% else %}
+  <div class="card mb-4">
+    <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">Employee Type: {{ session['leave_accrual_inputs']['employee_type'] }}</li>
+      <li class="list-group-item">Years of Federal Service: {{ session['leave_accrual_inputs']['years'] }}</li>
+      <li class="list-group-item">Pay Periods: {{ session['leave_accrual_inputs']['pay_periods'] }}</li>
+      {% if session['leave_accrual_inputs']['employee_type'] == 'Part-time Employee' %}
+        <li class="list-group-item">Hours in Pay Status per Pay Period: {{ session['leave_accrual_inputs']['hours_in_pay_status'] }}</li>
+      {% endif %}
+      {% if session['leave_accrual_inputs']['employee_type'] == 'Uncommon Tours of Duty' %}
+        <li class="list-group-item">Average Hours per Pay Period: {{ session['leave_accrual_inputs']['avg_hours_per_period'] }}</li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header fw-bold fs-5">📊 Accrual Estimate</div>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        Estimated Annual Leave Accrued: <span class="fw-bold text-primary">{{ result }} hours</span>
+      </li>
+    </ul>
+  </div>
+
+  <p class="text-muted" style="font-size: 12px;">
+    *Note: This estimate assumes the inputs provided are accurate. Refer to OPM guidance for details.*
+  </p>
+  <p>
+    <a href="https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/annual-leave/" target="_blank">
+      Source: OPM Annual Leave Fact Sheet
+    </a>
+  </p>
+  <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+    <a href="/leave_accrual" class="btn btn-outline-secondary">Back to Calculator</a>
+    <a href="/" class="btn btn-outline-primary">Back to Home</a>
+  </div>
+{% endif %}
+{% endblock %}

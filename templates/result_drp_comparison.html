@@ -1,0 +1,48 @@
+<!-- templates/result_drp_comparison.html -->
+{% extends "base.html" %}
+{% block title %}DRP vs. Severance Result{% endblock %}
+{% block content %}
+<h2 class="mb-3">Comparison Result: Severance vs. DRP</h2>
+
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Biweekly Salary: ${{ "{:,.2f}".format(session['drp_comparison_inputs']['biweekly_salary']) }}</li>
+    <li class="list-group-item">DRP Start Date: {{ session['drp_comparison_inputs']['drp_start_date'] }}</li>
+    <li class="list-group-item">Total Estimated Severance Pay: ${{ "{:,.2f}".format(session['drp_comparison_inputs']['severance_estimate']) }}</li>
+    <li class="list-group-item">Pay Periods From DRP Start to Actual RIF: {{ session['drp_comparison_inputs']['rif_pay_periods'] }}</li>
+  </ul>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header fw-bold fs-5">📊 Comparison Results</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Earnings Under DRP Until Sep 30, 2025: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.total_drp) }}</span> ({{ result.remaining_periods }} pay periods * ${{ "{:,.2f}".format(session['drp_comparison_inputs']['biweekly_salary']) }})</li>
+    <li class="list-group-item">Total Severance Pay Estimate: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.severance_est) }}</span></li>
+    <li class="list-group-item">Earnings from DRP Start until Actual RIF: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.total_rif) }}</span> ({{ session['drp_comparison_inputs']['rif_pay_periods'] }} pay periods * ${{ "{:,.2f}".format(session['drp_comparison_inputs']['biweekly_salary']) }})</li>
+    <li class="list-group-item">Total Adjusted RIF Severance: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.adjusted_severance) }}</span> (Severance Estimate + RIF Earnings)</li>
+  </ul>
+</div>
+
+{% if result.better == "DRP" %}
+  <div class="alert alert-info">
+    ✅ Delayed Resignated Program from DRP start date until September 30, 2025 provides an estimate of ${{ "{:,.2f}".format(result.total_drp - result.adjusted_severance) }} more than taking severance.
+  </div>
+{% elif result.better == "Severance" %}
+  <div class="alert alert-info">
+    ⚠️ Taking severance provides ${{ "{:,.2f}".format(result.adjusted_severance - result.total_drp) }} more than the DRP.
+  </div>
+{% else %}
+  <div class="alert alert-secondary">
+    💰 Both options result in the same payout.
+  </div>
+{% endif %}
+
+<p class="text-muted" style="font-size: 12px;">
+  *Note: This comparison is an estimate and does not include TSP, retirement credit, tax implications, or healthcare considerations.*
+</p>
+<div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+  <a href="/drp_comparison" class="btn btn-outline-secondary">Back to Calculator</a>
+  <a href="/" class="btn btn-outline-primary">Back to Home</a>
+</div>
+{% endblock %}

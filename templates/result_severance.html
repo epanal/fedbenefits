@@ -1,0 +1,47 @@
+<!-- templates/result_severance.html -->
+{% extends "base.html" %}
+{% block title %}Severance Pay Result{% endblock %}
+{% block content %}
+<h2 class="mb-3">Severance Pay Estimate 💼</h2>
+
+{% if result.error %}
+  <div class="alert alert-warning">{{ result.error }}</div>
+  <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+  <a href="/severance" class="btn btn-outline-secondary">Back to Calculator</a>
+  <a href="/" class="btn btn-outline-primary">Back to Home</a>
+</div>
+{% else %}
+  <div class="card mb-4">
+    <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">Annual Basic Pay: ${{ "{:,.2f}".format(result.annual_salary) }}</li>
+      <li class="list-group-item">Full Years of Federal Service: {{ result.years }}</li>
+      <li class="list-group-item">Additional Months of Service: {{ result.months }}</li>
+      <li class="list-group-item">Age at Separation: {{ result.age_years }} years and {{ result.age_months }} months</li>
+    </ul>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header fw-bold fs-5">📊 Severance Calculation</div>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">Basic Severance Pay: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.basic) }}</span></li>
+      <li class="list-group-item">Age Adjustment Allowance: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.age_adj) }}</span></li>
+      <li class="list-group-item">Adjusted Severance Pay: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.total) }}</span></li>
+      <li class="list-group-item">Weeks of Severance Pay: <span class="fw-bold text-primary">{{ result.weeks }} weeks</span></li>
+    </ul>
+  </div>
+
+  <p class="text-muted" style="font-size: 12px;">
+    *Note: These calculations are estimates and may not account for all agency-specific variables. Refer to official policy documents for guidance.*
+  </p>
+  <p>
+    <a href="https://www.opm.gov/policy-data-oversight/pay-leave/pay-administration/fact-sheets/severance-pay-estimation-worksheet/" target="_blank">
+      Source: OPM Severance Pay Estimation Worksheet
+    </a>
+  </p>
+  <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+  <a href="/severance" class="btn btn-outline-secondary">Back to Calculator</a>
+  <a href="/" class="btn btn-outline-primary">Back to Home</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,33 @@
+<!-- templates/severance.html -->
+{% extends "base.html" %}
+{% block title %}Severance Pay Estimator{% endblock %}
+{% block content %}
+<h2 class="mb-3">Severance Pay Estimator 💼</h2>
+<form method="post" action="/severance">
+  <div class="mb-3">
+    <label for="annual_salary" class="form-label">Annual Basic Pay ($)</label>
+    <input type="number" class="form-control" name="annual_salary" id="annual_salary" value="{{ values.annual_salary }}" min="0" step="1000" required>
+  </div>
+  <div class="mb-3">
+    <label for="years" class="form-label">Full Years of Creditable Federal Service</label>
+    <input type="number" class="form-control" name="years" id="years" value="{{ values.years }}" min="0" step="1" required>
+  </div>
+  <div class="mb-3">
+    <label for="months" class="form-label">Additional Months of Service (0 to 11)</label>
+    <input type="number" class="form-control" name="months" id="months" value="{{ values.months }}" min="0" max="11" step="1" required>
+  </div>
+  <div class="mb-3">
+    <label for="age_years" class="form-label">Age at Separation (Years)</label>
+    <input type="number" class="form-control" name="age_years" id="age_years" value="{{ values.age_years }}" min="0" step="1" required>
+  </div>
+  <div class="mb-3">
+    <label for="age_months" class="form-label">Additional Months (0 to 11)</label>
+    <input type="number" class="form-control" name="age_months" id="age_months" value="{{ values.age_months }}" min="0" max="11" step="1" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Calculate</button>
+</form>
+<a href="/" class="btn btn-outline-secondary mt-3">Back to Home</a>
+<p class="text-muted mt-3" style="font-size: 12px;">
+  *Note: These calculations are estimates based on available data and may not account for all variables. Please refer to the official OPM and agency policies for precise guidelines and calculations.*
+</p>
+{% endblock %}

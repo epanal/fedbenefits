@@ -1,0 +1,25 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Fed Benefit Calculators{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container py-5 d-flex justify-content-center">
+    <div class="w-100" style="max-width: 600px;">
+      <h1 class="mb-4">Fed Benefits Calculators</h1>
+      {% block content %}{% endblock %}
+      <div class="text-center mt-5">
+        <a href="https://buymeacoffee.com/vetfed" target="_blank">
+          <button class="btn btn-danger" style="padding: 10px 20px; font-size: 16px; border-radius: 5px;">
+            ☕ Buy Me a Coffee
+          </button>
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

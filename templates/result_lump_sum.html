@@ -1,0 +1,38 @@
+<!-- templates/result_lump_sum.html -->
+{% extends "base.html" %}
+{% block title %}Lump Sum Result{% endblock %}
+{% block content %}
+<h2 class="mb-3">Annual Leave Lump Sum Result 📝</h2>
+
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Hourly Pay Rate: ${{ "{:,.2f}".format(session['lump_sum_inputs']['hourly_rate']) }}</li>
+    <li class="list-group-item">Unused Annual Leave Balance: {{ session['lump_sum_inputs']['leave_hours'] }} hours</li>
+  </ul>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header fw-bold fs-5">📊 Calculation</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">
+      Estimated Lump Sum Payment: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result) }}</span>
+    </li>
+  </ul>
+</div>
+
+<p class="text-muted" style="font-size: 12px;">
+  *Note: This estimate is based on the hourly rate and unused leave provided. Please verify against official OPM policy or agency guidelines.*
+</p>
+<p>
+  <a href="https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/lump-sum-payments-for-annual-leave/" target="_blank">
+    Source: OPM Annual Leave Lump Sum Payment
+  </a>
+</p>
+<div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+  <a href="/lump_sum" class="btn btn-outline-secondary">Back to Calculator</a>
+  <a href="/" class="btn btn-outline-primary">Back to Home</a>
+</div>
+{% endblock %}
+
+

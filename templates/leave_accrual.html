@@ -1,0 +1,52 @@
+<!-- templates/leave_accrual.html -->
+{% extends "base.html" %}
+{% block title %}Annual Leave Accrual Calculator{% endblock %}
+{% block content %}
+<h2 class="mb-3">Annual Leave Accrual Calculator 📅</h2>
+<form method="post" action="/leave_accrual">
+  <div class="mb-3">
+    <label for="employee_type" class="form-label">Employee Type</label>
+    <select class="form-select" name="employee_type" id="employee_type" onchange="toggleFields()">
+      <option {% if values.employee_type == 'Full-time Employee' %}selected{% endif %}>Full-time Employee</option>
+      <option {% if values.employee_type == 'Part-time Employee' %}selected{% endif %}>Part-time Employee</option>
+      <option {% if values.employee_type == 'Uncommon Tours of Duty' %}selected{% endif %}>Uncommon Tours of Duty</option>
+      <option {% if values.employee_type == 'SES, Senior Level, Scientific/Professional Positions' %}selected{% endif %}>SES, Senior Level, Scientific/Professional Positions</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label for="years" class="form-label">Years of Federal Service</label>
+    <input type="number" class="form-control" name="years" id="years" value="{{ values.years }}" min="0" required>
+  </div>
+  <div class="mb-3">
+    <label for="pay_periods" class="form-label">Number of Pay Periods</label>
+    <input type="number" class="form-control" name="pay_periods" id="pay_periods" value="{{ values.pay_periods }}" min="1" required>
+  </div>
+  <div class="mb-3" id="partTimeFields" style="display: none;">
+    <label for="hours_in_pay_status" class="form-label">Hours in Pay Status per Pay Period (Part-time only)</label>
+    <input type="number" class="form-control" name="hours_in_pay_status" id="hours_in_pay_status" value="{{ values.hours_in_pay_status }}">
+  </div>
+  <div class="mb-3" id="uncommonFields" style="display: none;">
+    <label for="avg_hours_per_period" class="form-label">Average Hours per Biweekly Pay Period (Uncommon Tours only)</label>
+    <input type="number" class="form-control" name="avg_hours_per_period" id="avg_hours_per_period" value="{{ values.avg_hours_per_period }}">
+  </div>
+  <button type="submit" class="btn btn-primary">Calculate</button>
+</form>
+<a href="/" class="btn btn-outline-secondary mt-3">Back to Home</a>
+<p class="text-muted mt-3" style="font-size: 12px;">
+  *Note: Accrual amounts are estimates. Refer to OPM policies for official rules.*
+</p>
+<p>
+  <a href="https://www.opm.gov/policy-data-oversight/pay-leave/leave-administration/fact-sheets/annual-leave/" target="_blank">
+    Source: OPM Annual Leave Fact Sheet
+  </a>
+</p>
+
+<script>
+  function toggleFields() {
+    const type = document.getElementById("employee_type").value;
+    document.getElementById("partTimeFields").style.display = type === "Part-time Employee" ? "block" : "none";
+    document.getElementById("uncommonFields").style.display = type === "Uncommon Tours of Duty" ? "block" : "none";
+  }
+  document.addEventListener("DOMContentLoaded", toggleFields);
+</script>
+{% endblock %}

@@ -1,0 +1,11 @@
+<!-- templates/index.html -->
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="list-group">
+  <a href="/severance" class="list-group-item list-group-item-action">💼 Severance Pay Estimation</a>
+  <a href="/drp_comparison" class="list-group-item list-group-item-action">⚖️ Severance vs. DRP Comparison</a>
+  <a href="/lump_sum" class="list-group-item list-group-item-action">🏖️ Annual Leave Lump Sum</a>
+  <a href="/leave_accrual" class="list-group-item list-group-item-action">📅 Annual Leave Accrual</a>
+</div>
+{% endblock %}

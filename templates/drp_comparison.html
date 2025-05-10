@@ -1,0 +1,34 @@
+<!-- templates/drp_comparison.html -->
+{% extends "base.html" %}
+{% block title %}Severance vs. DRP Comparison{% endblock %}
+{% block content %}
+<h2 class="mb-3">Severance Pay vs. DRP Comparison ⚖️</h2>
+<form method="post" action="/drp_comparison">
+  <div class="mb-3">
+    <label for="biweekly_salary" class="form-label">Biweekly Salary ($)</label>
+    <input type="number" class="form-control" name="biweekly_salary" id="biweekly_salary" value="{{ values.biweekly_salary }}" min="0" step="100" required>
+  </div>
+  <div class="mb-3">
+    <label for="drp_start_date" class="form-label">DRP Start Date</label>
+    <input type="date" class="form-control" name="drp_start_date" id="drp_start_date" value="{{ values.drp_start_date }}" required>
+  </div>
+  {% if remaining_periods is not none %}
+    <div class="alert alert-light">
+      Pay periods remaining from DRP Start until Sep 30, 2025: <strong>{{ remaining_periods }}</strong>
+    </div>
+  {% endif %}
+  <div class="mb-3">
+    <label for="severance_estimate" class="form-label">Total Estimated Severance Pay ($)</label>
+    <input type="number" class="form-control" name="severance_estimate" id="severance_estimate" value="{{ values.severance_estimate }}" min="0" step="1000" required>
+  </div>
+  <div class="mb-3">
+    <label for="rif_pay_periods" class="form-label">Pay Periods From DRP Start to Actual RIF</label>
+    <input type="number" class="form-control" name="rif_pay_periods" id="rif_pay_periods" value="{{ values.rif_pay_periods }}" min="0" step="1" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Compare</button>
+</form>
+<a href="/" class="btn btn-outline-secondary mt-3">Back to Home</a>
+<p class="text-muted mt-3" style="font-size: 12px;">
+  *Note: This tool provides estimates only. Please consult official policy and HR guidance for final decisions.*
+</p>
+{% endblock %}
