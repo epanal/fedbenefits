@@ -10,7 +10,7 @@
   </div>
   <div class="mb-3">
     <label for="drp_start_date" class="form-label">DRP Start Date</label>
-    <input type="date" class="form-control" name="drp_start_date" id="drp_start_date" value="{{ values.drp_start_date }}" required>
+    <input type="date" class="form-control" name="drp_start_date" id="drp_start_date" value="{{ values.drp_start_date }}" required max="2025-09-30">
   </div>
   {% if remaining_periods is not none %}
     <div class="alert alert-light">
