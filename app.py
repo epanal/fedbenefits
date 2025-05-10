@@ -10,28 +10,15 @@ from calculations import (
 # Title
 st.title("Fed Benefits Calculators")
 
-# Initialize session state for banner and click counter
-if "show_banner" not in st.session_state:
-    st.session_state.show_banner = True
-if "click_count" not in st.session_state:
-    st.session_state.click_count = 0
-
-if st.session_state.show_banner:
-    col1, col2 = st.columns([10, 1])
-    with col1:
-        st.markdown("""
-        <div style="background-color:#D1ECF1; padding: 10px 15px; border-left: 5px solid #0C5460; border-radius: 4px;">
-            <strong>🚀 New Site Available:</strong> Click below to visit the new and improved version:
-        </div>
-        """, unsafe_allow_html=True)
-        clicked = st.button("🌐 www.fedbenefits.app", key="site_link", help="Go to new site")
-        if clicked:
-            st.session_state.click_count += 1
-            js = """<script>window.open("https://www.fedbenefits.app", "_blank").focus();</script>"""
-            st.components.v1.html(js)
-    with col2:
-        if st.button("❌", key="close_banner", help="Dismiss"):
-            st.session_state.show_banner = False
+# New site announcement banner
+st.markdown("""
+<div style="background-color:#D1ECF1; padding: 10px 15px; border-left: 5px solid #0C5460; margin-top: 10px; margin-bottom: 15px; border-radius: 4px;">
+    <strong>🚀 New Site Available:</strong> Visit the new and improved version at 
+    <a href="https://www.fedbenefits.app" target="_blank" style="text-decoration: underline; color: #0C5460;">
+        www.fedbenefits.app
+    </a>
+</div>
+""", unsafe_allow_html=True)
 
 
 # Add spacing after the title
