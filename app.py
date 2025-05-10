@@ -10,6 +10,17 @@ from calculations import (
 # Title
 st.title("Fed Benefits Calculators")
 
+# New site announcement banner
+st.markdown("""
+<div style="background-color:#D1ECF1; padding: 10px 15px; border-left: 5px solid #0C5460; margin-top: 10px; margin-bottom: 15px; border-radius: 4px;">
+    <strong>🚀 New Site Available:</strong> Visit the new and improved version at 
+    <a href="https://www.fedbenefits.app" target="_blank" style="text-decoration: underline; color: #0C5460;">
+        www.fedbenefits.app
+    </a>
+</div>
+""", unsafe_allow_html=True)
+
+
 # Add spacing after the title
 st.markdown("<br>", unsafe_allow_html=True)
 
