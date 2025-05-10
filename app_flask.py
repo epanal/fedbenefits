@@ -167,5 +167,5 @@ def process_drp_comparison():
         "better": "DRP" if total_drp > adjusted_severance else "Severance" if adjusted_severance > total_drp else "Equal"
     })
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
