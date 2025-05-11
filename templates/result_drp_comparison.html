@@ -10,8 +10,9 @@
     <li class="list-group-item">Biweekly Salary: ${{ "{:,.2f}".format(session['drp_comparison_inputs']['biweekly_salary']) }}</li>
     <li class="list-group-item">DRP Start Date: {{ session['drp_comparison_inputs']['drp_start_date'] }}</li>
     <li class="list-group-item">Total Estimated Severance Pay: ${{ "{:,.2f}".format(session['drp_comparison_inputs']['severance_estimate']) }}</li>
-    <li class="list-group-item">Pay Periods From DRP Start to Actual RIF: {{ session['drp_comparison_inputs']['rif_pay_periods'] }}</li>
-  </ul>
+    <li class="list-group-item">Pay Periods From DRP Start to Actual RIF Date: {{ session['drp_comparison_inputs']['rif_pay_periods'] }}</li>
+    <li class="list-group-item">Pay Periods Remaining Until Sep 30, 2025: {{ result.remaining_periods }}</li>
+   </ul>
 </div>
 
 <div class="card mb-3">
@@ -19,7 +20,7 @@
   <ul class="list-group list-group-flush">
     <li class="list-group-item">Earnings Under DRP Until Sep 30, 2025: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.total_drp) }}</span> ({{ result.remaining_periods }} pay periods * ${{ "{:,.2f}".format(session['drp_comparison_inputs']['biweekly_salary']) }})</li>
     <li class="list-group-item">Total Severance Pay Estimate: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.severance_est) }}</span></li>
-    <li class="list-group-item">Earnings from DRP Start until Actual RIF: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.total_rif) }}</span> ({{ session['drp_comparison_inputs']['rif_pay_periods'] }} pay periods * ${{ "{:,.2f}".format(session['drp_comparison_inputs']['biweekly_salary']) }})</li>
+    <li class="list-group-item">Earnings from DRP Start until Actual RIF Date: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.total_rif) }}</span> ({{ session['drp_comparison_inputs']['rif_pay_periods'] }} pay periods * ${{ "{:,.2f}".format(session['drp_comparison_inputs']['biweekly_salary']) }})</li>
     <li class="list-group-item">Total Adjusted RIF Severance: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.adjusted_severance) }}</span> (Severance Estimate + RIF Earnings)</li>
   </ul>
 </div>
