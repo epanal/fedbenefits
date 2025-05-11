@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Service Computation Date Result{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">📅 Service Computation Date (SCD) Result</h2>
+
+{% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+{% else %}
+  <div class="alert alert-success">
+    <strong>Your Adjusted Service Computation Date:</strong> {{ scd }}
+  </div>
+
+  <h5 class="mt-4">🧾 Input Summary:</h5>
+  <ul>
+    <li><strong>Current Start Date:</strong> {{ current_start }}</li>
+    <li><strong>Total Creditable Days:</strong> {{ total_days }}</li>
+    <li><strong>Creditable Periods:</strong>
+      <ul>
+        {% for start, end in periods %}
+        <li>{{ start }} to {{ end }}</li>
+        {% endfor %}
+      </ul>
+    </li>
+  </ul>
+{% endif %}
+
+<a href="{{ url_for('scd_calculator') }}" class="btn btn-secondary mt-3">🔁 Try Another Calculation</a>
+{% endblock %}

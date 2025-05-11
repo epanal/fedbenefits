@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Service Computation Date Calculator{% endblock %}
+{% block content %}
+
+<h2>📅 Service Computation Date (SCD) Calculator</h2>
+
+<form method="POST">
+  <div class="mb-3">
+    <label class="form-label">Current Federal Service Start Date</label>
+    <input type="date" class="form-control" name="current_start" required>
+  </div>
+
+  <h5>Add Prior Creditable Service Periods:</h5>
+  <div id="service-periods" class="mb-3">
+    <div class="row mb-2">
+      <div class="col">
+        <input type="date" class="form-control" name="prior_start[]" required>
+      </div>
+      <div class="col">
+        <input type="date" class="form-control" name="prior_end[]" required>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" class="btn btn-secondary mb-3" onclick="addPeriod()">➕ Add Another Period</button><br>
+  <button type="submit" class="btn btn-primary">🧮 Calculate SCD</button>
+</form>
+
+{% if scd %}
+  <div class="alert alert-success mt-4">
+    📅 <strong>Your Adjusted Service Computation Date:</strong> {{ scd }}
+  </div>
+{% elif error %}
+  <div class="alert alert-danger mt-4">{{ error }}</div>
+{% endif %}
+
+<script>
+function addPeriod() {
+  const container = document.getElementById('service-periods');
+  const newFields = document.createElement('div');
+  newFields.classList.add('row', 'mb-2');
+  newFields.innerHTML = `
+    <div class="col">
+      <input type="date" class="form-control" name="prior_start[]" required>
+    </div>
+    <div class="col">
+      <input type="date" class="form-control" name="prior_end[]" required>
+    </div>
+  `;
+  container.appendChild(newFields);
+}
+</script>
+
+{% endblock %}
