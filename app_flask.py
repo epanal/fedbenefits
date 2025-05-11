@@ -53,13 +53,22 @@ def show_drp_comparison_form():
         'severance_estimate': 0,
         'rif_pay_periods': 0
     })
+
     try:
         drp_start = datetime.fromisoformat(values['drp_start_date']).date()
     except Exception:
         drp_start = today
-    sep_30 = date(today.year, 9, 30)
+
+    # Static cutoff for FY2025
+    sep_30 = date(2025, 9, 30)
     remaining = max(0, (sep_30 - drp_start).days // 14)
-    return render_template('drp_comparison.html', values=values, remaining_periods=remaining)
+
+    return render_template(
+        'drp_comparison.html',
+        values=values,
+        remaining_periods=remaining,
+        current_date=today.isoformat()
+    )
 
 @app.route('/severance', methods=['POST'])
 def process_severance():
