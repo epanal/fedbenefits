@@ -8,7 +8,7 @@
   <div class="alert alert-danger">{{ error }}</div>
 {% else %}
   <div class="alert alert-success">
-    <strong>Your Unadjusted Service Computation Date:</strong> {{ scd }}
+    <strong>Your Service Computation Date:</strong> {{ scd }}
   </div>
 
   <h5 class="mt-4">🧾 Input Summary:</h5>
@@ -29,17 +29,10 @@
 <a href="{{ url_for('index') }}" class="btn btn-link mt-3">← Back to Home</a>
 
 <div class="mt-5 p-3 bg-light border rounded">
-    <h6 class="text-muted">⚠️ Important Caveats</h6>
+    <h6 class="text-muted">⚠️ Important</h6>
     <ul class="small">
-      <li>This calculator provides an estimated <strong>Service Computation Date (SCD)</strong> based solely on the service periods you enter. It does not account for:
-        <ul>
-          <li>Deposit or redeposit service not paid back</li>
-          <li>Periods of non-creditable time (e.g., some temp or contract service)</li>
-          <li>Military service that wasn’t bought back</li>
-          <li>Agency-specific adjustments or automated HR calculations</li>
-        </ul>
+      <li>This calculator provides an estimated <strong>Service Computation Date (SCD)</strong> based solely on the service periods you enter.
       </li>
-      <li>The SCD calculated here is for general reference only and may differ from your official SCD(s) for <strong>Leave, Retirement, or Reduction-in-Force (RIF)</strong> purposes.</li>
       <li>For authoritative information on what qualifies as creditable service for various SCD types, refer to official <a href="https://www.opm.gov" target="_blank">OPM guidance</a> or consult with your HR office.</li>
     </ul>
   </div>
