@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Service Computation Date Calculator{% endblock %}
+
 {% block content %}
 
-<h2>📅 Service Computation Date (SCD) Calculator</h2>
+<h2 class="mb-4">📅 Service Computation Date (SCD) Calculator</h2>
 
 <form method="POST">
   <div class="mb-3">
-    <label class="form-label">Current Federal Service Period Start Date</label>
+    <label class="form-label">Current Federal Service Start Date</label>
     <input type="date" class="form-control" name="current_start" required>
   </div>
 
@@ -15,9 +16,9 @@
 
   <button type="button" class="btn btn-secondary mb-3" onclick="addPeriod()">➕ Add Another Period</button><br>
   <button type="submit" class="btn btn-primary">🧮 Calculate SCD</button>
-  <a href="{{ url_for('index') }}" class="btn btn-link mt-3">← Back to Home</a>
-
 </form>
+
+<a href="{{ url_for('index') }}" class="btn btn-link mt-3">← Back to Home</a>
 
 {% if scd %}
   <div class="alert alert-success mt-4">
@@ -30,17 +31,22 @@
 <script>
 function addPeriod() {
   const container = document.getElementById('service-periods');
-  const newFields = document.createElement('div');
-  newFields.classList.add('row', 'mb-2');
-  newFields.innerHTML = `
+  const wrapper = document.createElement('div');
+  wrapper.classList.add('row', 'mb-2', 'align-items-center', 'service-period-entry');
+
+  wrapper.innerHTML = `
     <div class="col">
       <input type="date" class="form-control" name="prior_start[]" required>
     </div>
     <div class="col">
       <input type="date" class="form-control" name="prior_end[]" required>
     </div>
+    <div class="col-auto">
+      <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.closest('.service-period-entry').remove()">🗑️</button>
+    </div>
   `;
-  container.appendChild(newFields);
+
+  container.appendChild(wrapper);
 }
 </script>
 
