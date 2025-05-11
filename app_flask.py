@@ -184,7 +184,6 @@ def scd_calculator():
 
             # Auto-append current period
             today_str = date.today().isoformat()
-            prior_periods.append((current_start, today_str))
             scd, total_days, period_breakdown = calculate_scd(current_start, prior_periods)
 
             return render_template(
