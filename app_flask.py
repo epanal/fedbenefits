@@ -3,7 +3,8 @@ from datetime import date, datetime, timedelta
 from calculations import (
     calculate_severance_pay,
     calculate_lump_sum_payment,
-    calculate_annual_leave_accrual
+    calculate_annual_leave_accrual,
+    calculate_scd
 )
 
 app = Flask(__name__)
@@ -171,33 +172,31 @@ def process_drp_comparison():
 def scd_calculator():
     scd = None
     error = None
+    prior_starts = []
+    prior_ends = []
 
     if request.method == "POST":
         try:
-            current_start = datetime.strptime(request.form['current_start'], "%Y-%m-%d")
+            current_start = request.form['current_start']
             prior_starts = request.form.getlist("prior_start[]")
             prior_ends = request.form.getlist("prior_end[]")
+            prior_periods = list(zip(prior_starts, prior_ends))
 
-            total_days = 0
-            for s, e in zip(prior_starts, prior_ends):
-                start = datetime.strptime(s, "%Y-%m-%d")
-                end = datetime.strptime(e, "%Y-%m-%d")
-                delta = (end - start).days + 1
-                total_days += max(delta, 0)
+            scd, total_days = calculate_scd(current_start, prior_periods)
 
-            scd = (current_start - timedelta(days=total_days)).date()
+            return render_template(
+                "result_scd.html",
+                scd=scd,
+                error=error,
+                current_start=current_start,
+                total_days=total_days,
+                periods=prior_periods
+            )
 
         except Exception as ex:
             error = f"Error calculating SCD: {ex}"
 
-    return render_template(
-    "result_scd.html",
-    scd=scd,
-    error=error,
-    current_start=request.form.get('current_start'),
-    total_days=total_days if not error else 0,
-    periods=zip(prior_starts, prior_ends) if not error else []
-)
+    return render_template("scd.html", scd=scd, error=error)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

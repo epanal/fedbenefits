@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 def calculate_lump_sum_payment(hourly_rate: float, leave_balance_hours: float) -> float:
     """Calculate lump sum payment for unused annual leave."""
     return hourly_rate * leave_balance_hours  # Use leave hours directly
@@ -83,3 +85,27 @@ def calculate_severance_pay(annual_salary, years_of_service, months_of_service, 
     weeks_of_severance = min(52, (total_severance / biweekly_severance) * 2)
 
     return total_severance, total_severance_before_age_factor, age_adjustment, biweekly_severance, weeks_of_severance
+
+def calculate_scd(current_start_str, prior_periods):
+    """
+    Calculates the adjusted Service Computation Date (SCD).
+
+    Parameters:
+    - current_start_str: ISO-format string of current start date (YYYY-MM-DD)
+    - prior_periods: list of (start_str, end_str) tuples
+
+    Returns:
+    - adjusted_scd (date)
+    - total_creditable_days (int)
+    """
+    current_start = datetime.strptime(current_start_str, "%Y-%m-%d")
+    total_days = 0
+
+    for start_str, end_str in prior_periods:
+        start = datetime.strptime(start_str, "%Y-%m-%d")
+        end = datetime.strptime(end_str, "%Y-%m-%d")
+        delta = (end - start).days + 1
+        total_days += max(delta, 0)
+
+    adjusted_scd = (current_start - timedelta(days=total_days)).date()
+    return adjusted_scd, total_days
