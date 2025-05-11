@@ -15,6 +15,7 @@
   <ul>
     <li><strong>Current Start Date:</strong> {{ current_start }}</li>
     <li><strong>Total Creditable Days (Prior Service Only):</strong> {{ total_days }}</li>
+    <li><strong>Total Federal Service (Including Current Period):</strong> {{ total_service_days }} days</li>
     <li><strong>Creditable Periods:</strong>
       <ul>
         {% for start, end, days in periods %}

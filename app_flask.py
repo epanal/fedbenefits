@@ -197,6 +197,8 @@ def scd_calculator():
                 # Calculate SCD using prior periods
                 scd, total_days, period_breakdown = calculate_scd(current_start, prior_periods)
 
+                total_service_days = total_days + current_days
+
                 # Add current service block for display only (not counted in SCD shift)
                 period_breakdown.append(current_period)
 
@@ -206,6 +208,7 @@ def scd_calculator():
                 error=error,
                 current_start=current_start,
                 total_days=total_days,
+                total_service_days=total_service_days,
                 periods=period_breakdown,
                 current_date=today_str
             )
