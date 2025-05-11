@@ -209,5 +209,9 @@ def scd_calculator():
 
     return render_template("scd.html", scd=scd, error=error)
 
+@app.errorhandler(404)
+def not_found(e):
+    return redirect(url_for('index'))  # or render_template('404.html')
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
