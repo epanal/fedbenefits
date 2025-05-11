@@ -182,8 +182,7 @@ def scd_calculator():
             prior_ends = request.form.getlist("prior_end[]")
             prior_periods = list(zip(prior_starts, prior_ends))
 
-            # Auto-append current period
-            today_str = date.today().isoformat()
+            # ✅ Don't add current_start → today here! Avoid double-counting
             scd, total_days, period_breakdown = calculate_scd(current_start, prior_periods)
 
             return render_template(
