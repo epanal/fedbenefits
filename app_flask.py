@@ -206,7 +206,8 @@ def scd_calculator():
                 error=error,
                 current_start=current_start,
                 total_days=total_days,
-                periods=period_breakdown
+                periods=period_breakdown,
+                current_date=today_str
             )
 
         except Exception as ex:
