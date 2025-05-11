@@ -182,18 +182,23 @@ def scd_calculator():
             prior_ends = request.form.getlist("prior_end[]")
             prior_periods = list(zip(prior_starts, prior_ends))
 
-            # If no prior periods were entered, show current period as only service block
-            if not prior_periods or all(not s.strip() or not e.strip() for s, e in prior_periods):
-                current_start_dt = datetime.strptime(current_start, "%Y-%m-%d")
-                today_dt = datetime.today()
-                current_days = (today_dt - current_start_dt).days + 1
-                scd = current_start_dt.date()  # SCD stays as current start
-                total_days = current_days
-                period_breakdown = [(current_start, date.today().isoformat(), current_days)]
+            current_start_dt = datetime.strptime(current_start, "%Y-%m-%d")
+            today_dt = datetime.today()
+            today_str = date.today().isoformat()
+            current_days = (today_dt - current_start_dt).days + 1
+            current_period = (current_start, today_str, current_days)
 
+            if not prior_periods or all(not s.strip() or not e.strip() for s, e in prior_periods):
+                # No prior periods entered — SCD is just the current start
+                scd = current_start_dt.date()
+                total_days = current_days
+                period_breakdown = [current_period]
             else:
-                # Normal case with prior periods
+                # Calculate SCD using prior periods
                 scd, total_days, period_breakdown = calculate_scd(current_start, prior_periods)
+
+                # Add current service block for display only (not counted in SCD shift)
+                period_breakdown.append(current_period)
 
             return render_template(
                 "result_scd.html",

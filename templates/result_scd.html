@@ -14,11 +14,16 @@
   <h5 class="mt-4">🧾 Input Summary:</h5>
   <ul>
     <li><strong>Current Start Date:</strong> {{ current_start }}</li>
-    <li><strong>Total Creditable Days:</strong> {{ total_days }}</li>
+    <li><strong>Total Creditable Days (Prior Service Only):</strong> {{ total_days }}</li>
     <li><strong>Creditable Periods:</strong>
       <ul>
         {% for start, end, days in periods %}
-        <li>{{ start }} to {{ end }} — <strong>{{ days }} days</strong></li>
+          <li>
+            {{ start }} to {{ end }} — <strong>{{ days }} days</strong>
+            {% if start == current_start and end == current_date %}
+              <em>(Current Ongoing Service)</em>
+            {% endif %}
+          </li>
         {% endfor %}
       </ul>
     </li>
