@@ -11,19 +11,12 @@
   </div>
 
   <h5>Add Prior Creditable Service Periods:</h5>
-  <div id="service-periods" class="mb-3">
-    <div class="row mb-2">
-      <div class="col">
-        <input type="date" class="form-control" name="prior_start[]" required>
-      </div>
-      <div class="col">
-        <input type="date" class="form-control" name="prior_end[]" required>
-      </div>
-    </div>
-  </div>
+  <div id="service-periods" class="mb-3"></div>
 
   <button type="button" class="btn btn-secondary mb-3" onclick="addPeriod()">➕ Add Another Period</button><br>
   <button type="submit" class="btn btn-primary">🧮 Calculate SCD</button>
+  <a href="{{ url_for('index') }}" class="btn btn-link mt-3">← Back to Home</a>
+
 </form>
 
 {% if scd %}
