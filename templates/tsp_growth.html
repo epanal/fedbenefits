@@ -1,58 +1,59 @@
 {% extends "base.html" %}
+{% block title %}TSP Growth Result{% endblock %}
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-3">TSP Growth Calculator</h2>
-    <form method="POST">
-        <div class="mb-3">
-            <label for="current_balance" class="form-label">Current Account Balance ($)</label>
-            <input type="number" step="0.01" class="form-control" name="current_balance" required>
-        </div>
-        <div class="mb-3">
-            <label for="annual_contribution" class="form-label">Annual Contribution + TSP Match ($)</label>
-            <input type="number" step="0.01" class="form-control" name="annual_contribution" required>
-        </div>
-        <div class="mb-3">
-            <label for="years" class="form-label">Number of Years Until Retirement</label>
-            <input type="number" class="form-control" name="years" required>
-        </div>
-        <div class="mb-3">
-            <label for="annual_rate" class="form-label">Expected Annual Rate of Return (%)</label>
-            <input type="number" step="0.1" class="form-control" name="annual_rate" value="6.5" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Calculate</button>
-    </form>
+<h2 class="mb-3">TSP Growth Projection 📈</h2>
 
-    {% if result %}
-    <hr>
-    <h3 class="mt-4">Results</h3>
-    <p><strong>Estimated Future Balance:</strong> ${{ "{:,.2f}".format(result.future_value) }}</p>
-    <p><strong>Total Contributions:</strong> ${{ "{:,.2f}".format(result.total_contributions) }}</p>
-    <p><strong>Total Growth:</strong> ${{ "{:,.2f}".format(result.growth) }}</p>
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Current Balance: ${{ "{:,.2f}".format(current_balance) }}</li>
+    <li class="list-group-item">Annual Contribution + Match: ${{ "{:,.2f}".format(annual_contribution) }}</li>
+    <li class="list-group-item">Years Until Retirement: {{ years }}</li>
+    <li class="list-group-item">Expected Annual Return: {{ annual_rate }}%</li>
+  </ul>
+</div>
 
-    <canvas id="tspChart" width="400" height="200"></canvas>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        var ctx = document.getElementById('tspChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['Contributions', 'Growth'],
-                datasets: [{
-                    data: [{{ result.total_contributions }}, {{ result.growth }}],
-                    backgroundColor: ['#007bff', '#28a745']
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Breakdown of Contributions vs. Growth'
-                    }
-                }
-            }
-        });
-    </script>
-    {% endif %}
+<div class="card mb-3">
+  <div class="card-header fw-bold fs-5">📊 Results</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Estimated Future Balance: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.future_value) }}</span></li>
+    <li class="list-group-item">Total Contributions: ${{ "{:,.2f}".format(result.total_contributions) }}</li>
+    <li class="list-group-item">Growth: ${{ "{:,.2f}".format(result.growth) }}</li>
+  </ul>
+</div>
+
+<canvas id="growthChart" height="100"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('growthChart');
+const labels = {{ result.yearly_data | map(attribute='year') | list | safe }};
+const balances = {{ result.yearly_data | map(attribute='balance') | list | safe }};
+const contributions = {{ result.yearly_data | map(attribute='contributions') | list | safe }};
+const growth = {{ result.yearly_data | map(attribute='growth') | list | safe }};
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [
+            { label: 'Total Balance', data: balances, borderColor: '#007bff', fill: false },
+            { label: 'Contributions', data: contributions, borderColor: '#28a745', fill: false },
+            { label: 'Growth', data: growth, borderColor: '#ffc107', fill: false }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: { title: { display: true, text: 'Year-by-Year TSP Projection' } }
+    }
+});
+</script>
+
+<p class="text-muted mt-3" style="font-size: 12px;">
+  *This is a simplified projection. It does not account for inflation, wage increases, tax effects, or changes in contribution limits.*
+</p>
+
+<div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+  <a href="/tsp-growth" class="btn btn-outline-secondary">Back to Calculator</a>
+  <a href="/" class="btn btn-outline-primary">Back to Home</a>
 </div>
 {% endblock %}

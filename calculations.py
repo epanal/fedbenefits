@@ -115,18 +115,31 @@ def calculate_scd(current_start_str, prior_periods):
     return adjusted_scd, total_days, period_breakdown
 
 def calculate_tsp_growth(current_balance, annual_contribution, years, annual_rate):
-    r = annual_rate / 100  # convert % to decimal
-    t = years
+    r = annual_rate / 100
     P = current_balance
     PMT = annual_contribution
+    yearly_data = []
 
-    # Future Value formula
-    future_value = P * ((1 + r) ** t) + PMT * (((1 + r) ** t - 1) / r)
-    total_contributions = PMT * t
-    growth = future_value - total_contributions - P
+    balance = P
+    for year in range(1, years + 1):
+        balance = balance * (1 + r) + PMT
+        contributions = PMT * year
+        growth = balance - contributions - P
+        yearly_data.append({
+            "year": year,
+            "balance": round(balance, 2),
+            "contributions": round(contributions, 2),
+            "growth": round(growth, 2)
+        })
+
+    future_value = balance
+    total_contributions = PMT * years
+    growth_total = future_value - total_contributions - P
 
     return {
         "future_value": round(future_value, 2),
         "total_contributions": round(total_contributions, 2),
-        "growth": round(growth, 2)
+        "growth": round(growth_total, 2),
+        "yearly_data": yearly_data
+    }
     }
