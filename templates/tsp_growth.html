@@ -1,8 +1,36 @@
 {% extends "base.html" %}
-{% block title %}TSP Growth Result{% endblock %}
+{% block title %}TSP Growth Calculator{% endblock %}
 {% block content %}
-<h2 class="mb-3">TSP Growth Projection 📈</h2>
 
+<h2 class="mb-3">TSP Growth Calculator 📈</h2>
+
+{% if not result %}
+<!-- Input Form -->
+<form method="POST" class="mb-4">
+  <div class="mb-3">
+    <label for="current_balance" class="form-label">Current Account Balance ($)</label>
+    <input type="number" step="0.01" class="form-control" name="current_balance" required>
+  </div>
+  <div class="mb-3">
+    <label for="annual_contribution" class="form-label">Annual Contribution + TSP Match ($)</label>
+    <input type="number" step="0.01" class="form-control" name="annual_contribution" required>
+  </div>
+  <div class="mb-3">
+    <label for="years" class="form-label">Number of Years Until Retirement</label>
+    <input type="number" class="form-control" name="years" required>
+  </div>
+  <div class="mb-3">
+    <label for="annual_rate" class="form-label">Expected Annual Rate of Return (%)</label>
+    <input type="number" step="0.1" class="form-control" name="annual_rate" value="6.5" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Calculate</button>
+</form>
+
+{% else %}
+<!-- Results Section -->
+<h2 class="mb-3">TSP Growth Projection 📊</h2>
+
+<!-- Inputs Used -->
 <div class="card mb-4">
   <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
   <ul class="list-group list-group-flush">
@@ -13,24 +41,39 @@
   </ul>
 </div>
 
-<div class="card mb-3">
+<!-- Results -->
+<div class="card mb-4">
   <div class="card-header fw-bold fs-5">📊 Results</div>
   <ul class="list-group list-group-flush">
-    <li class="list-group-item">Estimated Future Balance: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.future_value) }}</span></li>
+    <li class="list-group-item">
+      Estimated Future Balance:
+      <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.future_value) }}</span>
+    </li>
     <li class="list-group-item">Total Contributions: ${{ "{:,.2f}".format(result.total_contributions) }}</li>
     <li class="list-group-item">Growth: ${{ "{:,.2f}".format(result.growth) }}</li>
   </ul>
 </div>
 
-<canvas id="growthChart" height="100"></canvas>
+<!-- JSON Data for Chart -->
+<script id="yearly-data" type="application/json">
+  {{ result.yearly_data | tojson }}
+</script>
+
+<!-- Chart.js -->
+<div class="mb-4">
+  <canvas id="growthChart" height="100"></canvas>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const ctx = document.getElementById('growthChart');
-const labels = {{ result.yearly_data | map(attribute='year') | list | safe }};
-const balances = {{ result.yearly_data | map(attribute='balance') | list | safe }};
-const contributions = {{ result.yearly_data | map(attribute='contributions') | list | safe }};
-const growth = {{ result.yearly_data | map(attribute='growth') | list | safe }};
+const yearlyData = JSON.parse(document.getElementById('yearly-data').textContent);
 
+// Extract values for chart
+const labels = yearlyData.map(item => item.year);
+const balances = yearlyData.map(item => item.balance);
+const contributions = yearlyData.map(item => item.contributions);
+const growth = yearlyData.map(item => item.growth);
+
+const ctx = document.getElementById('growthChart');
 new Chart(ctx, {
     type: 'line',
     data: {
@@ -43,17 +86,33 @@ new Chart(ctx, {
     },
     options: {
         responsive: true,
-        plugins: { title: { display: true, text: 'Year-by-Year TSP Projection' } }
+        plugins: {
+            title: { display: true, text: 'Year-by-Year TSP Projection' },
+            legend: { position: 'bottom' }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '$' + value.toLocaleString();
+                    }
+                }
+            }
+        }
     }
 });
 </script>
 
+<!-- Disclaimer -->
 <p class="text-muted mt-3" style="font-size: 12px;">
-  *This is a simplified projection. It does not account for inflation, wage increases, tax effects, or changes in contribution limits.*
+  *This is a simplified projection. It does not account for inflation, wage increases, changes in contribution limits, or tax implications.*
 </p>
 
+<!-- Navigation Buttons -->
 <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
   <a href="/tsp-growth" class="btn btn-outline-secondary">Back to Calculator</a>
   <a href="/" class="btn btn-outline-primary">Back to Home</a>
 </div>
+{% endif %}
 {% endblock %}

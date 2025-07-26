@@ -142,4 +142,4 @@ def calculate_tsp_growth(current_balance, annual_contribution, years, annual_rat
         "growth": round(growth_total, 2),
         "yearly_data": yearly_data
     }
-    }
+    
