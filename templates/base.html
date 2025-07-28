@@ -33,9 +33,12 @@
     gtag('config', 'G-RSVT2PFXL1');
   </script>
 </head>
-<body class="bg-light">
+<body data-bs-theme="light">
   <div class="container py-5 d-flex justify-content-center">
     <div class="w-100" style="max-width: 600px;">
+      <div class="text-end mb-3">
+        <button class="btn btn-sm btn-outline-secondary" onclick="toggleTheme()">🌓 Toggle Dark Mode</button>
+      </div>
       {% block content %}{% endblock %}
       <div class="text-center mt-5">
         <a href="https://buymeacoffee.com/vetfed" target="_blank">
@@ -46,5 +49,19 @@
       </div>
     </div>
   </div>
+
+  <script>
+    function toggleTheme() {
+      const current = document.body.getAttribute('data-bs-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-bs-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('theme') || 'light';
+      document.body.setAttribute('data-bs-theme', saved);
+    });
+  </script>
 </body>
 </html>
