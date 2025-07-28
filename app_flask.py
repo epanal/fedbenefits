@@ -4,7 +4,8 @@ from calculations import (
     calculate_severance_pay,
     calculate_lump_sum_payment,
     calculate_annual_leave_accrual,
-    calculate_scd
+    calculate_scd,
+    calculate_tsp_growth
 )
 
 app = Flask(__name__)
@@ -69,6 +70,31 @@ def show_drp_comparison_form():
         remaining_periods=remaining,
         current_date=today.isoformat()
     )
+
+@app.route("/tsp-growth", methods=["GET", "POST"])
+def tsp_growth():
+    if request.method == "POST":
+        current_balance = float(request.form["current_balance"])
+        annual_contribution = float(request.form["annual_contribution"])
+        years = int(request.form["years"])
+        annual_rate = float(request.form["annual_rate"])
+
+        # Save inputs in session for displaying later
+        session["tsp_inputs"] = {
+            "current_balance": current_balance,
+            "annual_contribution": annual_contribution,
+            "years": years,
+            "annual_rate": annual_rate
+        }
+
+        result = calculate_tsp_growth(current_balance, annual_contribution, years, annual_rate)
+        return render_template("tsp_growth.html", result=result,
+                               current_balance=current_balance,
+                               annual_contribution=annual_contribution,
+                               years=years,
+                               annual_rate=annual_rate)
+
+    return render_template("tsp_growth.html", result=None)
 
 @app.route('/severance', methods=['POST'])
 def process_severance():

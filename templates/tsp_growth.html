@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}TSP Growth Calculator{% endblock %}
+{% block content %}
+
+<h2 class="mb-3">TSP Growth Calculator 📈</h2>
+
+{% if not result %}
+<!-- Input Form -->
+<form method="POST" class="mb-4">
+  <div class="mb-3">
+    <label for="current_balance" class="form-label">Current Account Balance ($)</label>
+    <input type="number" step="0.01" class="form-control" name="current_balance" required>
+  </div>
+  <div class="mb-3">
+    <label for="annual_contribution" class="form-label">Annual Contribution + TSP Match ($)</label>
+    <input type="number" step="0.01" class="form-control" name="annual_contribution" required>
+  </div>
+  <div class="mb-3">
+    <label for="years" class="form-label">Number of Years Until Retirement</label>
+    <input type="number" class="form-control" name="years" required>
+  </div>
+  <div class="mb-3">
+    <label for="annual_rate" class="form-label">Expected Annual Rate of Return (%)</label>
+    <input type="number" step="0.1" class="form-control" name="annual_rate" value="6.5" required>
+  </div>
+  <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+    <button type="submit" class="btn btn-primary">Calculate</button>
+    <a href="/" class="btn btn-outline-secondary">Back to Home</a>
+  </div>
+</form>
+
+{% else %}
+<!-- Results Section -->
+<!-- Disclaimer -->
+<p class="text-muted mt-3" style="font-size: 12px;">
+  *This is a simplified projection. It does not account for inflation, wage increases, changes in contribution limits, or tax implications.*
+</p>
+
+<!-- Inputs Used -->
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Current Balance: ${{ "{:,.2f}".format(current_balance) }}</li>
+    <li class="list-group-item">Annual Contribution + Match: ${{ "{:,.2f}".format(annual_contribution) }}</li>
+    <li class="list-group-item">Years Until Retirement: {{ years }}</li>
+    <li class="list-group-item">Expected Annual Return: {{ annual_rate }}%</li>
+  </ul>
+</div>
+
+<!-- Results -->
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">📊 Results</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">
+      Estimated Future Balance:
+      <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.future_value) }}</span>
+    </li>
+    <li class="list-group-item">Total Contributions: ${{ "{:,.2f}".format(result.total_contributions) }}</li>
+    <li class="list-group-item">Growth: ${{ "{:,.2f}".format(result.growth) }}</li>
+  </ul>
+</div>
+
+<!-- JSON Data for Chart -->
+<script id="yearly-data" type="application/json">
+  {{ result.yearly_data | tojson }}
+</script>
+
+<!-- Chart Container -->
+<div style="height: 400px;" class="mb-4">
+  <canvas id="growthChart"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const yearlyData = JSON.parse(document.getElementById('yearly-data').textContent);
+const labels = yearlyData.map(item => item.year);
+const contributions = yearlyData.map(item => item.contributions);
+const growth = yearlyData.map(item => item.growth);
+
+const ctx = document.getElementById('growthChart');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: labels,
+    datasets: [
+      {
+        label: 'Contributions',
+        data: contributions,
+        backgroundColor: '#28a745',
+        stack: 'stack1'
+      },
+      {
+        label: 'Growth',
+        data: growth,
+        backgroundColor: '#ffc107',
+        stack: 'stack1'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Year-by-Year TSP Growth (Stacked)'
+      },
+      tooltip: {
+        callbacks: {
+          title: function (tooltipItems) {
+            return `Year: ${tooltipItems[0].label}`;
+          },
+          label: function (context) {
+            return `${context.dataset.label}: $${context.parsed.y.toLocaleString()}`;
+          }
+        }
+      },
+      legend: {
+        position: 'bottom'
+      }
+    },
+    scales: {
+      x: {
+        stacked: true
+      },
+      y: {
+        stacked: true,
+        beginAtZero: true,
+        ticks: {
+          callback: value => '$' + value.toLocaleString()
+        }
+      }
+    }
+  }
+});
+</script>
+
+
+<!-- Navigation Buttons -->
+<div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+  <a href="/tsp-growth" class="btn btn-outline-secondary">Back to Calculator</a>
+  <a href="/" class="btn btn-outline-primary">Back to Home</a>
+</div>
+{% endif %}
+{% endblock %}

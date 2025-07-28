@@ -9,10 +9,9 @@
   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
 <!-- Meta tags for SEO -->
-<meta name="description" content="Estimate your federal employee benefits including severance pay, lump sum leave, and annual leave accrual. Accurate tools built for government workers.">
-<meta name="keywords" content="federal benefits calculator, severance pay, lump sum leave, government employee tools, OPM calculators">
+<meta name="description" content="Estimate your federal employee benefits including severance pay, Thrift Savings Plan (TSP) growth, lump sum leave, and annual leave accrual. Accurate tools built for government workers.">
+<meta name="keywords" content="federal benefits calculator, TSP growth calculator, thrift savings plan, severance pay, lump sum leave, government employee tools, OPM calculators">
 <meta name="author" content="FedBenefits.app">
-
 <!-- Social sharing tags -->
 <meta property="og:title" content="Fed Benefits Calculators">
 <meta property="og:description" content="Free tools to estimate your federal severance, leave payout, and more.">
@@ -34,18 +33,33 @@
     gtag('config', 'G-RSVT2PFXL1');
   </script>
 </head>
-<body class="bg-light">
+<body data-bs-theme="light">
   <div class="container py-5 d-flex justify-content-center">
     <div class="w-100" style="max-width: 600px;">
       {% block content %}{% endblock %}
-      <div class="text-center mt-5">
-        <a href="https://buymeacoffee.com/vetfed" target="_blank">
-          <button class="btn btn-danger" style="padding: 10px 20px; font-size: 16px; border-radius: 5px;">
-            ☕ Buy Me a Coffee
-          </button>
+      <div class="d-flex justify-content-center mt-5 gap-2 flex-wrap">
+        <button class="btn btn-outline-secondary" onclick="toggleTheme()">
+          🌓 Toggle Dark Mode
+        </button>
+        <a href="https://buymeacoffee.com/vetfed" target="_blank" class="btn btn-danger">
+          ☕ Buy Me a Coffee
         </a>
       </div>
     </div>
   </div>
+
+  <script>
+    function toggleTheme() {
+      const current = document.body.getAttribute('data-bs-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-bs-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('theme') || 'light';
+      document.body.setAttribute('data-bs-theme', saved);
+    });
+  </script>
 </body>
 </html>
