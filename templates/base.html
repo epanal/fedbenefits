@@ -36,15 +36,13 @@
 <body data-bs-theme="light">
   <div class="container py-5 d-flex justify-content-center">
     <div class="w-100" style="max-width: 600px;">
-      <div class="text-end mb-3">
-        <button class="btn btn-sm btn-outline-secondary" onclick="toggleTheme()">🌓 Toggle Dark Mode</button>
-      </div>
       {% block content %}{% endblock %}
-      <div class="text-center mt-5">
-        <a href="https://buymeacoffee.com/vetfed" target="_blank">
-          <button class="btn btn-danger" style="padding: 10px 20px; font-size: 16px; border-radius: 5px;">
-            ☕ Buy Me a Coffee
-          </button>
+      <div class="d-flex justify-content-center mt-5 gap-2 flex-wrap">
+        <button class="btn btn-outline-secondary" onclick="toggleTheme()">
+          🌓 Toggle Dark Mode
+        </button>
+        <a href="https://buymeacoffee.com/vetfed" target="_blank" class="btn btn-danger">
+          ☕ Buy Me a Coffee
         </a>
       </div>
     </div>
