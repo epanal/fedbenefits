@@ -51,17 +51,22 @@
              value="{{ values.get('num_pay_periods', '') }}" required>
     </div>
 
-    <div class="col-md-6">
-      <label class="form-label">Biweekly Contribution (No Loan)</label>
-      <input type="number" class="form-control" name="biweekly_contribution_no_loan"
-             value="{{ values.get('biweekly_contribution_no_loan', '') }}" required>
+    <div class="col-md-12">
+    <label class="form-label fw-bold">Biweekly Contributions</label>
     </div>
 
     <div class="col-md-6">
-      <label class="form-label">Biweekly Contribution (During Loan)</label>
-      <input type="number" class="form-control" name="biweekly_contribution_during_loan"
-             value="{{ values.get('biweekly_contribution_during_loan', '') }}" required>
+    <label class="form-label">If You Don't Take a Loan</label>
+    <input type="number" class="form-control" name="biweekly_contribution_no_loan"
+            value="{{ values.get('biweekly_contribution_no_loan', '') }}" required>
     </div>
+
+    <div class="col-md-6">
+    <label class="form-label">While You're Repaying the Loan</label>
+    <input type="number" class="form-control" name="biweekly_contribution_during_loan"
+            value="{{ values.get('biweekly_contribution_during_loan', '') }}" required>
+    </div>
+
   </div>
 
   <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
