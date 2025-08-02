@@ -107,6 +107,52 @@
       </div>
     </div>
   </div>
+  <div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card border-success">
+      <div class="card-body">
+        <h5 class="card-title">No Loan</h5>
+        <p class="card-text fw-bold text-success">${{ '{:,.2f}'.format(result.balance_no_loan) }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-danger">
+      <div class="card-body">
+        <h5 class="card-title">With Loan</h5>
+        <p class="card-text fw-bold text-danger">${{ '{:,.2f}'.format(result.balance_with_loan) }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-primary">
+      <div class="card-body">
+        <h5 class="card-title">Difference</h5>
+        <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.delta) }}</p>
+      </div>
+    </div>
+  </div>
+    <div class="col-md-3">
+        <div class="card border-dark">
+        <div class="card-body">
+            <h5 class="card-title">Loan Payment (biweekly)</h5>
+            <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.loan_payment) }}</p>
+        </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Second row for processing fee -->
+    <div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-secondary">
+        <div class="card-body">
+            <h5 class="card-title">Processing Fee</h5>
+            <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.processing_fee) }}</p>
+        </div>
+        </div>
+    </div>
+    </div>
 </div>
 
 <!-- JSON Chart Data -->
