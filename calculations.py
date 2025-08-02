@@ -142,4 +142,81 @@ def calculate_tsp_growth(current_balance, annual_contribution, years, annual_rat
         "growth": round(growth_total, 2),
         "yearly_data": yearly_data
     }
+
+def calculate_tsp_loan(
+    loan_type: str,
+    tsp_balance: float,
+    loan_amount: float,
+    loan_interest_rate: float,
+    expected_annual_growth: float,
+    num_pay_periods: int,
+    biweekly_contribution_no_loan: float,
+    biweekly_contribution_during_loan: float
+):
+    """
+    Simulates growth of TSP account with and without taking a loan.
+    Returns ending balances, loan repayment summary, and yearly breakdown.
+    """
+    annual_growth_rate = expected_annual_growth / 100
+    loan_rate = loan_interest_rate / 100
+    years = num_pay_periods / 26
+
+    # Calculate processing fee
+    processing_fee = 100 if loan_type == "residential" else 50
+
+    # --- No Loan Scenario ---
+    balance_no_loan = tsp_balance
+    yearly_data_no_loan = []
+
+    for year in range(1, int(years) + 1):
+        for _ in range(26):
+            balance_no_loan += biweekly_contribution_no_loan
+            balance_no_loan *= (1 + (annual_growth_rate / 26))
+        yearly_data_no_loan.append(round(balance_no_loan, 2))
+
+    # --- Loan Scenario ---
+    balance_with_loan = tsp_balance - loan_amount - processing_fee
+    yearly_data_with_loan = []
+
+    # Calculate fixed biweekly loan payment (amortized)
+    r = loan_rate / 26
+    if r > 0:
+        payment = loan_amount * r / (1 - (1 + r) ** -num_pay_periods)
+    else:
+        payment = loan_amount / num_pay_periods
+
+    total_repaid = payment * num_pay_periods
+
+    for p in range(1, num_pay_periods + 1):
+        balance_with_loan += biweekly_contribution_during_loan
+        balance_with_loan *= (1 + (annual_growth_rate / 26))
+        balance_with_loan -= payment
+
+        if p % 26 == 0:
+            yearly_data_with_loan.append(round(balance_with_loan, 2))
+
+    # If loan is shorter than years, continue growing
+    total_periods = int(years * 26)
+    for p in range(num_pay_periods + 1, total_periods + 1):
+        balance_with_loan += biweekly_contribution_no_loan
+        balance_with_loan *= (1 + (annual_growth_rate / 26))
+        if p % 26 == 0:
+            yearly_data_with_loan.append(round(balance_with_loan, 2))
+
+    # Final comparison
+    delta = balance_no_loan - balance_with_loan
+
+    return {
+        "balance_no_loan": round(balance_no_loan, 2),
+        "balance_with_loan": round(balance_with_loan, 2),
+        "delta": round(delta, 2),
+        "loan_payment": round(payment, 2),
+        "total_repaid": round(total_repaid, 2),
+        "processing_fee": processing_fee,
+        "yearly_data": {
+            "no_loan": yearly_data_no_loan,
+            "with_loan": yearly_data_with_loan
+        }
+    }
+
     

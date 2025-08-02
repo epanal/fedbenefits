@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}TSP Loan Calculator{% endblock %}
+{% block content %}
+
+<h2 class="mb-3">TSP Loan Calculator 💵</h2>
+
+{% if not result %}
+<form method="POST" class="mb-4">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Loan Type</label><br>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="loan_type" value="general" checked>
+        <label class="form-check-label">General</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="loan_type" value="residential">
+        <label class="form-check-label">Primary Residence</label>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">TSP Balance ($)</label>
+      <input type="number" class="form-control" name="tsp_balance" required>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Loan Amount ($)</label>
+      <input type="number" class="form-control" name="loan_amount" required>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Loan Interest Rate (%)</label>
+      <input type="number" class="form-control" name="loan_interest_rate" step="0.1" required>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Expected Market Growth (%)</label>
+      <input type="number" class="form-control" name="expected_annual_growth" step="0.1" required>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Number of Pay Periods</label>
+      <input type="number" class="form-control" name="num_pay_periods" required>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Biweekly Contribution (No Loan)</label>
+      <input type="number" class="form-control" name="biweekly_contribution_no_loan" required>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Biweekly Contribution (During Loan)</label>
+      <input type="number" class="form-control" name="biweekly_contribution_during_loan" required>
+    </div>
+  </div>
+
+  <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+    <button type="submit" class="btn btn-primary">Calculate</button>
+    <a href="/" class="btn btn-outline-secondary">Back to Home</a>
+  </div>
+</form>
+
+{% else %}
+<!-- Disclaimer -->
+<p class="text-muted mt-3" style="font-size: 12px;">
+  *This is a simplified tool. It does not account for wage increases, changes in contribution limits, or tax implications. Assumes no other outstanding loans.*
+</p>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card border-success">
+      <div class="card-body">
+        <h5 class="card-title">No Loan</h5>
+        <p class="card-text fw-bold text-success">${{ '{:,.2f}'.format(result.balance_no_loan) }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-danger">
+      <div class="card-body">
+        <h5 class="card-title">With Loan</h5>
+        <p class="card-text fw-bold text-danger">${{ '{:,.2f}'.format(result.balance_with_loan) }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-primary">
+      <div class="card-body">
+        <h5 class="card-title">Difference</h5>
+        <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.delta) }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JSON Chart Data -->
+<script id="loan-data" type="application/json">
+  {{ result.yearly_data | tojson }}
+</script>
+<div style="height: 400px;">
+  <canvas id="loanChart"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const chartData = JSON.parse(document.getElementById('loan-data').textContent);
+const ctx = document.getElementById('loanChart');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: chartData.labels.map(y => `Year ${y}`),
+    datasets: [
+      {
+        label: 'No Loan',
+        data: chartData.no_loan,
+        borderColor: '#28a745',
+        backgroundColor: 'rgba(40,167,69,0.1)',
+        fill: true
+      },
+      {
+        label: 'With Loan',
+        data: chartData.with_loan,
+        borderColor: '#dc3545',
+        backgroundColor: 'rgba(220,53,69,0.1)',
+        fill: true
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'TSP Growth Comparison'
+      },
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
+        }
+      },
+      legend: {
+        position: 'bottom'
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: v => '$' + v.toLocaleString()
+        }
+      }
+    }
+  }
+});
+</script>
+
+<!-- Navigation Buttons -->
+<div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+  <a href="/tsp-loan" class="btn btn-outline-secondary">Back to Calculator</a>
+  <a href="/" class="btn btn-outline-primary">Back to Home</a>
+</div>
+{% endif %}
+{% endblock %}

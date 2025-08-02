@@ -5,7 +5,8 @@ from calculations import (
     calculate_lump_sum_payment,
     calculate_annual_leave_accrual,
     calculate_scd,
-    calculate_tsp_growth
+    calculate_tsp_growth,
+    calculate_tsp_loan
 )
 
 app = Flask(__name__)
@@ -95,6 +96,64 @@ def tsp_growth():
                                annual_rate=annual_rate)
 
     return render_template("tsp_growth.html", result=None)
+
+@app.route("/tsp-loan", methods=["GET", "POST"])
+def tsp_loan():
+    if request.method == "POST":
+        # Get form values
+        loan_type = request.form["loan_type"]
+        tsp_balance = float(request.form["tsp_balance"])
+        loan_amount = float(request.form["loan_amount"])
+        loan_interest_rate = float(request.form["loan_interest_rate"])
+        expected_annual_growth = float(request.form["expected_annual_growth"])
+        num_pay_periods = int(request.form["num_pay_periods"])
+        biweekly_contribution_no_loan = float(request.form["biweekly_contribution_no_loan"])
+        biweekly_contribution_during_loan = float(request.form["biweekly_contribution_during_loan"])
+
+        # Basic validation (can be extended)
+        if loan_amount < 1000 or loan_amount > 50000 or loan_amount > tsp_balance:
+            return render_template("tsp_loan.html", result={
+                "error": "Loan amount must be at least $1,000, cannot exceed $50,000, and must be less than your TSP balance."
+            })
+
+        if loan_type == "general" and not (26 <= num_pay_periods <= 130):
+            return render_template("tsp_loan.html", result={
+                "error": "General loans must be between 26 and 130 pay periods."
+            })
+        if loan_type == "residential" and not (26 <= num_pay_periods <= 390):
+            return render_template("tsp_loan.html", result={
+                "error": "Residential loans must be between 26 and 390 pay periods."
+            })
+
+        # Store inputs
+        session["tsp_loan_inputs"] = {
+            "loan_type": loan_type,
+            "tsp_balance": tsp_balance,
+            "loan_amount": loan_amount,
+            "loan_interest_rate": loan_interest_rate,
+            "expected_annual_growth": expected_annual_growth,
+            "num_pay_periods": num_pay_periods,
+            "biweekly_contribution_no_loan": biweekly_contribution_no_loan,
+            "biweekly_contribution_during_loan": biweekly_contribution_during_loan
+        }
+
+        # Call calculation
+        result = calculate_tsp_loan(
+            loan_type,
+            tsp_balance,
+            loan_amount,
+            loan_interest_rate,
+            expected_annual_growth,
+            num_pay_periods,
+            biweekly_contribution_no_loan,
+            biweekly_contribution_during_loan
+        )
+
+        return render_template("tsp_loan.html", result=result)
+
+    # GET request
+    values = session.get("tsp_loan_inputs", None)
+    return render_template("tsp_loan.html", result=None, values=values)
 
 @app.route('/severance', methods=['POST'])
 def process_severance():
