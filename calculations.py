@@ -155,59 +155,71 @@ def calculate_tsp_loan(
 ):
     """
     Simulates growth of TSP account with and without taking a loan.
-    Returns ending balances, loan repayment summary, and yearly breakdown.
+    Returns ending balances, loan repayment summary, and detailed pay-period breakdown.
     """
     annual_growth_rate = expected_annual_growth / 100
     loan_rate = loan_interest_rate / 100
-    years = num_pay_periods / 26
+    total_periods = int(num_pay_periods)  # Assume loan duration = total projection window
+    years = total_periods / 26
 
-    # Calculate processing fee
     processing_fee = 100 if loan_type == "residential" else 50
 
-    # --- No Loan Scenario ---
+    # --- No Loan Growth Projection ---
     balance_no_loan = tsp_balance
     yearly_data_no_loan = []
+    balance_no_loan_temp = tsp_balance
 
-    for year in range(1, int(years) + 1):
-        for _ in range(26):
-            balance_no_loan += biweekly_contribution_no_loan
-            balance_no_loan *= (1 + (annual_growth_rate / 26))
-        yearly_data_no_loan.append(round(balance_no_loan, 2))
-
-    # --- Loan Scenario ---
+    # --- Loan Setup ---
     balance_with_loan = tsp_balance - loan_amount - processing_fee
     yearly_data_with_loan = []
+    payperiod_data = []
 
-    # Calculate fixed biweekly loan payment (amortized)
+    # Calculate fixed biweekly loan payment
     r = loan_rate / 26
     if r > 0:
         payment = loan_amount * r / (1 - (1 + r) ** -num_pay_periods)
     else:
         payment = loan_amount / num_pay_periods
-
     total_repaid = payment * num_pay_periods
 
-    for p in range(1, num_pay_periods + 1):
-        balance_with_loan += biweekly_contribution_during_loan
-        balance_with_loan *= (1 + (annual_growth_rate / 26))
-        balance_with_loan -= payment
+    # Pay-period level simulation
+    for p in range(1, total_periods + 1):
+        # Loan scenario
+        if p <= num_pay_periods:
+            balance_with_loan += biweekly_contribution_during_loan
+            balance_with_loan *= (1 + (annual_growth_rate / 26))
+            balance_with_loan -= payment
+            loan_balance_remaining = max(0, loan_amount - payment * p)
+            remaining_loan_payments = max(0, num_pay_periods - p)
+        else:
+            balance_with_loan += biweekly_contribution_no_loan
+            balance_with_loan *= (1 + (annual_growth_rate / 26))
+            loan_balance_remaining = None
+            remaining_loan_payments = None
+
+        # No-loan scenario
+        balance_no_loan_temp += biweekly_contribution_no_loan
+        balance_no_loan_temp *= (1 + (annual_growth_rate / 26))
+
+        # Save pay period snapshot
+        payperiod_data.append({
+            "period": p,
+            "no_loan": round(balance_no_loan_temp, 2),
+            "with_loan": round(balance_with_loan, 2),
+            "diff": round(balance_no_loan_temp - balance_with_loan, 2),
+            "loan_balance": round(loan_balance_remaining, 2) if loan_balance_remaining is not None else None,
+            "remaining_loan_payments": remaining_loan_payments
+        })
 
         if p % 26 == 0:
+            yearly_data_no_loan.append(round(balance_no_loan_temp, 2))
             yearly_data_with_loan.append(round(balance_with_loan, 2))
 
-    # If loan is shorter than years, continue growing
-    total_periods = int(years * 26)
-    for p in range(num_pay_periods + 1, total_periods + 1):
-        balance_with_loan += biweekly_contribution_no_loan
-        balance_with_loan *= (1 + (annual_growth_rate / 26))
-        if p % 26 == 0:
-            yearly_data_with_loan.append(round(balance_with_loan, 2))
-
-    # Final comparison
-    delta = balance_no_loan - balance_with_loan
+    # Final balances
+    delta = balance_no_loan_temp - balance_with_loan
 
     return {
-        "balance_no_loan": round(balance_no_loan, 2),
+        "balance_no_loan": round(balance_no_loan_temp, 2),
         "balance_with_loan": round(balance_with_loan, 2),
         "delta": round(delta, 2),
         "loan_payment": round(payment, 2),
@@ -215,8 +227,8 @@ def calculate_tsp_loan(
         "processing_fee": processing_fee,
         "yearly_data": {
             "no_loan": yearly_data_no_loan,
-            "with_loan": yearly_data_with_loan
-        }
+            "with_loan": yearly_data_with_loan,
+            "labels": [i + 1 for i in range(len(yearly_data_no_loan))]
+        },
+        "payperiod_data": payperiod_data
     }
-
-    

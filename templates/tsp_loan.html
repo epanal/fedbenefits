@@ -10,48 +10,57 @@
     <div class="col-md-6">
       <label class="form-label">Loan Type</label><br>
       <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="loan_type" value="general" checked>
+        <input class="form-check-input" type="radio" name="loan_type" value="general"
+               {% if values.get('loan_type', 'general') == 'general' %}checked{% endif %}>
         <label class="form-check-label">General</label>
       </div>
       <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="loan_type" value="residential">
+        <input class="form-check-input" type="radio" name="loan_type" value="residential"
+               {% if values.get('loan_type') == 'residential' %}checked{% endif %}>
         <label class="form-check-label">Primary Residence</label>
       </div>
     </div>
 
     <div class="col-md-6">
       <label class="form-label">TSP Balance ($)</label>
-      <input type="number" class="form-control" name="tsp_balance" required>
+      <input type="number" class="form-control" name="tsp_balance"
+             value="{{ values.get('tsp_balance', '') }}" required>
     </div>
 
     <div class="col-md-6">
       <label class="form-label">Loan Amount ($)</label>
-      <input type="number" class="form-control" name="loan_amount" required>
+      <input type="number" class="form-control" name="loan_amount"
+             value="{{ values.get('loan_amount', '') }}" required>
     </div>
 
     <div class="col-md-6">
       <label class="form-label">Loan Interest Rate (%)</label>
-      <input type="number" class="form-control" name="loan_interest_rate" step="0.1" required>
+      <input type="number" class="form-control" name="loan_interest_rate" step="0.1"
+             value="{{ values.get('loan_interest_rate', '') }}" required>
     </div>
 
     <div class="col-md-6">
       <label class="form-label">Expected Market Growth (%)</label>
-      <input type="number" class="form-control" name="expected_annual_growth" step="0.1" required>
+      <input type="number" class="form-control" name="expected_annual_growth" step="0.1"
+             value="{{ values.get('expected_annual_growth', '') }}" required>
     </div>
 
     <div class="col-md-6">
       <label class="form-label">Number of Pay Periods</label>
-      <input type="number" class="form-control" name="num_pay_periods" required>
+      <input type="number" class="form-control" name="num_pay_periods"
+             value="{{ values.get('num_pay_periods', '') }}" required>
     </div>
 
     <div class="col-md-6">
       <label class="form-label">Biweekly Contribution (No Loan)</label>
-      <input type="number" class="form-control" name="biweekly_contribution_no_loan" required>
+      <input type="number" class="form-control" name="biweekly_contribution_no_loan"
+             value="{{ values.get('biweekly_contribution_no_loan', '') }}" required>
     </div>
 
     <div class="col-md-6">
       <label class="form-label">Biweekly Contribution (During Loan)</label>
-      <input type="number" class="form-control" name="biweekly_contribution_during_loan" required>
+      <input type="number" class="form-control" name="biweekly_contribution_during_loan"
+             value="{{ values.get('biweekly_contribution_during_loan', '') }}" required>
     </div>
   </div>
 
@@ -154,6 +163,47 @@ new Chart(ctx, {
   }
 });
 </script>
+
+<!-- Pay Period Breakdown Table -->
+<div class="table-responsive mt-5">
+  <h4>Pay Period Comparison Table</h4>
+  <table class="table table-bordered table-striped table-sm">
+    <thead class="table-light">
+      <tr>
+        <th>Pay Period</th>
+        <th>No Loan Balance</th>
+        <th>With Loan Balance</th>
+        <th>Difference</th>
+        <th>Loan Balance</th>
+        <th>Remaining Loan Payments</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in result.payperiod_data %}
+      <tr>
+        <td>{{ row.period }}</td>
+        <td>${{ '{:,.2f}'.format(row.no_loan) }}</td>
+        <td>${{ '{:,.2f}'.format(row.with_loan) }}</td>
+        <td>${{ '{:,.2f}'.format(row.diff) }}</td>
+        <td>
+          {% if row.loan_balance is not none %}
+            ${{ '{:,.2f}'.format(row.loan_balance) }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td>
+          {% if row.remaining_loan_payments is not none %}
+            {{ row.remaining_loan_payments }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 
 <!-- Navigation Buttons -->
 <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">

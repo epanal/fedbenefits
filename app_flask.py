@@ -100,60 +100,51 @@ def tsp_growth():
 @app.route("/tsp-loan", methods=["GET", "POST"])
 def tsp_loan():
     if request.method == "POST":
-        # Get form values
-        loan_type = request.form["loan_type"]
-        tsp_balance = float(request.form["tsp_balance"])
-        loan_amount = float(request.form["loan_amount"])
-        loan_interest_rate = float(request.form["loan_interest_rate"])
-        expected_annual_growth = float(request.form["expected_annual_growth"])
-        num_pay_periods = int(request.form["num_pay_periods"])
-        biweekly_contribution_no_loan = float(request.form["biweekly_contribution_no_loan"])
-        biweekly_contribution_during_loan = float(request.form["biweekly_contribution_during_loan"])
+        form = request.form
+        try:
+            tsp_balance = float(form["tsp_balance"])
+            loan_amount = float(form["loan_amount"])
+            interest_rate = float(form["interest_rate"])
+            market_growth_rate = float(form["market_growth_rate"])
+            num_pay_periods = int(form["num_pay_periods"])
+            contribution_no_loan = float(form["biweekly_contribution_no_loan"])
+            contribution_with_loan = float(form["biweekly_contribution_with_loan"])
+            loan_type = form["loan_type"]
+        except (ValueError, KeyError):
+            return render_template("tsp_loan.html", error="Please enter valid numeric values.", values=form)
 
-        # Basic validation (can be extended)
-        if loan_amount < 1000 or loan_amount > 50000 or loan_amount > tsp_balance:
-            return render_template("tsp_loan.html", result={
-                "error": "Loan amount must be at least $1,000, cannot exceed $50,000, and must be less than your TSP balance."
-            })
+        # Basic backend validations
+        if loan_amount < 1000:
+            return render_template("tsp_loan.html", error="Loan must be at least $1,000.", values=form)
+        if loan_amount > tsp_balance:
+            return render_template("tsp_loan.html", error="Loan cannot exceed current TSP balance.", values=form)
+        if num_pay_periods < 26 or num_pay_periods > 130:
+            return render_template("tsp_loan.html", error="Loan length must be between 26 and 130 pay periods.", values=form)
+        if loan_amount > 50000:
+            return render_template("tsp_loan.html", error="Loan cannot exceed $50,000.", values=form)
 
-        if loan_type == "general" and not (26 <= num_pay_periods <= 130):
-            return render_template("tsp_loan.html", result={
-                "error": "General loans must be between 26 and 130 pay periods."
-            })
-        if loan_type == "residential" and not (26 <= num_pay_periods <= 390):
-            return render_template("tsp_loan.html", result={
-                "error": "Residential loans must be between 26 and 390 pay periods."
-            })
+        # Save to session for back button
+        session["tsp_loan_inputs"] = dict(form)
 
-        # Store inputs
-        session["tsp_loan_inputs"] = {
-            "loan_type": loan_type,
-            "tsp_balance": tsp_balance,
-            "loan_amount": loan_amount,
-            "loan_interest_rate": loan_interest_rate,
-            "expected_annual_growth": expected_annual_growth,
-            "num_pay_periods": num_pay_periods,
-            "biweekly_contribution_no_loan": biweekly_contribution_no_loan,
-            "biweekly_contribution_during_loan": biweekly_contribution_during_loan
-        }
-
-        # Call calculation
+        # Run the calculation
+        from calculations import calculate_tsp_loan
         result = calculate_tsp_loan(
-            loan_type,
             tsp_balance,
             loan_amount,
-            loan_interest_rate,
-            expected_annual_growth,
+            interest_rate,
+            market_growth_rate,
             num_pay_periods,
-            biweekly_contribution_no_loan,
-            biweekly_contribution_during_loan
+            contribution_no_loan,
+            contribution_with_loan,
+            loan_type
         )
 
-        return render_template("tsp_loan.html", result=result)
+        return render_template("tsp_loan.html", result=result, values=form)
 
-    # GET request
-    values = session.get("tsp_loan_inputs", None)
-    return render_template("tsp_loan.html", result=None, values=values)
+    # GET request — use stored session values or blank
+    saved_values = session.get("tsp_loan_inputs", {})
+    return render_template("tsp_loan.html", result=None, values=saved_values)
+
 
 @app.route('/severance', methods=['POST'])
 def process_severance():
