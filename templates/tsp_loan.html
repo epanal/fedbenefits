@@ -53,15 +53,17 @@
 
     <div class="col-12">
       <fieldset class="border rounded p-3 mt-3">
-        <legend class="w-auto px-2 fw-bold">Biweekly Contributions</legend>
+        <legend class="w-auto px-2 fw-bold">Biweekly Contributions + Match</legend>
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label">If You Don't Take a Loan</label>
+            <label class="form-label">Biweekly Contribution (No Loan)</label>
+<small class="form-text text-muted">Your regular contribution if you don’t borrow from TSP.</small>
             <input type="number" class="form-control" name="biweekly_contribution_no_loan"
                    value="{{ values.get('biweekly_contribution_no_loan', '') }}" required>
           </div>
           <div class="col-md-6">
-            <label class="form-label">While You're Repaying the Loan</label>
+            <label class="form-label">Biweekly Contribution (With Loan)</label>
+<small class="form-text text-muted">Your adjusted contribution while repaying the loan.</small>
             <input type="number" class="form-control" name="biweekly_contribution_during_loan"
                    value="{{ values.get('biweekly_contribution_during_loan', '') }}" required>
           </div>
@@ -82,40 +84,32 @@
   *This is a simplified tool. It does not account for wage increases, changes in contribution limits, or tax implications. Assumes no other outstanding loans.*
 </p>
 
-<!-- Summary Cards Row -->
-<div class="row g-3 mb-4">
-  <div class="col-md-6 col-lg-3">
-    <div class="card border-success">
-      <div class="card-body">
-        <h6 class="card-title text-success">No Loan</h6>
-        <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.balance_no_loan) }}</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6 col-lg-3">
-    <div class="card border-danger">
-      <div class="card-body">
-        <h6 class="card-title text-danger">With Loan</h6>
-        <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.balance_with_loan) }}</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6 col-lg-3">
-    <div class="card border-primary">
-      <div class="card-body">
-        <h6 class="card-title">Difference</h6>
-        <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.delta) }}</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6 col-lg-3">
-    <div class="card border-dark">
-      <div class="card-body">
-        <h6 class="card-title">Loan Payment (biweekly)</h6>
-        <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.loan_payment) }}</p>
-      </div>
-    </div>
-  </div>
+<!-- Inputs Used -->
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Loan Type: {{ values.loan_type | title }}</li>
+    <li class="list-group-item">TSP Balance: ${{ "{:,.2f}".format(values.tsp_balance | float) }}</li>
+    <li class="list-group-item">Loan Amount: ${{ "{:,.2f}".format(values.loan_amount | float) }}</li>
+    <li class="list-group-item">Loan Interest Rate: {{ values.loan_interest_rate }}%</li>
+    <li class="list-group-item">Market Growth Rate: {{ values.expected_annual_growth }}%</li>
+    <li class="list-group-item">Number of Pay Periods: {{ values.num_pay_periods }}</li>
+    <li class="list-group-item">Contribution (No Loan): ${{ "{:,.2f}".format(values.biweekly_contribution_no_loan | float) }}</li>
+    <li class="list-group-item">Contribution (With Loan): ${{ "{:,.2f}".format(values.biweekly_contribution_during_loan | float) }}</li>
+  </ul>
+</div>
+
+<!-- Loan Calculation Summary -->
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">📊 Loan Impact Summary</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Balance Without Loan: <span class="fw-bold text-success">${{ "{:,.2f}".format(result.balance_no_loan) }}</span></li>
+    <li class="list-group-item">Balance With Loan: <span class="fw-bold text-danger">${{ "{:,.2f}".format(result.balance_with_loan) }}</span></li>
+    <li class="list-group-item">Difference: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.delta) }}</span></li>
+    <li class="list-group-item">Biweekly Loan Payment: <span class="fw-bold">${{ "{:,.2f}".format(result.loan_payment) }}</span></li>
+    <li class="list-group-item">Processing Fee: <span class="fw-bold">${{ "{:,.2f}".format(result.processing_fee) }}</span></li>
+    <li class="list-group-item">Total Repaid: <span class="fw-bold">${{ "{:,.2f}".format(result.total_repaid) }}</span></li>
+  </ul>
 </div>
 
 <!-- Second Row for Processing Fee -->
