@@ -44,12 +44,12 @@
 
     <!-- Loan Interest Rate -->
     <div class="col-md-6">
-      <label class="form-label">Loan Interest Rate (%)</label>
-        <input type="number" class="form-control" name="expected_annual_growth"
-            step="0.01"
-            title="Annual return estimate. Can be negative. Use up to 2 decimal places (e.g., 7.25%)"
-            value="{{ values.get('expected_annual_growth', '') }}" required>
-        <div class="invalid-feedback">Enter a value like 7.25% up to hundredth decimal place.</div>
+    <label class="form-label">Loan Interest Rate (%)</label>
+    <input type="number" class="form-control" name="loan_interest_rate"
+            step="0.01" min="0"
+            title="Enter a non-negative interest rate (e.g., 4.25%)"
+            value="{{ values.get('loan_interest_rate', '') }}" required>
+    <div class="invalid-feedback">Enter a valid non-negative interest rate up to hundredth decimal place (e.g., 4.25).</div>
     </div>
 
     <!-- Expected Market Growth -->
