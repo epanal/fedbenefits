@@ -235,9 +235,9 @@ def calculate_tsp_loan(
         "total_repaid": round(total_repaid, 2),
         "processing_fee": processing_fee,
         "yearly_data": {
-            "no_loan": no_loan_periods,
-            "with_loan": with_loan_periods,
-            "labels": list(range(1, len(no_loan_periods) + 1))
+            "labels": [p["period"] for p in payperiod_data],
+            "no_loan": [p["no_loan"] for p in payperiod_data],
+            "with_loan": [p["with_loan"] for p in payperiod_data]
         },
         "payperiod_data": payperiod_data
     }
