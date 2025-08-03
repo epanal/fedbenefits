@@ -83,12 +83,11 @@
             min="26" max="390"
             title="Enter number of biweekly pay periods"
             value="{{ values.get('num_pay_periods', '') }}" required>
-    <div class="invalid-feedback">
-        Must be between 26–390 (12 to 180 months).
+    <div id="payPeriodFeedback" class="invalid-feedback">
+    Must be between 26–390 pay periods.
     </div>
-    <small class="form-text text-muted">
-        General loans: 1–5 years (26–130 pay periods) &nbsp;|&nbsp;
-        Residential loans: 5–15 years (131–390 pay periods)
+    <small id="payPeriodHint" class="form-text text-muted">
+    General loans: 1–5 years (26–130 pay periods) | Residential loans: 5–15 years (131–390)
     </small>
     </div>
 
@@ -347,9 +346,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (!valid) {
-      payPeriodsInput.setCustomValidity("Invalid number of pay periods for selected loan type.");
+    payPeriodsInput.setCustomValidity("Invalid number of pay periods for selected loan type.");
+    payPeriodsInput.reportValidity();
     } else {
-      payPeriodsInput.setCustomValidity(""); // Clear error
+    payPeriodsInput.setCustomValidity("");
     }
   }
 
