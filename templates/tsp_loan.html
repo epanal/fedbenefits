@@ -227,37 +227,43 @@ new Chart(ctx, {
 <!-- Pay Period Breakdown Table -->
 <div class="table-responsive mt-5">
   <h4>Pay Period Comparison Table</h4>
+    <button class="btn btn-sm btn-outline-secondary mb-3" id="toggle-advanced">
+    Toggle Advanced Columns
+    </button>
+    <script>
+        document.getElementById('toggle-advanced').addEventListener('click', () => {
+        document.querySelectorAll('.advanced-column').forEach(col => {
+        col.classList.toggle('d-none');
+        });
+        });
+    </script>
   <table class="table table-bordered table-striped table-sm">
-    <thead class="table-light">
+        <thead class="table-light">
         <tr>
-        <th>Pay Period</th>
-        <th>No Loan Balance</th>
-        <th>With Loan Balance</th>
-        <th>Difference</th>
-        <th>Loan Balance</th>
-        <th>Interest</th>
-        <th>Principal</th>
-        <th>Contribution (No Loan)</th>
-        <th>Contribution (With Loan)</th>
-        <th>Remaining Loan Payments</th>
+            <th>Pay Period</th>
+            <th>No Loan Balance</th>
+            <th>With Loan Balance</th>
+            <th>Difference</th>
+            <th>Loan Balance</th>
+            <th>Remaining Loan Payments</th>
+            <th class="advanced-column d-none">Interest Paid</th>
+            <th class="advanced-column d-none">Principal Repaid</th>
+            <th class="advanced-column d-none">Contribution (With Loan)</th>
+            <th class="advanced-column d-none">Contribution (No Loan)</th>
         </tr>
-    </thead>
-    <tbody>
-      {% for row in result.payperiod_data %}
-        <tr>
-        <td>{{ row.period }}</td>
-        <td>${{ '{:,.2f}'.format(row.no_loan) }}</td>
-        <td>${{ '{:,.2f}'.format(row.with_loan) }}</td>
-        <td>${{ '{:,.2f}'.format(row.diff) }}</td>
-        <td>${{ '{:,.2f}'.format(row.loan_balance) if row.loan_balance is not none else '—' }}</td>
-        <td>${{ '{:,.2f}'.format(row.interest) if row.interest is not none else '—' }}</td>
-        <td>${{ '{:,.2f}'.format(row.principal) if row.principal is not none else '—' }}</td>
-        <td>${{ '{:,.2f}'.format(row.contribution_no_loan) }}</td>
-        <td>${{ '{:,.2f}'.format(row.contribution_with_loan) }}</td>
-        <td>{{ row.remaining_loan_payments if row.remaining_loan_payments is not none else '—' }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
+        </thead>
+            <tr>
+            <td>{{ row.period }}</td>
+            <td>${{ '{:,.2f}'.format(row.no_loan) }}</td>
+            <td>${{ '{:,.2f}'.format(row.with_loan) }}</td>
+            <td>${{ '{:,.2f}'.format(row.diff) }}</td>
+            <td>{% if row.loan_balance is not none %}${{ '{:,.2f}'.format(row.loan_balance) }}{% else %}—{% endif %}</td>
+            <td>{% if row.remaining_loan_payments is not none %}{{ row.remaining_loan_payments }}{% else %}—{% endif %}</td>
+            <td class="advanced-column d-none">${{ '{:,.2f}'.format(row.interest) if row.interest is not none else '—' }}</td>
+            <td class="advanced-column d-none">${{ '{:,.2f}'.format(row.principal) if row.principal is not none else '—' }}</td>
+            <td class="advanced-column d-none">${{ '{:,.2f}'.format(row.contri_with_loan) if row.contri_with_loan is not none else '—' }}</td>
+            <td class="advanced-column d-none">${{ '{:,.2f}'.format(row.contri_no_loan) if row.contri_no_loan is not none else '—' }}</td>
+            </tr>
   </table>
 </div>
 
