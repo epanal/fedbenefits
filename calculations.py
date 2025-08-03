@@ -197,6 +197,10 @@ def calculate_tsp_loan(
             "with_loan": round(with_loan_bal, 2),
             "diff": round(no_loan_periods[p - 1] - with_loan_bal, 2),
             "loan_balance": round(loan_balance, 2),
+            "interest": round(interest, 2),
+            "principal": round(principal, 2),
+            "contribution_with_loan": round(biweekly_contribution_during_loan, 2),
+            "contribution_no_loan": round(biweekly_contribution_no_loan, 2),
             "remaining_loan_payments": num_pay_periods - p
         })
 
@@ -241,3 +245,5 @@ def calculate_tsp_loan(
         },
         "payperiod_data": payperiod_data
     }
+
+

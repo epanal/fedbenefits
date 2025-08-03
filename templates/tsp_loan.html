@@ -26,7 +26,7 @@
     <div class="col-md-6">
       <label class="form-label">TSP Balance ($)</label>
         <input type="number" class="form-control" name="tsp_balance"
-            id="tsp_balance" min="0" max="1000000"
+            id="tsp_balance" min="1000" max="1000000"
             title="Your current TSP account balance. Must be ≥ loan amount."
             value="{{ values.get('tsp_balance', '') }}" required>
         <div class="invalid-feedback" id="tsp-balance-feedback">Balance must be at least as large as the loan amount.</div>
@@ -229,37 +229,33 @@ new Chart(ctx, {
   <h4>Pay Period Comparison Table</h4>
   <table class="table table-bordered table-striped table-sm">
     <thead class="table-light">
-      <tr>
+        <tr>
         <th>Pay Period</th>
         <th>No Loan Balance</th>
         <th>With Loan Balance</th>
         <th>Difference</th>
         <th>Loan Balance</th>
+        <th>Interest</th>
+        <th>Principal</th>
+        <th>Contribution (No Loan)</th>
+        <th>Contribution (With Loan)</th>
         <th>Remaining Loan Payments</th>
-      </tr>
+        </tr>
     </thead>
     <tbody>
       {% for row in result.payperiod_data %}
-      <tr>
+        <tr>
         <td>{{ row.period }}</td>
         <td>${{ '{:,.2f}'.format(row.no_loan) }}</td>
         <td>${{ '{:,.2f}'.format(row.with_loan) }}</td>
         <td>${{ '{:,.2f}'.format(row.diff) }}</td>
-        <td>
-          {% if row.loan_balance is not none %}
-            ${{ '{:,.2f}'.format(row.loan_balance) }}
-          {% else %}
-            —
-          {% endif %}
-        </td>
-        <td>
-          {% if row.remaining_loan_payments is not none %}
-            {{ row.remaining_loan_payments }}
-          {% else %}
-            —
-          {% endif %}
-        </td>
-      </tr>
+        <td>${{ '{:,.2f}'.format(row.loan_balance) if row.loan_balance is not none else '—' }}</td>
+        <td>${{ '{:,.2f}'.format(row.interest) if row.interest is not none else '—' }}</td>
+        <td>${{ '{:,.2f}'.format(row.principal) if row.principal is not none else '—' }}</td>
+        <td>${{ '{:,.2f}'.format(row.contribution_no_loan) }}</td>
+        <td>${{ '{:,.2f}'.format(row.contribution_with_loan) }}</td>
+        <td>{{ row.remaining_loan_payments if row.remaining_loan_payments is not none else '—' }}</td>
+        </tr>
       {% endfor %}
     </tbody>
   </table>
