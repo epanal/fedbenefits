@@ -121,10 +121,25 @@
   const forms = document.querySelectorAll('.needs-validation');
   Array.from(forms).forEach(form => {
     form.addEventListener('submit', e => {
+      const generalRadio = document.getElementById('loan_general');
+      const residentialRadio = document.getElementById('loan_residential');
+      const payPeriodsInput = document.getElementById('num_pay_periods');
+
+      // Dynamically set correct range before validation
+      if (generalRadio.checked) {
+        payPeriodsInput.setAttribute('min', '26');
+        payPeriodsInput.setAttribute('max', '130');
+      } else if (residentialRadio.checked) {
+        payPeriodsInput.setAttribute('min', '132');
+        payPeriodsInput.setAttribute('max', '390');
+      }
+
+      // Trigger built-in validation
       if (!form.checkValidity()) {
         e.preventDefault();
         e.stopPropagation();
       }
+
       form.classList.add('was-validated');
     }, false);
   });
