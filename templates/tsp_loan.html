@@ -47,6 +47,25 @@
       <div class="invalid-feedback">Enter a growth rate between 0% and 15%.</div>
     </div>
 
+    <!-- Loan Type -->
+    <div class="col-md-6">
+    <label class="form-label">Loan Type</label>
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="loan_type" id="generalLoan"
+            value="general" {% if values.get('loan_type', 'general') == 'general' %}checked{% endif %}>
+        <label class="form-check-label" for="generalLoan">
+        General (Processing Fee: $50)
+        </label>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="loan_type" id="residentialLoan"
+            value="residential" {% if values.get('loan_type') == 'residential' %}checked{% endif %}>
+        <label class="form-check-label" for="residentialLoan">
+        Residential (Processing Fee: $100)
+        </label>
+    </div>
+    </div>
+
     <!-- Pay Periods -->
     <div class="col-md-6">
       <label class="form-label">Number of Pay Periods</label>
