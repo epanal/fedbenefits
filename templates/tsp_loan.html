@@ -51,25 +51,26 @@
              value="{{ values.get('num_pay_periods', '') }}" required>
     </div>
 
-    <fieldset class="border rounded p-3 mt-3">
-    <legend class="w-auto px-2 fw-bold">Biweekly Contributions</legend>
-    <div class="row g-3">
-        <div class="col-md-6">
-        <label class="form-label">If You Don't Take a Loan</label>
-        <input type="number" class="form-control" name="biweekly_contribution_no_loan"
-                value="{{ values.get('biweekly_contribution_no_loan', '') }}" required>
+    <div class="col-12">
+      <fieldset class="border rounded p-3 mt-3">
+        <legend class="w-auto px-2 fw-bold">Biweekly Contributions</legend>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">If You Don't Take a Loan</label>
+            <input type="number" class="form-control" name="biweekly_contribution_no_loan"
+                   value="{{ values.get('biweekly_contribution_no_loan', '') }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">While You're Repaying the Loan</label>
+            <input type="number" class="form-control" name="biweekly_contribution_during_loan"
+                   value="{{ values.get('biweekly_contribution_during_loan', '') }}" required>
+          </div>
         </div>
-        <div class="col-md-6">
-        <label class="form-label">While You're Repaying the Loan</label>
-        <input type="number" class="form-control" name="biweekly_contribution_during_loan"
-                value="{{ values.get('biweekly_contribution_during_loan', '') }}" required>
-        </div>
+      </fieldset>
     </div>
-    </fieldset>
-
   </div>
 
-  <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+  <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
     <button type="submit" class="btn btn-primary">Calculate</button>
     <a href="/" class="btn btn-outline-secondary">Back to Home</a>
   </div>
@@ -81,53 +82,52 @@
   *This is a simplified tool. It does not account for wage increases, changes in contribution limits, or tax implications. Assumes no other outstanding loans.*
 </p>
 
-<!-- Summary Cards -->
-  <div class="row mb-4">
-  <div class="col-md-3">
+<!-- Summary Cards Row -->
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-lg-3">
     <div class="card border-success">
       <div class="card-body">
-        <h5 class="card-title">No Loan</h5>
-        <p class="card-text fw-bold text-success">${{ '{:,.2f}'.format(result.balance_no_loan) }}</p>
+        <h6 class="card-title text-success">No Loan</h6>
+        <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.balance_no_loan) }}</p>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-6 col-lg-3">
     <div class="card border-danger">
       <div class="card-body">
-        <h5 class="card-title">With Loan</h5>
-        <p class="card-text fw-bold text-danger">${{ '{:,.2f}'.format(result.balance_with_loan) }}</p>
+        <h6 class="card-title text-danger">With Loan</h6>
+        <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.balance_with_loan) }}</p>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-6 col-lg-3">
     <div class="card border-primary">
       <div class="card-body">
-        <h5 class="card-title">Difference</h5>
+        <h6 class="card-title">Difference</h6>
         <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.delta) }}</p>
       </div>
     </div>
   </div>
-    <div class="col-md-3">
-        <div class="card border-dark">
-        <div class="card-body">
-            <h5 class="card-title">Loan Payment (biweekly)</h5>
-            <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.loan_payment) }}</p>
-        </div>
-        </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="card border-dark">
+      <div class="card-body">
+        <h6 class="card-title">Loan Payment (biweekly)</h6>
+        <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.loan_payment) }}</p>
+      </div>
     </div>
-    </div>
+  </div>
+</div>
 
-    <!-- Second row for processing fee -->
-    <div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card border-secondary">
-        <div class="card-body">
-            <h5 class="card-title">Processing Fee</h5>
-            <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.processing_fee) }}</p>
-        </div>
-        </div>
+<!-- Second Row for Processing Fee -->
+<div class="row mb-4">
+  <div class="col-md-6 col-lg-3">
+    <div class="card border-secondary">
+      <div class="card-body">
+        <h6 class="card-title">Processing Fee</h6>
+        <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.processing_fee) }}</p>
+      </div>
     </div>
-    </div>
+  </div>
 </div>
 
 <!-- JSON Chart Data -->
@@ -144,7 +144,7 @@ const ctx = document.getElementById('loanChart');
 new Chart(ctx, {
   type: 'line',
   data: {
-    labels: chartData.labels.map((_, i) => `Period ${i + 1}`),
+    labels: chartData.labels.map((_, i) => `Pay Period ${i + 1}`),
     datasets: [
       {
         label: 'No Loan',
@@ -233,8 +233,4 @@ new Chart(ctx, {
 
 <!-- Navigation Buttons -->
 <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
-  <a href="/tsp-loan" class="btn btn-outline-secondary">Back to Calculator</a>
-  <a href="/" class="btn btn-outline-primary">Back to Home</a>
-</div>
-{% endif %}
-{% endblock %}
+  <a href="/tsp-loan" class=
