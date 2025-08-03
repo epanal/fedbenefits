@@ -8,6 +8,11 @@
 
 {% if not result %}
 <form method="POST" class="mb-4 needs-validation" novalidate>
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+    {{ error }}
+    </div>
+    {% endif %}
   <div class="row g-3">
 
     <!-- TSP Balance -->
