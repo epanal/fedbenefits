@@ -34,12 +34,12 @@
 
     <!-- Loan Amount -->
     <div class="col-md-6">
-      <label class="form-label">Loan Amount ($)</label>
-        <input type="number" class="form-control" name="loan_interest_rate"
-            step="0.01" min="0"
-            title="Enter a non-negative interest rate (e.g., 4.25%)"
-            value="{{ values.get('loan_interest_rate', '') }}" required>
-        <div class="invalid-feedback">Enter a valid non-negative interest rate up to hundredth decimal place(e.g., 4.25).</div>
+    <label class="form-label">Loan Amount ($)</label>
+    <input type="number" class="form-control" name="loan_amount"
+            min="1000" max="50000"
+            title="Loan amount must be between $1,000 and $50,000"
+            value="{{ values.get('loan_amount', '') }}" required>
+    <div class="invalid-feedback">Loan amount must be between $1,000 and $50,000.</div>
     </div>
 
     <!-- Loan Interest Rate -->
