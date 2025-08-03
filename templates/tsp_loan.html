@@ -25,15 +25,19 @@
     <!-- TSP Balance -->
     <div class="col-md-6">
       <label class="form-label">TSP Balance ($)</label>
-      <input type="number" class="form-control" name="tsp_balance" min="1" max="1000000"
+      <input type="number" class="form-control" name="tsp_balance"
+             min="100" max="1000000"
+             title="Your current TSP account balance ($100 – $1,000,000)"
              value="{{ values.get('tsp_balance', '') }}" required>
-      <div class="invalid-feedback">Enter a valid balance (1–1,000,000).</div>
+      <div class="invalid-feedback">Enter a valid balance between $100 and $1,000,000.</div>
     </div>
 
     <!-- Loan Amount -->
     <div class="col-md-6">
       <label class="form-label">Loan Amount ($)</label>
-      <input type="number" class="form-control" name="loan_amount" min="1" max="50000"
+      <input type="number" class="form-control" name="loan_amount"
+             min="100" max="50000"
+             title="Maximum TSP loan amount is $50,000"
              value="{{ values.get('loan_amount', '') }}" required>
       <div class="invalid-feedback">Max loan amount is $50,000.</div>
     </div>
@@ -43,17 +47,19 @@
       <label class="form-label">Loan Interest Rate (%)</label>
       <input type="number" class="form-control" name="loan_interest_rate"
              step="0.01" min="0" max="15"
+             title="Typical TSP loan interest is 3–5%. Max allowed: 15%"
              value="{{ values.get('loan_interest_rate', '') }}" required>
-      <div class="invalid-feedback">Enter an interest rate between 0–15%.</div>
+      <div class="invalid-feedback">Enter an interest rate between 0% and 15%.</div>
     </div>
 
-    <!-- Market Growth -->
+    <!-- Expected Market Growth -->
     <div class="col-md-6">
       <label class="form-label">Expected Market Growth (%)</label>
       <input type="number" class="form-control" name="expected_annual_growth"
              step="0.01" min="0" max="15"
+             title="Estimated TSP annual return (e.g., 5–10%). Max: 15%"
              value="{{ values.get('expected_annual_growth', '') }}" required>
-      <div class="invalid-feedback">Enter a growth rate between 0–15%.</div>
+      <div class="invalid-feedback">Enter a growth rate between 0% and 15%.</div>
     </div>
 
     <!-- Pay Periods -->
@@ -61,6 +67,7 @@
       <label class="form-label">Number of Pay Periods</label>
       <input type="number" class="form-control" name="num_pay_periods"
              min="1" max="1300"
+             title="Biweekly periods: 26 = 1 year, 130 = 5 years, 1300 = 50 years"
              value="{{ values.get('num_pay_periods', '') }}" required>
       <div class="invalid-feedback">Number must be between 1 and 1300.</div>
     </div>
@@ -75,6 +82,7 @@
             <small class="form-text text-muted">Your regular contribution if you don’t borrow from TSP.</small>
             <input type="number" class="form-control" name="biweekly_contribution_no_loan"
                    min="0" max="2000"
+                   title="Typical total contributions per paycheck. Max $2,000."
                    value="{{ values.get('biweekly_contribution_no_loan', '') }}" required>
             <div class="invalid-feedback">Enter an amount up to $2,000.</div>
           </div>
@@ -83,6 +91,7 @@
             <small class="form-text text-muted">Your adjusted contribution while repaying the loan.</small>
             <input type="number" class="form-control" name="biweekly_contribution_during_loan"
                    min="0" max="2000"
+                   title="Your reduced TSP contribution while repaying the loan. Max $2,000."
                    value="{{ values.get('biweekly_contribution_during_loan', '') }}" required>
             <div class="invalid-feedback">Enter an amount up to $2,000.</div>
           </div>
@@ -98,7 +107,7 @@
   </div>
 </form>
 
-<!-- Bootstrap Validation Script -->
+<!-- Tooltip Style Validation Script -->
 <script>
 (function () {
   'use strict';
