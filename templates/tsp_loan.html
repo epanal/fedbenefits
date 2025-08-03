@@ -25,31 +25,31 @@
     <!-- TSP Balance -->
     <div class="col-md-6">
       <label class="form-label">TSP Balance ($)</label>
-      <input type="number" class="form-control" name="tsp_balance"
-             min="100" max="1000000"
-             title="Your current TSP account balance ($100 – $1,000,000)"
-             value="{{ values.get('tsp_balance', '') }}" required>
-      <div class="invalid-feedback">Enter a valid balance between $100 and $1,000,000.</div>
+        <input type="number" class="form-control" name="tsp_balance"
+            id="tsp_balance" min="0" max="1000000"
+            title="Your current TSP account balance. Must be ≥ loan amount."
+            value="{{ values.get('tsp_balance', '') }}" required>
+        <div class="invalid-feedback" id="tsp-balance-feedback">Balance must be at least as large as the loan amount.</div>
     </div>
 
     <!-- Loan Amount -->
     <div class="col-md-6">
       <label class="form-label">Loan Amount ($)</label>
-      <input type="number" class="form-control" name="loan_amount"
-       min="1000" max="50000"
-       title="Loan amount must be between $1,000 and $50,000"
-       value="{{ values.get('loan_amount', '') }}" required>
-      <div class="invalid-feedback">Loan amount must be between $1,000 and $50,000.</div>
+        <input type="number" class="form-control" name="loan_interest_rate"
+            step="0.01" min="0"
+            title="Enter a non-negative interest rate (e.g., 4.25%)"
+            value="{{ values.get('loan_interest_rate', '') }}" required>
+        <div class="invalid-feedback">Enter a valid non-negative interest rate up to hundredth decimal place(e.g., 4.25).</div>
     </div>
 
     <!-- Loan Interest Rate -->
     <div class="col-md-6">
       <label class="form-label">Loan Interest Rate (%)</label>
-      <input type="number" class="form-control" name="loan_interest_rate"
-             step="0.01" min="0" max="15"
-             title="Typical TSP loan interest is 3–5%. Max allowed: 15%"
-             value="{{ values.get('loan_interest_rate', '') }}" required>
-      <div class="invalid-feedback">Enter an interest rate between 0% and 15%.</div>
+        <input type="number" class="form-control" name="expected_annual_growth"
+            step="0.01"
+            title="Annual return estimate. Can be negative. Use up to 2 decimal places (e.g., 7.25%)"
+            value="{{ values.get('expected_annual_growth', '') }}" required>
+        <div class="invalid-feedback">Enter a value like 7.25% up to hundredth decimal place.</div>
     </div>
 
     <!-- Expected Market Growth -->
@@ -66,11 +66,15 @@
     <div class="col-md-6">
         <label class="form-label">Number of Pay Periods</label>
         <input type="number" class="form-control" name="num_pay_periods" id="num_pay_periods"
-        min="26" max="1300"
-        title="Biweekly periods: 26 = 1 year, 130 = 5 years, 1300 = 50 years"
-        value="{{ values.get('num_pay_periods', '') }}" required>
+            min="26" max="1300"
+            title="Biweekly pay periods. Varies by loan type (see below)."
+            value="{{ values.get('num_pay_periods', '') }}" required>
         <div class="invalid-feedback" id="pay-period-feedback">
-        Number must be between 26 and 1300.
+        Pay periods must match loan type:
+        <ul class="mb-0">
+            <li><strong>General</strong>: 26–130 (12–60 months)</li>
+            <li><strong>Residential</strong>: 132–390 (61–180 months)</li>
+        </ul>
         </div>
     </div>
 
@@ -80,22 +84,22 @@
         <legend class="w-auto px-2 fw-bold">Biweekly Contributions + Match</legend>
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label">Biweekly Contribution (No Loan)</label>
+            <label class="form-label">No Loan</label>
             <small class="form-text text-muted">Your regular contribution if you don’t borrow from TSP.</small>
             <input type="number" class="form-control" name="biweekly_contribution_no_loan"
-                   min="0" max="2000"
-                   title="Typical total contributions per paycheck. Max $2,000."
+                   min="0" max="5000"
+                   title="Typical total contributions per paycheck. Max $5,000."
                    value="{{ values.get('biweekly_contribution_no_loan', '') }}" required>
-            <div class="invalid-feedback">Enter an amount up to $2,000.</div>
+            <div class="invalid-feedback">Enter an amount up to $5,000.</div>
           </div>
           <div class="col-md-6">
-            <label class="form-label">Biweekly Contribution (With Loan)</label>
+            <label class="form-label">With Loan</label>
             <small class="form-text text-muted">Your adjusted contribution while repaying the loan.</small>
             <input type="number" class="form-control" name="biweekly_contribution_during_loan"
-                   min="0" max="2000"
-                   title="Your reduced TSP contribution while repaying the loan. Max $2,000."
+                   min="0" max="5000"
+                   title="Your reduced TSP contribution while repaying the loan. Max $5,000."
                    value="{{ values.get('biweekly_contribution_during_loan', '') }}" required>
-            <div class="invalid-feedback">Enter an amount up to $2,000.</div>
+            <div class="invalid-feedback">Enter an amount up to $5,000.</div>
           </div>
         </div>
       </fieldset>
