@@ -7,49 +7,34 @@
 <form method="POST" class="mb-4 needs-validation" novalidate>
   <div class="row g-3">
 
-    <!-- Loan Type -->
-    <div class="col-md-6">
-      <label class="form-label">Loan Type</label><br>
-      <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="loan_type" value="general" id="loan_general"
-               {% if values.get('loan_type', 'general') == 'general' %}checked{% endif %}>
-        <label class="form-check-label">General</label>
-      </div>
-      <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="loan_type" value="residential" id="loan_residential"
-               {% if values.get('loan_type') == 'residential' %}checked{% endif %}>
-        <label class="form-check-label">Primary Residence</label>
-      </div>
-    </div>
-
     <!-- TSP Balance -->
     <div class="col-md-6">
       <label class="form-label">TSP Balance ($)</label>
-        <input type="number" class="form-control" name="tsp_balance"
-            id="tsp_balance" min="1000" max="1000000"
-            title="Your current TSP account balance. Must be ≥ loan amount."
-            value="{{ values.get('tsp_balance', '') }}" required>
-        <div class="invalid-feedback" id="tsp-balance-feedback">Balance must be at least as large as the loan amount.</div>
+      <input type="number" class="form-control" name="tsp_balance"
+             id="tsp_balance" min="1000" max="1000000"
+             title="Your current TSP account balance. Must be ≥ loan amount."
+             value="{{ values.get('tsp_balance', '') }}" required>
+      <div class="invalid-feedback">Balance must be at least as large as the loan amount.</div>
     </div>
 
     <!-- Loan Amount -->
     <div class="col-md-6">
-    <label class="form-label">Loan Amount ($)</label>
-    <input type="number" class="form-control" name="loan_amount"
-            min="1000" max="50000"
-            title="Loan amount must be between $1,000 and $50,000"
-            value="{{ values.get('loan_amount', '') }}" required>
-    <div class="invalid-feedback">Loan amount must be between $1,000 and $50,000.</div>
+      <label class="form-label">Loan Amount ($)</label>
+      <input type="number" class="form-control" name="loan_amount"
+             min="1000" max="50000"
+             title="Loan amount must be between $1,000 and $50,000"
+             value="{{ values.get('loan_amount', '') }}" required>
+      <div class="invalid-feedback">Loan amount must be between $1,000 and $50,000.</div>
     </div>
 
     <!-- Loan Interest Rate -->
     <div class="col-md-6">
-    <label class="form-label">Loan Interest Rate (%)</label>
-    <input type="number" class="form-control" name="loan_interest_rate"
-            step="0.01" min="0"
-            title="Enter a non-negative interest rate (e.g., 4.25%)"
-            value="{{ values.get('loan_interest_rate', '') }}" required>
-    <div class="invalid-feedback">Enter a valid non-negative interest rate up to hundredth decimal place (e.g., 4.25).</div>
+      <label class="form-label">Loan Interest Rate (%)</label>
+      <input type="number" class="form-control" name="loan_interest_rate"
+             step="0.01" min="0"
+             title="Enter a non-negative interest rate (e.g., 4.25%)"
+             value="{{ values.get('loan_interest_rate', '') }}" required>
+      <div class="invalid-feedback">Enter a valid non-negative interest rate.</div>
     </div>
 
     <!-- Expected Market Growth -->
@@ -64,17 +49,15 @@
 
     <!-- Pay Periods -->
     <div class="col-md-6">
-        <label class="form-label">Number of Pay Periods</label>
-        <input type="number" class="form-control" name="num_pay_periods" id="num_pay_periods"
-            title="Biweekly pay periods. Varies by loan type (see below)."
-            value="{{ values.get('num_pay_periods', '') }}" required>
-        <div class="invalid-feedback" id="pay-period-feedback">
-        Pay periods must match loan type:
-        <ul class="mb-0">
-            <li><strong>General</strong>: 26–130 (12–60 months)</li>
-            <li><strong>Residential</strong>: 132–390 (61–180 months)</li>
-        </ul>
-        </div>
+      <label class="form-label">Number of Pay Periods</label>
+      <input type="number" class="form-control" name="num_pay_periods"
+             min="26" max="390"
+             title="Enter number of biweekly pay periods"
+             value="{{ values.get('num_pay_periods', '') }}" required>
+      <div class="invalid-feedback">
+        Must be between 26–390 (12 to 180 months).<br>
+        <small class="text-muted">General loans: 26–130 | Residential loans: 132–390</small>
+      </div>
     </div>
 
     <!-- Biweekly Contributions -->
@@ -270,34 +253,6 @@ new Chart(ctx, {
             </tbody>
   </table>
 </div>
-
-<!-- Dynamic Pay Period Validation Script -->
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const generalRadio = document.getElementById('loan_general');
-  const residentialRadio = document.getElementById('loan_residential');
-  const payPeriodsInput = document.getElementById('num_pay_periods');
-  const feedback = document.getElementById('pay-period-feedback');
-
-function updatePayPeriodLimits() {
-if (generalRadio.checked) {
-    payPeriodsInput.min = 26;
-    payPeriodsInput.max = 130;
-    payPeriodsInput.title = "General loans: 12–60 months (26–130 pay periods)";
-    feedback.textContent = "Enter 26–130 pay periods (12 to 60 months for general loans).";
-} else if (residentialRadio.checked) {
-    payPeriodsInput.min = 132;
-    payPeriodsInput.max = 390;
-    payPeriodsInput.title = "Residential loans: 61–180 months (132–390 pay periods)";
-    feedback.textContent = "Enter 132–390 pay periods (61 to 180 months for residential loans).";
-}
-}
-
-  generalRadio.addEventListener('change', updatePayPeriodLimits);
-  residentialRadio.addEventListener('change', updatePayPeriodLimits);
-  updatePayPeriodLimits(); // on load
-});
-</script>
 
 <!-- Navigation Buttons -->
 <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
