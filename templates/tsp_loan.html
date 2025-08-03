@@ -264,8 +264,8 @@ new Chart(ctx, {
             <td>{% if row.remaining_loan_payments is not none %}{{ row.remaining_loan_payments }}{% else %}—{% endif %}</td>
             <td class="advanced-column d-none">${{ '{:,.2f}'.format(row.interest) if row.interest is not none else '—' }}</td>
             <td class="advanced-column d-none">${{ '{:,.2f}'.format(row.principal) if row.principal is not none else '—' }}</td>
-            <td class="advanced-column d-none">${{ '{:,.2f}'.format(row.contri_with_loan) if row.contri_with_loan is not none else '—' }}</td>
-            <td class="advanced-column d-none">${{ '{:,.2f}'.format(row.contri_no_loan) if row.contri_no_loan is not none else '—' }}</td>
+            <td class="advanced-column d-none">${{ '{:,.2f}'.format(row.contribution_with_loan) if row.contribution_with_loan is not none else '—' }}</td>
+            <td class="advanced-column d-none">${{ '{:,.2f}'.format(row.contribution_no_loan) if row.contribution_no_loan is not none else '—' }}</td>
             </tr>
             {% endfor %}
             </tbody>
