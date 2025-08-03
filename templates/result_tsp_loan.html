@@ -1,0 +1,44 @@
+<!-- templates/result_tsp_loan.html -->
+{% extends "base.html" %}
+{% block title %}TSP Loan Result{% endblock %}
+{% block content %}
+<h2 class="mb-3">TSP Loan Impact Summary 💵</h2>
+
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Loan Type: {{ values.loan_type | title }}</li>
+    <li class="list-group-item">TSP Balance: ${{ "{:,.2f}".format(values.tsp_balance | float) }}</li>
+    <li class="list-group-item">Loan Amount: ${{ "{:,.2f}".format(values.loan_amount | float) }}</li>
+    <li class="list-group-item">Loan Interest Rate: {{ values.loan_interest_rate }}%</li>
+    <li class="list-group-item">Expected Market Growth Rate: {{ values.expected_annual_growth }}%</li>
+    <li class="list-group-item">Number of Pay Periods: {{ values.num_pay_periods }}</li>
+    <li class="list-group-item">Biweekly Contribution (No Loan): ${{ "{:,.2f}".format(values.biweekly_contribution_no_loan | float) }}</li>
+    <li class="list-group-item">Biweekly Contribution (With Loan): ${{ "{:,.2f}".format(values.biweekly_contribution_during_loan | float) }}</li>
+  </ul>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header fw-bold fs-5">📊 Loan Comparison Results</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Balance Without Loan: <span class="fw-bold text-success">${{ "{:,.2f}".format(result.balance_no_loan) }}</span></li>
+    <li class="list-group-item">Balance With Loan: <span class="fw-bold text-danger">${{ "{:,.2f}".format(result.balance_with_loan) }}</span></li>
+    <li class="list-group-item">Difference in Ending Balance: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.delta) }}</span></li>
+    <li class="list-group-item">Biweekly Loan Payment: <span class="fw-bold">${{ "{:,.2f}".format(result.loan_payment) }}</span></li>
+    <li class="list-group-item">Processing Fee: <span class="fw-bold">${{ "{:,.2f}".format(result.processing_fee) }}</span></li>
+    <li class="list-group-item">Total Repaid Over Loan Term: <span class="fw-bold">${{ "{:,.2f}".format(result.total_repaid) }}</span></li>
+  </ul>
+</div>
+
+<p class="text-muted" style="font-size: 12px;">
+  *This tool is for illustrative purposes only. It does not consider taxes, changes in pay, TSP limits, or early repayment behavior. Always consult with a financial advisor or review official TSP guidance before making loan decisions.*
+</p>
+<p>
+  <a href="https://www.tsp.gov/loans/" target="_blank">Source: TSP Loan Policies</a>
+</p>
+
+<div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+  <a href="/tsp-loan" class="btn btn-outline-secondary">Back to Calculator</a>
+  <a href="/" class="btn btn-outline-primary">Back to Home</a>
+</div>
+{% endblock %}
