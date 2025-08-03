@@ -155,73 +155,59 @@ def calculate_tsp_loan(
 ):
     annual_growth_rate = expected_annual_growth / 100
     loan_rate = loan_interest_rate / 100
-    r = loan_rate / 26  # biweekly loan interest
-    g = annual_growth_rate / 26  # biweekly market growth rate
+    r = loan_rate / 26
+    g = annual_growth_rate / 26
     years = num_pay_periods / 26
 
     processing_fee = 100 if loan_type == "residential" else 50
 
-    # Loan payment calculation
+    # Loan payment
     if r > 0:
         payment = loan_amount * r / (1 - (1 + r) ** -num_pay_periods)
     else:
         payment = loan_amount / num_pay_periods
     total_repaid = payment * num_pay_periods
 
-    # Initialize balances
+    # No loan growth
     no_loan_bal = tsp_balance
-    with_loan_bal = tsp_balance - loan_amount - processing_fee
-    loan_balance = loan_amount
-
-    no_loan_periods = [round(no_loan_bal, 2)]
-    with_loan_periods = [round(with_loan_bal, 2)]
-    payperiod_data = []
-
-    # Pay Period 1: Baseline (no contributions, no growth)
-    payperiod_data.append({
-        "period": 1,
-        "no_loan": round(no_loan_bal, 2),
-        "with_loan": round(with_loan_bal, 2),
-        "diff": round(no_loan_bal - with_loan_bal, 2),
-        "loan_balance": round(loan_balance, 2),
-        "interest": 0.00,
-        "principal": 0.00,
-        "contribution_with_loan": 0.00,
-        "contribution_no_loan": 0.00,
-        "remaining_loan_payments": num_pay_periods
-    })
-
-    # Pay Period 2 through loan duration
-    for p in range(2, num_pay_periods + 1):
-        # No loan balance
+    no_loan_periods = []
+    for p in range(1, num_pay_periods + 1):
         no_loan_bal += biweekly_contribution_no_loan
         no_loan_bal *= (1 + g)
         no_loan_periods.append(round(no_loan_bal, 2))
 
-        # With loan balance
+    # With loan
+    with_loan_bal = tsp_balance - loan_amount - processing_fee
+    loan_balance = loan_amount
+    with_loan_periods = []
+    payperiod_data = []
+
+    for p in range(1, num_pay_periods + 1):
         interest = loan_balance * r
         principal = payment - interest
         loan_balance = max(0, loan_balance - principal)
 
         with_loan_bal += biweekly_contribution_during_loan
-        with_loan_bal += principal  # Repaid principal is re-invested
-        with_loan_bal *= (1 + g)
-        with_loan_periods.append(round(with_loan_bal, 2))
+        with_loan_bal += principal  # Credit the repaid principal
+        with_loan_bal *= (1 + g)    # Apply growth AFTER contributions + repayment
 
         payperiod_data.append({
             "period": p,
-            "no_loan": round(no_loan_bal, 2),
+            "no_loan": round(no_loan_periods[p - 1], 2),
             "with_loan": round(with_loan_bal, 2),
-            "diff": round(no_loan_bal - with_loan_bal, 2),
+            "diff": round(no_loan_periods[p - 1] - with_loan_bal, 2),
             "loan_balance": round(loan_balance, 2),
             "interest": round(interest, 2),
             "principal": round(principal, 2),
             "contribution_with_loan": round(biweekly_contribution_during_loan, 2),
             "contribution_no_loan": round(biweekly_contribution_no_loan, 2),
-            "remaining_loan_payments": num_pay_periods - (p - 1)
+            "remaining_loan_payments": num_pay_periods - p
         })
 
-    # Continue growth after loan ends
+        if p % 26 == 0:
+            with_loan_periods.append(round(with_loan_bal, 2))
+
+    # Continue growing balance after loan is paid
     total_periods = int(years * 26)
     for p in range(num_pay_periods + 1, total_periods + 1):
         no_loan_bal += biweekly_contribution_no_loan
@@ -236,10 +222,6 @@ def calculate_tsp_loan(
             "with_loan": round(with_loan_bal, 2),
             "diff": round(no_loan_bal - with_loan_bal, 2),
             "loan_balance": None,
-            "interest": None,
-            "principal": None,
-            "contribution_with_loan": round(biweekly_contribution_no_loan, 2),
-            "contribution_no_loan": round(biweekly_contribution_no_loan, 2),
             "remaining_loan_payments": None
         })
 
