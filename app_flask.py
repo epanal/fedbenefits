@@ -119,8 +119,8 @@ def tsp_loan():
             return render_template("tsp_loan.html", error="Loan must be at least $1,000.", values=form)
         if loan_amount > tsp_balance:
             return render_template("tsp_loan.html", error="Loan cannot exceed current TSP balance.", values=form)
-        if num_pay_periods < 26 or num_pay_periods > 130:
-            return render_template("tsp_loan.html", error="Loan length must be between 26 and 130 pay periods.", values=form)
+        if num_pay_periods < 26 or num_pay_periods > 390:
+            return render_template("tsp_loan.html", error="Loan length must be between 26 and 390 pay periods.", values=form)
         if loan_amount > 50000:
             return render_template("tsp_loan.html", error="Loan cannot exceed $50,000.", values=form)
 
