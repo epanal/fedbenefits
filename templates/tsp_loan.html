@@ -83,7 +83,7 @@
         <fieldset class="border rounded p-3 mt-3">
         <legend class="w-auto px-2 fw-bold">Biweekly Contributions + Match</legend>
         <p class="text-muted mb-3" style="font-size: 0.95rem;">
-            Compare how your TSP contributions might differ if you take out a loan. (i.e. You may choose reduce your contributions during loan repayment).
+            Compare how your TSP contributions might differ if you take out a loan. (i.e. You may reduce your contributions during loan repayment).
         </p>
         <div class="row g-3">
             <div class="col-md-6">
@@ -93,7 +93,7 @@
                     min="0" max="5000"
                     title="Typical total contributions per paycheck. Max $5,000."
                     value="{{ values.get('biweekly_contribution_no_loan', '') }}" required>
-            <div class="invalid-feedback">Enter an amount up to $5,000.</div>
+            <div class="invalid-feedback">Enter your contribution (max $5,000 per pay period)</div>
             </div>
             <div class="col-md-6">
             <label class="form-label">Contribution With a TSP Loan</label>
@@ -102,7 +102,7 @@
                     min="0" max="5000"
                     title="Your reduced TSP contribution while repaying the loan. Max $5,000."
                     value="{{ values.get('biweekly_contribution_during_loan', '') }}" required>
-            <div class="invalid-feedback">Enter an amount up to $5,000.</div>
+            <div class="invalid-feedback">Enter your contribution (max $5,000 per pay period)</div>
             </div>
         </div>
         </fieldset>
@@ -255,6 +255,8 @@ new Chart(ctx, {
             <th class="advanced-column d-none">Contribution (No Loan)</th>
         </tr>
         </thead>
+            <tbody>
+            {% for row in result.payperiod_data %}
             <tr>
             <td>{{ row.period }}</td>
             <td>${{ '{:,.2f}'.format(row.no_loan) }}</td>
@@ -267,6 +269,8 @@ new Chart(ctx, {
             <td class="advanced-column d-none">${{ '{:,.2f}'.format(row.contri_with_loan) if row.contri_with_loan is not none else '—' }}</td>
             <td class="advanced-column d-none">${{ '{:,.2f}'.format(row.contri_no_loan) if row.contri_no_loan is not none else '—' }}</td>
             </tr>
+            {% endfor %}
+            </tbody>
   </table>
 </div>
 
