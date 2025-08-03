@@ -5,7 +5,8 @@ from calculations import (
     calculate_lump_sum_payment,
     calculate_annual_leave_accrual,
     calculate_scd,
-    calculate_tsp_growth
+    calculate_tsp_growth,
+    calculate_tsp_loan
 )
 
 app = Flask(__name__)
@@ -95,6 +96,61 @@ def tsp_growth():
                                annual_rate=annual_rate)
 
     return render_template("tsp_growth.html", result=None)
+
+@app.route("/tsp-loan", methods=["GET", "POST"])
+def tsp_loan():
+    if request.method == "POST":
+        form = request.form
+
+        try:
+            loan_type = form["loan_type"]
+            tsp_balance = float(form["tsp_balance"])
+            loan_amount = float(form["loan_amount"])
+            loan_interest_rate = float(form["loan_interest_rate"])
+            expected_annual_growth = float(form["expected_annual_growth"])
+            num_pay_periods = int(form["num_pay_periods"])
+            biweekly_contribution_no_loan = float(form["biweekly_contribution_no_loan"])
+            biweekly_contribution_during_loan = float(form["biweekly_contribution_during_loan"])
+        except (ValueError, KeyError):
+            return render_template("tsp_loan.html", error="Please enter valid numeric values.", values=form)
+
+        # Validations
+        if loan_amount < 1000:
+            return render_template("tsp_loan.html", error="Loan must be at least $1,000.", values=form)
+        if loan_amount > tsp_balance:
+            return render_template("tsp_loan.html", error="Loan cannot exceed current TSP balance.", values=form)
+        if num_pay_periods < 26 or num_pay_periods > 390:
+            return render_template("tsp_loan.html", error="Loan length must be between 26 and 390 pay periods.", values=form)
+        if loan_amount > 50000:
+            return render_template("tsp_loan.html", error="Loan cannot exceed $50,000.", values=form)
+        
+        # Loan-type-specific validation
+        loan_range = {
+            "general": (26, 130),
+            "residential": (131, 390)
+        }
+        min_pp, max_pp = loan_range[loan_type]
+        if not (min_pp <= num_pay_periods <= max_pp):
+            return render_template("tsp_loan.html", error=f"{loan_type.capitalize()} loans must be between {min_pp} and {max_pp} payments (pay periods).", values=form)
+
+        session["tsp_loan_inputs"] = dict(form)
+
+        result = calculate_tsp_loan(
+            loan_type,
+            tsp_balance,
+            loan_amount,
+            loan_interest_rate,
+            expected_annual_growth,
+            num_pay_periods,
+            biweekly_contribution_no_loan,
+            biweekly_contribution_during_loan
+        )
+
+        return render_template("tsp_loan.html", result=result, values=form)
+
+    # GET request
+    saved_values = session.get("tsp_loan_inputs", {})
+    return render_template("tsp_loan.html", result=None, values=saved_values)
 
 @app.route('/severance', methods=['POST'])
 def process_severance():

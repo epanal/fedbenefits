@@ -9,15 +9,15 @@
 <form method="POST" class="mb-4">
   <div class="mb-3">
     <label for="current_balance" class="form-label">Current Account Balance ($)</label>
-    <input type="number" step="0.01" class="form-control" name="current_balance" required>
+    <input type="number" step="0.01" class="form-control" name="current_balance" min="0" required>
   </div>
   <div class="mb-3">
     <label for="annual_contribution" class="form-label">Annual Contribution + TSP Match ($)</label>
-    <input type="number" step="0.01" class="form-control" name="annual_contribution" required>
+    <input type="number" step="0.01" class="form-control" name="annual_contribution" min="0" required>
   </div>
   <div class="mb-3">
     <label for="years" class="form-label">Number of Years Until Retirement</label>
-    <input type="number" class="form-control" name="years" required>
+    <input type="number" class="form-control" name="years" min="1" required>
   </div>
   <div class="mb-3">
     <label for="annual_rate" class="form-label">Expected Annual Rate of Return (%)</label>

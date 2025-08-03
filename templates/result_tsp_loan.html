@@ -1,0 +1,139 @@
+<!-- Disclaimer -->
+<p class="text-muted mt-3" style="font-size: 12px;">
+  *This tool provides simplified estimates. It does not account for tax treatment, wage increases, or policy changes.*
+</p>
+
+<!-- Inputs Used -->
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Loan Type: {{ values.loan_type | title }}</li>
+    <li class="list-group-item">TSP Balance: ${{ "{:,.2f}".format(values.tsp_balance | float) }}</li>
+    <li class="list-group-item">Loan Amount: ${{ "{:,.2f}".format(values.loan_amount | float) }}</li>
+    <li class="list-group-item">Loan Interest Rate: {{ values.loan_interest_rate }}%</li>
+    <li class="list-group-item">Market Growth Rate: {{ values.expected_annual_growth }}%</li>
+    <li class="list-group-item">Number of Pay Periods: {{ values.num_pay_periods }}</li>
+    <li class="list-group-item">Contribution (No Loan): ${{ "{:,.2f}".format(values.biweekly_contribution_no_loan | float) }}</li>
+    <li class="list-group-item">Contribution (With Loan): ${{ "{:,.2f}".format(values.biweekly_contribution_during_loan | float) }}</li>
+  </ul>
+</div>
+
+<!-- Loan Calculation Summary -->
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">📊 Loan Impact Summary</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Balance Without Loan: <span class="fw-bold text-success">${{ "{:,.2f}".format(result.balance_no_loan) }}</span></li>
+    <li class="list-group-item">Balance With Loan: <span class="fw-bold text-danger">${{ "{:,.2f}".format(result.balance_with_loan) }}</span></li>
+    <li class="list-group-item">Difference: <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.delta) }}</span></li>
+    <li class="list-group-item">Biweekly Loan Payment: <span class="fw-bold">${{ "{:,.2f}".format(result.loan_payment) }}</span></li>
+    <li class="list-group-item">Processing Fee: <span class="fw-bold">${{ "{:,.2f}".format(result.processing_fee) }}</span></li>
+    <li class="list-group-item">Total Repaid: <span class="fw-bold">${{ "{:,.2f}".format(result.total_repaid) }}</span></li>
+  </ul>
+</div>
+
+<!-- Chart Data and Canvas -->
+<script id="loan-data" type="application/json">
+  {{ result.yearly_data | tojson }}
+</script>
+<div style="height: 400px;">
+  <canvas id="loanChart"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const chartData = JSON.parse(document.getElementById('loan-data').textContent);
+const ctx = document.getElementById('loanChart');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: chartData.labels.map((_, i) => `Pay Period ${i + 1}`),
+    datasets: [
+      {
+        label: 'No Loan',
+        data: chartData.no_loan,
+        borderColor: '#28a745',
+        backgroundColor: 'rgba(40,167,69,0.1)',
+        fill: true
+      },
+      {
+        label: 'With Loan',
+        data: chartData.with_loan,
+        borderColor: '#dc3545',
+        backgroundColor: 'rgba(220,53,69,0.1)',
+        fill: true
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'TSP Growth Comparison'
+      },
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
+        }
+      },
+      legend: {
+        position: 'bottom'
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: v => '$' + v.toLocaleString()
+        }
+      }
+    }
+  }
+});
+</script>
+
+<!-- Pay Period Breakdown Table -->
+<div class="table-responsive mt-5">
+  <h4>Pay Period Comparison Table</h4>
+  <table class="table table-bordered table-striped table-sm">
+    <thead class="table-light">
+      <tr>
+        <th>Pay Period</th>
+        <th>No Loan Balance</th>
+        <th>With Loan Balance</th>
+        <th>Difference</th>
+        <th>Loan Balance</th>
+        <th>Remaining Loan Payments</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in result.payperiod_data %}
+      <tr>
+        <td>{{ row.period }}</td>
+        <td>${{ '{:,.2f}'.format(row.no_loan) }}</td>
+        <td>${{ '{:,.2f}'.format(row.with_loan) }}</td>
+        <td>${{ '{:,.2f}'.format(row.diff) }}</td>
+        <td>
+          {% if row.loan_balance is not none %}
+            ${{ '{:,.2f}'.format(row.loan_balance) }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td>
+          {% if row.remaining_loan_payments is not none %}
+            {{ row.remaining_loan_payments }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Navigation Buttons -->
+<div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+  <a href="/tsp-loan" class="btn btn-outline-secondary">Back to Calculator</a>
+  <a href="/" class="btn btn-outline-primary">Back to Home</a>
+</div>
