@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% block title %}TSP Loan Calculator{% endblock %}
 {% block content %}
-
 <h2 class="mb-3">TSP Loan Calculator 💵</h2>
 
 {% if not result %}
-<form method="POST" class="mb-4">
+<form method="POST" class="mb-4 needs-validation" novalidate>
   <div class="row g-3">
+
+    <!-- Loan Type -->
     <div class="col-md-6">
       <label class="form-label">Loan Type</label><br>
       <div class="form-check form-check-inline">
@@ -21,62 +22,98 @@
       </div>
     </div>
 
+    <!-- TSP Balance -->
     <div class="col-md-6">
       <label class="form-label">TSP Balance ($)</label>
-      <input type="number" class="form-control" name="tsp_balance"
+      <input type="number" class="form-control" name="tsp_balance" min="1" max="1000000"
              value="{{ values.get('tsp_balance', '') }}" required>
+      <div class="invalid-feedback">Enter a valid balance (1–1,000,000).</div>
     </div>
 
+    <!-- Loan Amount -->
     <div class="col-md-6">
       <label class="form-label">Loan Amount ($)</label>
-      <input type="number" class="form-control" name="loan_amount"
+      <input type="number" class="form-control" name="loan_amount" min="1" max="50000"
              value="{{ values.get('loan_amount', '') }}" required>
+      <div class="invalid-feedback">Max loan amount is $50,000.</div>
     </div>
 
+    <!-- Loan Interest Rate -->
     <div class="col-md-6">
       <label class="form-label">Loan Interest Rate (%)</label>
-      <input type="number" class="form-control" name="loan_interest_rate" step="0.01" min="0"
-       value="{{ values.get('loan_interest_rate', '') }}" required>
+      <input type="number" class="form-control" name="loan_interest_rate"
+             step="0.01" min="0" max="15"
+             value="{{ values.get('loan_interest_rate', '') }}" required>
+      <div class="invalid-feedback">Enter an interest rate between 0–15%.</div>
     </div>
 
+    <!-- Market Growth -->
     <div class="col-md-6">
       <label class="form-label">Expected Market Growth (%)</label>
-      <input type="number" class="form-control" name="expected_annual_growth" step="0.01" min="0"
-       value="{{ values.get('expected_annual_growth', '') }}" required>
+      <input type="number" class="form-control" name="expected_annual_growth"
+             step="0.01" min="0" max="15"
+             value="{{ values.get('expected_annual_growth', '') }}" required>
+      <div class="invalid-feedback">Enter a growth rate between 0–15%.</div>
     </div>
 
+    <!-- Pay Periods -->
     <div class="col-md-6">
       <label class="form-label">Number of Pay Periods</label>
       <input type="number" class="form-control" name="num_pay_periods"
+             min="1" max="1300"
              value="{{ values.get('num_pay_periods', '') }}" required>
+      <div class="invalid-feedback">Number must be between 1 and 1300.</div>
     </div>
 
+    <!-- Biweekly Contributions -->
     <div class="col-12">
       <fieldset class="border rounded p-3 mt-3">
         <legend class="w-auto px-2 fw-bold">Biweekly Contributions + Match</legend>
         <div class="row g-3">
           <div class="col-md-6">
             <label class="form-label">Biweekly Contribution (No Loan)</label>
-<small class="form-text text-muted">Your regular contribution if you don’t borrow from TSP.</small>
+            <small class="form-text text-muted">Your regular contribution if you don’t borrow from TSP.</small>
             <input type="number" class="form-control" name="biweekly_contribution_no_loan"
+                   min="0" max="2000"
                    value="{{ values.get('biweekly_contribution_no_loan', '') }}" required>
+            <div class="invalid-feedback">Enter an amount up to $2,000.</div>
           </div>
           <div class="col-md-6">
             <label class="form-label">Biweekly Contribution (With Loan)</label>
-<small class="form-text text-muted">Your adjusted contribution while repaying the loan.</small>
+            <small class="form-text text-muted">Your adjusted contribution while repaying the loan.</small>
             <input type="number" class="form-control" name="biweekly_contribution_during_loan"
+                   min="0" max="2000"
                    value="{{ values.get('biweekly_contribution_during_loan', '') }}" required>
+            <div class="invalid-feedback">Enter an amount up to $2,000.</div>
           </div>
         </div>
       </fieldset>
     </div>
   </div>
 
+  <!-- Submit Buttons -->
   <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
     <button type="submit" class="btn btn-primary">Calculate</button>
     <a href="/" class="btn btn-outline-secondary">Back to Home</a>
   </div>
 </form>
+
+<!-- Bootstrap Validation Script -->
+<script>
+(function () {
+  'use strict';
+  const forms = document.querySelectorAll('.needs-validation');
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', e => {
+      if (!form.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    }, false);
+  });
+})();
+</script>
 
 {% else %}
 <!-- Disclaimer -->
@@ -110,18 +147,6 @@
     <li class="list-group-item">Processing Fee: <span class="fw-bold">${{ "{:,.2f}".format(result.processing_fee) }}</span></li>
     <li class="list-group-item">Total Repaid: <span class="fw-bold">${{ "{:,.2f}".format(result.total_repaid) }}</span></li>
   </ul>
-</div>
-
-<!-- Second Row for Processing Fee -->
-<div class="row mb-4">
-  <div class="col-md-6 col-lg-3">
-    <div class="card border-secondary">
-      <div class="card-body">
-        <h6 class="card-title">Processing Fee</h6>
-        <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.processing_fee) }}</p>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- JSON Chart Data -->
