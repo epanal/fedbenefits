@@ -188,8 +188,8 @@ def calculate_tsp_loan(
         loan_balance = max(0, loan_balance - principal)
 
         with_loan_bal += biweekly_contribution_during_loan
-        with_loan_bal *= (1 + g)
-        with_loan_bal -= payment
+        with_loan_bal += principal  # Credit the repaid principal
+        with_loan_bal *= (1 + g)    # Apply growth AFTER contributions + repayment
 
         payperiod_data.append({
             "period": p,
