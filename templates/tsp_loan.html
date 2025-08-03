@@ -120,25 +120,10 @@
   const forms = document.querySelectorAll('.needs-validation');
   Array.from(forms).forEach(form => {
     form.addEventListener('submit', e => {
-      const generalRadio = document.getElementById('loan_general');
-      const residentialRadio = document.getElementById('loan_residential');
-      const payPeriodsInput = document.getElementById('num_pay_periods');
-
-      // Dynamically set correct range before validation
-      if (generalRadio.checked) {
-        payPeriodsInput.setAttribute('min', '26');
-        payPeriodsInput.setAttribute('max', '130');
-      } else if (residentialRadio.checked) {
-        payPeriodsInput.setAttribute('min', '132');
-        payPeriodsInput.setAttribute('max', '390');
-      }
-
-      // Trigger built-in validation
       if (!form.checkValidity()) {
         e.preventDefault();
         e.stopPropagation();
       }
-
       form.classList.add('was-validated');
     }, false);
   });
@@ -294,19 +279,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const payPeriodsInput = document.getElementById('num_pay_periods');
   const feedback = document.getElementById('pay-period-feedback');
 
-  function updatePayPeriodLimits() {
-    if (generalRadio.checked) {
-      payPeriodsInput.min = 26;
-      payPeriodsInput.max = 130;
-      payPeriodsInput.title = "General loans: 12–60 months (26–130 pay periods)";
-      feedback.textContent = "Enter 26–130 pay periods (12 to 60 months for general loans).";
-    } else if (residentialRadio.checked) {
-      payPeriodsInput.min = 132;
-      payPeriodsInput.max = 390;
-      payPeriodsInput.title = "Residential loans: 61–180 months (132–390 pay periods)";
-      feedback.textContent = "Enter 132–390 pay periods (61 to 180 months for residential loans).";
-    }
-  }
+function updatePayPeriodLimits() {
+if (generalRadio.checked) {
+    payPeriodsInput.min = 26;
+    payPeriodsInput.max = 130;
+    payPeriodsInput.title = "General loans: 12–60 months (26–130 pay periods)";
+    feedback.textContent = "Enter 26–130 pay periods (12 to 60 months for general loans).";
+} else if (residentialRadio.checked) {
+    payPeriodsInput.min = 132;
+    payPeriodsInput.max = 390;
+    payPeriodsInput.title = "Residential loans: 61–180 months (132–390 pay periods)";
+    feedback.textContent = "Enter 132–390 pay periods (61 to 180 months for residential loans).";
+}
+}
 
   generalRadio.addEventListener('change', updatePayPeriodLimits);
   residentialRadio.addEventListener('change', updatePayPeriodLimits);
