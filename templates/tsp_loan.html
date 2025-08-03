@@ -35,14 +35,14 @@
 
     <div class="col-md-6">
       <label class="form-label">Loan Interest Rate (%)</label>
-      <input type="number" class="form-control" name="loan_interest_rate" step="0.1"
-             value="{{ values.get('loan_interest_rate', '') }}" required>
+      <input type="number" class="form-control" name="loan_interest_rate" step="0.01" min="0"
+       value="{{ values.get('loan_interest_rate', '') }}" required>
     </div>
 
     <div class="col-md-6">
       <label class="form-label">Expected Market Growth (%)</label>
-      <input type="number" class="form-control" name="expected_annual_growth" step="0.1"
-             value="{{ values.get('expected_annual_growth', '') }}" required>
+      <input type="number" class="form-control" name="expected_annual_growth" step="0.01" min="0"
+       value="{{ values.get('expected_annual_growth', '') }}" required>
     </div>
 
     <div class="col-md-6">
@@ -51,21 +51,21 @@
              value="{{ values.get('num_pay_periods', '') }}" required>
     </div>
 
-    <div class="col-md-12">
-    <label class="form-label fw-bold">Biweekly Contributions</label>
+    <fieldset class="border rounded p-3 mt-3">
+    <legend class="w-auto px-2 fw-bold">Biweekly Contributions</legend>
+    <div class="row g-3">
+        <div class="col-md-6">
+        <label class="form-label">If You Don't Take a Loan</label>
+        <input type="number" class="form-control" name="biweekly_contribution_no_loan"
+                value="{{ values.get('biweekly_contribution_no_loan', '') }}" required>
+        </div>
+        <div class="col-md-6">
+        <label class="form-label">While You're Repaying the Loan</label>
+        <input type="number" class="form-control" name="biweekly_contribution_during_loan"
+                value="{{ values.get('biweekly_contribution_during_loan', '') }}" required>
+        </div>
     </div>
-
-    <div class="col-md-6">
-    <label class="form-label">If You Don't Take a Loan</label>
-    <input type="number" class="form-control" name="biweekly_contribution_no_loan"
-            value="{{ values.get('biweekly_contribution_no_loan', '') }}" required>
-    </div>
-
-    <div class="col-md-6">
-    <label class="form-label">While You're Repaying the Loan</label>
-    <input type="number" class="form-control" name="biweekly_contribution_during_loan"
-            value="{{ values.get('biweekly_contribution_during_loan', '') }}" required>
-    </div>
+    </fieldset>
 
   </div>
 
@@ -82,31 +82,6 @@
 </p>
 
 <!-- Summary Cards -->
-<div class="row mb-4">
-  <div class="col-md-4">
-    <div class="card border-success">
-      <div class="card-body">
-        <h5 class="card-title">No Loan</h5>
-        <p class="card-text fw-bold text-success">${{ '{:,.2f}'.format(result.balance_no_loan) }}</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card border-danger">
-      <div class="card-body">
-        <h5 class="card-title">With Loan</h5>
-        <p class="card-text fw-bold text-danger">${{ '{:,.2f}'.format(result.balance_with_loan) }}</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card border-primary">
-      <div class="card-body">
-        <h5 class="card-title">Difference</h5>
-        <p class="card-text fw-bold">${{ '{:,.2f}'.format(result.delta) }}</p>
-      </div>
-    </div>
-  </div>
   <div class="row mb-4">
   <div class="col-md-3">
     <div class="card border-success">
@@ -169,7 +144,7 @@ const ctx = document.getElementById('loanChart');
 new Chart(ctx, {
   type: 'line',
   data: {
-    labels: chartData.labels.map(y => `Year ${y}`),
+    labels: chartData.labels.map((_, i) => `Period ${i + 1}`),
     datasets: [
       {
         label: 'No Loan',
