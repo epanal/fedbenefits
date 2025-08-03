@@ -125,10 +125,13 @@ def tsp_loan():
             return render_template("tsp_loan.html", error="Loan cannot exceed $50,000.", values=form)
         
         # Loan-type-specific validation
-        if loan_type == "general" and not (26 <= num_pay_periods <= 130):
-            return render_template("tsp_loan.html", error="General loans must be between 26 and 130 pay periods.", values=form)
-        elif loan_type == "residential" and not (131 <= num_pay_periods <= 390):
-            return render_template("tsp_loan.html", error="Residential loans must be between 131 and 390 pay periods.", values=form)
+        loan_range = {
+            "general": (26, 130),
+            "residential": (131, 390)
+        }
+        min_pp, max_pp = loan_range[loan_type]
+        if not (min_pp <= num_pay_periods <= max_pp):
+            return render_template("tsp_loan.html", error=f"{loan_type.capitalize()} loans must be between {min_pp} and {max_pp} pay periods.", values=form)
 
         session["tsp_loan_inputs"] = dict(form)
 
