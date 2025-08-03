@@ -66,7 +66,6 @@
     <div class="col-md-6">
         <label class="form-label">Number of Pay Periods</label>
         <input type="number" class="form-control" name="num_pay_periods" id="num_pay_periods"
-            min="26" max="1300"
             title="Biweekly pay periods. Varies by loan type (see below)."
             value="{{ values.get('num_pay_periods', '') }}" required>
         <div class="invalid-feedback" id="pay-period-feedback">
@@ -230,7 +229,7 @@ new Chart(ctx, {
     },
     scales: {
       y: {
-        beginAtZero: true,
+        beginAtZero: false,
         ticks: {
           callback: v => '$' + v.toLocaleString()
         }
