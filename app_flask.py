@@ -131,7 +131,7 @@ def tsp_loan():
         }
         min_pp, max_pp = loan_range[loan_type]
         if not (min_pp <= num_pay_periods <= max_pp):
-            return render_template("tsp_loan.html", error=f"{loan_type.capitalize()} loans must be between {min_pp} and {max_pp} pay periods.", values=form)
+            return render_template("tsp_loan.html", error=f"{loan_type.capitalize()} loans must be between {min_pp} and {max_pp} payments (pay periods).", values=form)
 
         session["tsp_loan_inputs"] = dict(form)
 
