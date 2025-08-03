@@ -145,11 +145,6 @@
   The difference is <strong>${{ "{:,.2f}".format(result.delta) }}</strong>.
 </div>
 
-<!-- Disclaimer -->
-<p class="text-muted mt-3" style="font-size: 12px;">
-  *This is a simplified tool. It does not account for wage increases, changes in contribution limits, or tax implications. Assumes no other outstanding loans.*
-</p>
-
 <!-- Inputs Used -->
 <div class="card mb-4">
   <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
@@ -231,23 +226,23 @@ new Chart(ctx, {
             labelLastNoLoan: {
                 type: 'label',
                 xValue: chartData.labels.length - 1,
-                yValue: chartData.no_loan[chartData.no_loan.length - 1],
+                yValue: chartData.no_loan.at(-1),
                 content: [`No Loan: $${chartData.no_loan.at(-1).toLocaleString()}`],
                 backgroundColor: 'rgba(40, 167, 69, 0.7)',
                 font: { weight: 'bold' },
-                position: 'end',
-                xAdjust: 40,
+                position: 'center',
+                xAdjust: 20,
                 yAdjust: -10
             },
             labelLastWithLoan: {
                 type: 'label',
                 xValue: chartData.labels.length - 1,
-                yValue: chartData.with_loan[chartData.with_loan.length - 1],
+                yValue: chartData.with_loan.at(-1),
                 content: [`With Loan: $${chartData.with_loan.at(-1).toLocaleString()}`],
                 backgroundColor: 'rgba(220, 53, 69, 0.7)',
                 font: { weight: 'bold' },
-                position: 'end',
-                xAdjust: 40,
+                position: 'center',
+                xAdjust: 20,
                 yAdjust: 20
             }
             }
