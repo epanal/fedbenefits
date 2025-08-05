@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}TSP Front-Loading Calculator{% endblock %}
+{% block content %}
+<h2 class="mb-3">TSP Front-Loading Advantage Estimator 🚀</h2>
+<p class="text-muted" style="font-size: 0.95rem;">
+  This calculator compares front-loading your TSP contributions versus spreading them evenly throughout the year. It assumes consistent pay periods, market growth, and minimum contributions to preserve agency matching eligibility.
+</p>
+
+{% if not result %}
+<form method="POST" class="mb-4 needs-validation" novalidate>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Annual Salary ($)</label>
+      <input type="number" class="form-control" name="annual_salary" step="0.01" required
+             value="{{ values.get('annual_salary', '') }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Agency Match (%)</label>
+      <input type="number" class="form-control" name="match_percent" step="0.01" min="0" max="10" required
+             value="{{ values.get('match_percent', '5') }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Target Investment ($)</label>
+      <input type="number" class="form-control" name="target_investment" step="0.01" required
+             value="{{ values.get('target_investment', '23500') }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Max Biweekly Contribution ($)</label>
+      <input type="number" class="form-control" name="max_biweekly" step="0.01" required
+             value="{{ values.get('max_biweekly', '') }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Estimated Annual Growth (%)</label>
+      <input type="number" class="form-control" name="growth_rate" step="0.01" required
+             value="{{ values.get('growth_rate', '6') }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label"># Front Load Pay Periods</label>
+      <input type="number" class="form-control" name="front_load_periods" min="1" max="26" required
+             value="{{ values.get('front_load_periods', '2') }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">One-Off Contribution ($, optional)</label>
+      <input type="number" class="form-control" name="one_off_amount" step="0.01"
+             value="{{ values.get('one_off_amount', '') }}">
+    </div>
+  </div>
+  <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+    <button type="submit" class="btn btn-primary">Estimate</button>
+    <a href="/" class="btn btn-outline-secondary">Back to Home</a>
+  </div>
+</form>
+<script>
+(function () {
+  'use strict';
+  const forms = document.querySelectorAll('.needs-validation');
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', e => {
+      if (!form.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    }, false);
+  });
+})();
+</script>
+
+{% else %}
+<!-- Summary Output -->
+<div class="alert alert-info">
+  <strong>Summary:</strong> Front-loaded balance: <strong>${{ result.front_ending_balance }}</strong> vs. even contributions: <strong>${{ result.even_ending_balance }}</strong>. 
+  Advantage: <strong>${{ result.advantage }}</strong>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Annual Salary: ${{ values.annual_salary }}</li>
+    <li class="list-group-item">Agency Match %: {{ values.match_percent }}%</li>
+    <li class="list-group-item">Target Investment: ${{ values.target_investment }}</li>
+    <li class="list-group-item">Max Per-Pay Contribution: ${{ values.max_biweekly }}</li>
+    <li class="list-group-item">Annual Growth Estimate: {{ values.growth_rate }}%</li>
+    <li class="list-group-item">Front Load Periods: {{ values.front_load_periods }}</li>
+    <li class="list-group-item">One-Off Contribution: ${{ values.one_off_amount or 0 }}</li>
+  </ul>
+</div>
+
+<!-- Chart Display -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div style="height: 400px">
+  <canvas id="frontloadChart"></canvas>
+</div>
+<script>
+  const labels = {{ chart_data.labels | tojson }};
+  const front = {{ chart_data.front | tojson }};
+  const even = {{ chart_data.even | tojson }};
+
+  new Chart(document.getElementById("frontloadChart"), {
+    type: 'line',
+    data: {
+      labels: labels.map(p => `PP ${p}`),
+      datasets: [
+        {
+          label: 'Front-Loaded Strategy',
+          data: front,
+          borderColor: '#0d6efd',
+          backgroundColor: 'rgba(13, 110, 253, 0.1)',
+          fill: true,
+        },
+        {
+          label: 'Even Contributions',
+          data: even,
+          borderColor: '#198754',
+          backgroundColor: 'rgba(25, 135, 84, 0.1)',
+          fill: true,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: {
+          display: true,
+          text: 'TSP Growth Over Time'
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
+          }
+        },
+        legend: { position: 'bottom' }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          ticks: {
+            callback: v => '$' + v.toLocaleString()
+          }
+        }
+      }
+    }
+  });
+</script>
+
+<!-- Pay Period Breakdown Table -->
+<div class="table-responsive mt-5">
+  <h4>Pay Period Comparison Table</h4>
+  <table class="table table-bordered table-striped table-sm">
+    <thead class="table-light">
+      <tr>
+        <th>PP</th>
+        <th>Front Begin</th>
+        <th>Front Additions</th>
+        <th>Front End</th>
+        <th>Even Begin</th>
+        <th>Even Additions</th>
+        <th>Even End</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in table %}
+      <tr>
+        <td>{{ row['PP'] }}</td>
+        <td>${{ '{:,.2f}'.format(row['Front Begin']) }}</td>
+        <td>${{ '{:,.2f}'.format(row['Front Additions']) }}</td>
+        <td>${{ '{:,.2f}'.format(row['Front End']) }}</td>
+        <td>${{ '{:,.2f}'.format(row['Even Begin']) }}</td>
+        <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
+        <td>${{ '{:,.2f}'.format(row['Even End']) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Navigation -->
+<div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+  <a href="/tsp-frontload" class="btn btn-outline-secondary">Back to Calculator</a>
+  <a href="/" class="btn btn-outline-primary">Back to Home</a>
+</div>
+{% endif %}
+{% endblock %}

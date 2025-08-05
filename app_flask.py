@@ -6,7 +6,8 @@ from calculations import (
     calculate_annual_leave_accrual,
     calculate_scd,
     calculate_tsp_growth,
-    calculate_tsp_loan
+    calculate_tsp_loan,
+    calculate_tsp_frontload
 )
 
 app = Flask(__name__)
@@ -308,6 +309,48 @@ def scd_calculator():
             error = f"Error calculating SCD: {ex}"
 
     return render_template("scd.html", scd=scd, error=error)
+
+@app.route("/tsp-frontload", methods=["GET", "POST"])
+def tsp_frontload():
+    if request.method == "POST":
+        form = request.form
+
+        try:
+            annual_salary = float(form["annual_salary"])
+            match_percent = float(form["match_percent"])
+            target_investment = float(form["target_investment"])
+            max_biweekly = float(form["max_biweekly"])
+            growth_rate = float(form["growth_rate"])
+            front_load_periods = int(form["front_load_periods"])
+            one_off_amount = float(form.get("one_off_amount", 0.0) or 0.0)
+        except (ValueError, KeyError):
+            return render_template("tsp_frontload.html", error="Please enter valid numeric inputs.", values=form)
+
+        # Save to session
+        session["tsp_frontload_inputs"] = dict(form)
+
+        # Run calculation
+        summary, df, chart_data = calculate_tsp_frontload(
+            annual_salary,
+            target_investment,
+            max_biweekly,
+            match_percent,
+            growth_rate,
+            front_load_periods,
+            one_off_amount
+        )
+
+        return render_template(
+            "tsp_frontload.html",
+            result=summary,
+            table=df.to_dict(orient="records"),
+            chart_data=chart_data,
+            values=form
+        )
+
+    # GET request
+    values = session.get("tsp_frontload_inputs", {})
+    return render_template("tsp_frontload.html", result=None, values=values)
 
 @app.errorhandler(404)
 def not_found(e):
