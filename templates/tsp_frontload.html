@@ -85,15 +85,15 @@
 
 <!-- Chart Display -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<div style="height: 400px">
-  <canvas id="frontloadChart"></canvas>
-</div>
-<script>
-  const labels = {{ chart_data.labels | tojson }};
-  const front = {{ chart_data.front | tojson }};
-  const even = {{ chart_data.even | tojson }};
 
-  new Chart(document.getElementById("frontloadChart"), {
+<!-- Inject chart data safely for JS context -->
+<script>
+  const labels = JSON.parse('{{ chart_data.labels | tojson | safe }}');
+  const front = JSON.parse('{{ chart_data.front | tojson | safe }}');
+  const even = JSON.parse('{{ chart_data.even | tojson | safe }}');
+
+  const ctx = document.getElementById("frontloadChart").getContext('2d');
+  new Chart(ctx, {
     type: 'line',
     data: {
       labels: labels.map(p => `PP ${p}`),
@@ -103,14 +103,14 @@
           data: front,
           borderColor: '#0d6efd',
           backgroundColor: 'rgba(13, 110, 253, 0.1)',
-          fill: true,
+          fill: true
         },
         {
           label: 'Even Contributions',
           data: even,
           borderColor: '#198754',
           backgroundColor: 'rgba(25, 135, 84, 0.1)',
-          fill: true,
+          fill: true
         }
       ]
     },
@@ -123,22 +123,29 @@
         },
         tooltip: {
           callbacks: {
-            label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
+            label: function(ctx) {
+              return `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`;
+            }
           }
         },
-        legend: { position: 'bottom' }
+        legend: {
+          position: 'bottom'
+        }
       },
       scales: {
         y: {
           beginAtZero: false,
           ticks: {
-            callback: v => '$' + v.toLocaleString()
+            callback: function(v) {
+              return '$' + v.toLocaleString();
+            }
           }
         }
       }
     }
   });
 </script>
+
 
 <!-- Pay Period Breakdown Table -->
 <div class="table-responsive mt-5">
