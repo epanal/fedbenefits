@@ -248,51 +248,52 @@ def calculate_tsp_loan(
 
 def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, match_percent, annual_growth_percent):
     total_periods = 26
+    match_dollars = round((annual_salary * match_percent / 100) / total_periods, 2)
 
-    # Agency match (for potential future use, not used in calculations for now)
-    match_dollars = (annual_salary * match_percent / 100) / total_periods
-
-    # Target is 100% employee contributions
-    front_load_periods = int(target_investment // max_biweekly)
-    one_off_amount = round(target_investment - (front_load_periods * max_biweekly), 2)
+    remaining_target = target_investment
+    contribution_schedule = []
+    front_balance = 0
+    even_balance = 0
+    labels = []
+    front_contributions = []
+    even_contributions = []
 
     even_contribution = target_investment / total_periods
     annual_growth = annual_growth_percent / 100
     period_growth = (1 + annual_growth) ** (1 / total_periods) - 1
 
-    front_balance = 0
-    even_balance = 0
-    table = []
-    labels = []
-    front_contributions = []
-    even_contributions = []
-
     for pp in range(1, total_periods + 1):
         labels.append(pp)
 
-        # --- Front Strategy ---
         front_start = front_balance
-        additions = 0
-        contrib_type = "No Contribution"
-
-        if pp <= front_load_periods:
-            additions = max_biweekly
-            contrib_type = "Front-Load (Max)"
-        elif pp == front_load_periods + 1 and one_off_amount > 0:
-            additions = one_off_amount
-            contrib_type = "One-Off Remainder"
-
-        front_balance = (front_balance + additions) * (1 + period_growth)
-
-        # --- Even Strategy ---
         even_start = even_balance
+
+        # Determine extra front-loaded contribution
+        extra = 0
+        contrib_type = "Match Only"
+
+        # Only add extra if we haven't reached the target
+        if remaining_target > 0:
+            max_extra = max_biweekly - match_dollars
+            if remaining_target >= max_extra:
+                extra = max_extra
+                contrib_type = "Front-Load + Match"
+            else:
+                extra = remaining_target
+                contrib_type = "One-Off + Match"
+
+            remaining_target = round(remaining_target - extra, 2)
+
+        total_add = match_dollars + extra
+        front_balance = (front_balance + total_add) * (1 + period_growth)
+
         even_add = even_contribution
         even_balance = (even_balance + even_add) * (1 + period_growth)
 
-        table.append({
+        contribution_schedule.append({
             "PP": pp,
             "Front Begin": round(front_start, 2),
-            "Front Additions": round(additions, 2),
+            "Front Additions": round(total_add, 2),
             "Front End": round(front_balance, 2),
             "Even Begin": round(even_start, 2),
             "Even Additions": round(even_add, 2),
@@ -303,12 +304,12 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
         front_contributions.append(round(front_balance, 2))
         even_contributions.append(round(even_balance, 2))
 
+    # Summary info
     result = {
         "front_ending_balance": round(front_balance, 2),
         "even_ending_balance": round(even_balance, 2),
         "advantage": round(front_balance - even_balance, 2),
-        "front_load_periods": front_load_periods,
-        "one_off_amount": round(one_off_amount, 2)
+        "match_dollars": match_dollars
     }
 
     chart_data = {
@@ -317,4 +318,4 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
         "even": even_contributions
     }
 
-    return result, table, chart_data
+    return result, contribution_schedule, chart_data
