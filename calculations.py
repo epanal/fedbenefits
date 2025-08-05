@@ -252,49 +252,52 @@ def calculate_tsp_frontload(
     max_biweekly: float,
     match_percent: float,
     annual_growth_percent: float,
-    front_load_periods: int = 2,
-    one_off_amount: float = 0.0,
     pay_periods: int = 26
 ):
-    """
-    Simulates TSP balance growth using front-loading vs. even contributions.
-
-    Returns:
-        - summary dict
-        - comparison table DataFrame
-        - chart data (labels, front, even)
-    """
     import pandas as pd
 
-    # Convert growth rate to per-pay-period
+    # Per-period market growth rate
     period_growth = (1 + annual_growth_percent / 100) ** (1 / pay_periods) - 1
 
-    # Determine minimum per-period contribution to get match
+    # Minimum per-period contribution to get match
     match_threshold = (annual_salary / pay_periods) * (match_percent / 100)
 
-    # === FRONT-LOADED STRATEGY ===
     front_additions = []
+    total_contributed = 0
+    front_load_periods = 0
+    one_off_amount = 0
 
-    # Front-load pay periods
-    for i in range(front_load_periods):
-        front_additions.append(min(max_biweekly, target_investment - sum(front_additions)))
+    # Step 1: Front-load using max_biweekly
+    while total_contributed + max_biweekly < target_investment:
+        front_additions.append(max_biweekly)
+        total_contributed += max_biweekly
+        front_load_periods += 1
 
-    # One-off contribution (optional)
-    if one_off_amount > 0 and sum(front_additions) < target_investment:
-        front_additions.append(min(one_off_amount, target_investment - sum(front_additions)))
+    # Step 2: Add one-off amount if needed
+    remaining = target_investment - total_contributed
+    if remaining > match_threshold:
+        front_additions.append(remaining)
+        one_off_amount = remaining
+        total_contributed += remaining
+    else:
+        # Include in later minimal contributions
+        pass
 
-    # Fill in the rest with match-compliant amounts
+    # Step 3: Fill remaining pay periods with match-threshold contributions
     while len(front_additions) < pay_periods:
         remaining = target_investment - sum(front_additions)
         periods_left = pay_periods - len(front_additions)
-        amount = max(match_threshold, remaining / periods_left)
-        front_additions.append(min(amount, remaining))
+        if periods_left <= 0 or remaining <= 0:
+            front_additions.append(0)
+        else:
+            contrib = max(match_threshold, remaining / periods_left)
+            front_additions.append(min(contrib, remaining))
 
-    # === EVEN CONTRIBUTION STRATEGY ===
-    even_addition = target_investment / pay_periods
-    even_additions = [even_addition] * pay_periods
+    # === EVEN STRATEGY ===
+    even_add = target_investment / pay_periods
+    even_additions = [even_add] * pay_periods
 
-    # === Compound Growth Calculation ===
+    # === Compound Growth Logic ===
     def simulate_growth(additions, rate):
         begin, end = [], []
         balance = 0
@@ -307,7 +310,7 @@ def calculate_tsp_frontload(
     front_begin, front_adds, front_end = simulate_growth(front_additions, period_growth)
     even_begin, even_adds, even_end = simulate_growth(even_additions, period_growth)
 
-    # === Output DataFrame ===
+    # === DataFrame for Table ===
     df = pd.DataFrame({
         "PP": list(range(1, pay_periods + 1)),
         "Front Begin": [round(x, 2) for x in front_begin],
@@ -318,13 +321,14 @@ def calculate_tsp_frontload(
         "Even End": [round(x, 2) for x in even_end],
     })
 
-    # === Summary ===
     summary = {
         "front_total": round(sum(front_additions), 2),
         "even_total": round(sum(even_additions), 2),
         "front_ending_balance": round(front_end[-1], 2),
         "even_ending_balance": round(even_end[-1], 2),
         "advantage": round(front_end[-1] - even_end[-1], 2),
+        "front_load_periods": front_load_periods,
+        "one_off_amount": round(one_off_amount, 2)
     }
 
     chart_data = {
@@ -334,3 +338,4 @@ def calculate_tsp_frontload(
     }
 
     return summary, df, chart_data
+

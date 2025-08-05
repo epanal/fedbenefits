@@ -34,22 +34,13 @@
       <input type="number" class="form-control" name="growth_rate" step="0.01" required
              value="{{ values.get('growth_rate', '6') }}">
     </div>
-    <div class="col-md-6">
-      <label class="form-label"># Front Load Pay Periods</label>
-      <input type="number" class="form-control" name="front_load_periods" min="1" max="26" required
-             value="{{ values.get('front_load_periods', '2') }}">
-    </div>
-    <div class="col-md-6">
-      <label class="form-label">One-Off Contribution ($, optional)</label>
-      <input type="number" class="form-control" name="one_off_amount" step="0.01"
-             value="{{ values.get('one_off_amount', '') }}">
-    </div>
   </div>
   <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
     <button type="submit" class="btn btn-primary">Estimate</button>
     <a href="/" class="btn btn-outline-secondary">Back to Home</a>
   </div>
 </form>
+
 <script>
 (function () {
   'use strict';
@@ -81,8 +72,14 @@
     <li class="list-group-item">Target Investment: ${{ values.target_investment }}</li>
     <li class="list-group-item">Max Per-Pay Contribution: ${{ values.max_biweekly }}</li>
     <li class="list-group-item">Annual Growth Estimate: {{ values.growth_rate }}%</li>
-    <li class="list-group-item">Front Load Periods: {{ values.front_load_periods }}</li>
-    <li class="list-group-item">One-Off Contribution: ${{ values.one_off_amount or 0 }}</li>
+  </ul>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">🔍 Front-Loading Strategy Details</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Front Load Pay Periods: {{ result.front_load_periods }}</li>
+    <li class="list-group-item">One-Off Contribution: ${{ result.one_off_amount }}</li>
   </ul>
 </div>
 
