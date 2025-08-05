@@ -320,7 +320,14 @@ def tsp_frontload():
             match_percent = float(request.form["match_percent"])
             growth_rate = float(request.form["growth_rate"])
         except (ValueError, KeyError):
-            return render_template("tsp_frontload.html", result=None, values=request.form, error="Invalid input")
+            values = {
+                "annual_salary": request.form.get("annual_salary", ""),
+                "target_investment": request.form.get("target_investment", ""),
+                "max_biweekly": request.form.get("max_biweekly", ""),
+                "match_percent": request.form.get("match_percent", ""),
+                "growth_rate": request.form.get("growth_rate", "")
+            }
+            return render_template("tsp_frontload.html", result=None, values=values, error="Invalid input")
 
         values = {
             "annual_salary": annual_salary,
@@ -340,6 +347,7 @@ def tsp_frontload():
 
         return render_template("tsp_frontload.html", result=result, values=values, table=table, chart_data=chart_data)
 
+    # Safe default for GET
     return render_template("tsp_frontload.html", result=None, values={})
 
 @app.errorhandler(404)
