@@ -248,22 +248,13 @@ def calculate_tsp_loan(
 
 def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, match_percent, annual_growth_percent):
     total_periods = 26
+
+    # Agency match (for potential future use, not used in calculations for now)
     match_dollars = (annual_salary * match_percent / 100) / total_periods
-    match_total = match_dollars * total_periods
-    remaining_target = target_investment - match_total
 
-    front_load_periods = 0
-    one_off_amount = 0.0
-
-    # Calculate how many full pay periods you can front-load
-    if remaining_target > 0:
-        front_load_periods = int(remaining_target // max_biweekly)
-        one_off_amount = round(remaining_target - (front_load_periods * max_biweekly), 2)
-    else:
-        match_total = target_investment
-        match_dollars = match_total / total_periods
-        front_load_periods = 0
-        one_off_amount = 0.0
+    # Target is 100% employee contributions
+    front_load_periods = int(target_investment // max_biweekly)
+    one_off_amount = round(target_investment - (front_load_periods * max_biweekly), 2)
 
     even_contribution = target_investment / total_periods
     annual_growth = annual_growth_percent / 100
@@ -282,13 +273,13 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
         # --- Front Strategy ---
         front_start = front_balance
         additions = 0
-        contrib_type = "Match Only"
+        contrib_type = "No Contribution"
 
         if pp <= front_load_periods:
-            additions += max_biweekly
+            additions = max_biweekly
             contrib_type = "Front-Load (Max)"
         elif pp == front_load_periods + 1 and one_off_amount > 0:
-            additions += one_off_amount
+            additions = one_off_amount
             contrib_type = "One-Off Remainder"
 
         front_balance = (front_balance + additions) * (1 + period_growth)
@@ -300,12 +291,12 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
 
         table.append({
             "PP": pp,
-            "Front Begin": front_start,
-            "Front Additions": additions,
-            "Front End": front_balance,
-            "Even Begin": even_start,
-            "Even Additions": even_add,
-            "Even End": even_balance,
+            "Front Begin": round(front_start, 2),
+            "Front Additions": round(additions, 2),
+            "Front End": round(front_balance, 2),
+            "Even Begin": round(even_start, 2),
+            "Even Additions": round(even_add, 2),
+            "Even End": round(even_balance, 2),
             "Contribution Type": contrib_type
         })
 
