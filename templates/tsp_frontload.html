@@ -160,6 +160,7 @@
         <th>Even Begin</th>
         <th>Even Additions</th>
         <th>Even End</th>
+        <th>Contribution Type</th>
       </tr>
     </thead>
     <tbody>
@@ -172,12 +173,32 @@
         <td>${{ '{:,.2f}'.format(row['Even Begin']) }}</td>
         <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
         <td>${{ '{:,.2f}'.format(row['Even End']) }}</td>
+        <td>
+            <span class="
+            {% if row['Contribution Type'] == 'Front-Load (Max)' %}
+                text-primary fw-bold
+            {% elif row['Contribution Type'] == 'One-Off Remainder' %}
+                text-warning fw-bold
+            {% else %}
+                text-muted
+            {% endif %}
+            ">
+            {{ row['Contribution Type'] }}
+            </span>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
 
+<div class="mt-3 mb-2">
+  <small class="text-muted">Legend: 
+    <span class="fw-bold text-primary">Front-Load (Max)</span>, 
+    <span class="fw-bold text-warning">One-Off Remainder</span>, 
+    <span class="text-muted">Match Only</span>
+  </small>
+</div>
 <!-- Navigation -->
 <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
   <a href="/tsp-frontload" class="btn btn-outline-secondary">Back to Calculator</a>

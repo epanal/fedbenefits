@@ -282,10 +282,15 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
         # --- Front Strategy ---
         front_start = front_balance
         additions = match_dollars
+        contrib_type = "Match Only"
+
         if pp <= front_load_periods:
             additions += max_biweekly
+            contrib_type = "Front-Load (Max)"
         elif pp == front_load_periods + 1 and one_off_amount > 0:
             additions += one_off_amount
+            contrib_type = "One-Off Remainder"
+
         front_balance = (front_balance + additions) * (1 + period_growth)
 
         # --- Even Strategy ---
@@ -300,7 +305,8 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
             "Front End": front_balance,
             "Even Begin": even_start,
             "Even Additions": even_add,
-            "Even End": even_balance
+            "Even End": even_balance,
+            "Contribution Type": contrib_type
         })
 
         front_contributions.append(round(front_balance, 2))
