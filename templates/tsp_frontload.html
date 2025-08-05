@@ -60,26 +60,26 @@
 {% else %}
 <!-- Summary Output -->
 <div class="alert alert-info">
-  <strong>Summary:</strong> Front-loaded balance: <strong>${{ result.front_ending_balance }}</strong> vs. even contributions: <strong>${{ result.even_ending_balance }}</strong>. 
-  Advantage: <strong>${{ result.advantage }}</strong>
+    <strong>${{ result["front_ending_balance"] }}</strong> vs. even contributions: <strong>${{ result["even_ending_balance"] }}</strong>. 
+    Advantage: <strong>${{ result["advantage"] }}</strong>
 </div>
 
 <div class="card mb-4">
   <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
   <ul class="list-group list-group-flush">
-    <li class="list-group-item">Annual Salary: ${{ values.annual_salary }}</li>
-    <li class="list-group-item">Agency Match %: {{ values.match_percent }}%</li>
-    <li class="list-group-item">Target Investment: ${{ values.target_investment }}</li>
-    <li class="list-group-item">Max Per-Pay Contribution: ${{ values.max_biweekly }}</li>
-    <li class="list-group-item">Annual Growth Estimate: {{ values.growth_rate }}%</li>
+    <li class="list-group-item">Annual Salary: ${{ values["annual_salary"] }}</li>
+    <li class="list-group-item">Agency Match %: {{ values["match_percent"] }}%</li>
+    <li class="list-group-item">Target Investment: ${{ values["target_investment"] }}</li>
+    <li class="list-group-item">Max Per-Pay Contribution: ${{ values["max_biweekly"] }}</li>
+    <li class="list-group-item">Annual Growth Estimate: {{ values["growth_rate"] }}%</li>
   </ul>
 </div>
 
 <div class="card mb-4">
   <div class="card-header fw-bold fs-5">🔍 Front-Loading Strategy Details</div>
   <ul class="list-group list-group-flush">
-    <li class="list-group-item">Front Load Pay Periods: {{ result.front_load_periods }}</li>
-    <li class="list-group-item">One-Off Contribution: ${{ result.one_off_amount }}</li>
+    <li class="list-group-item">Front Load Pay Periods: {{ result["front_load_periods"] }}</li>
+    <li class="list-group-item">One-Off Contribution: ${{ result["one_off_amount"] }}</li>
   </ul>
 </div>
 
