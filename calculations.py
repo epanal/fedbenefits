@@ -246,96 +246,78 @@ def calculate_tsp_loan(
         "payperiod_data": payperiod_data
     }
 
-def calculate_tsp_frontload(
-    annual_salary: float,
-    target_investment: float,
-    max_biweekly: float,
-    match_percent: float,
-    annual_growth_percent: float,
-    pay_periods: int = 26
-):
-    import pandas as pd
+def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, match_percent, annual_growth_percent):
+    total_periods = 26
+    match_dollars = (annual_salary * match_percent / 100) / total_periods
+    match_total = match_dollars * total_periods
+    remaining_target = target_investment - match_total
 
-    # Per-period market growth rate
-    period_growth = (1 + annual_growth_percent / 100) ** (1 / pay_periods) - 1
-
-    # Minimum per-period contribution to get match
-    match_threshold = (annual_salary / pay_periods) * (match_percent / 100)
-
-    front_additions = []
-    total_contributed = 0
     front_load_periods = 0
-    one_off_amount = 0
+    one_off_amount = 0.0
 
-    # Step 1: Front-load using max_biweekly
-    while total_contributed + max_biweekly < target_investment:
-        front_additions.append(max_biweekly)
-        total_contributed += max_biweekly
-        front_load_periods += 1
-
-    # Step 2: Add one-off amount if needed
-    remaining = target_investment - total_contributed
-    if remaining > match_threshold:
-        front_additions.append(remaining)
-        one_off_amount = remaining
-        total_contributed += remaining
+    # Calculate how many full pay periods you can front-load
+    if remaining_target > 0:
+        front_load_periods = int(remaining_target // max_biweekly)
+        one_off_amount = round(remaining_target - (front_load_periods * max_biweekly), 2)
     else:
-        # Include in later minimal contributions
-        pass
+        match_total = target_investment
+        match_dollars = match_total / total_periods
+        front_load_periods = 0
+        one_off_amount = 0.0
 
-    # Step 3: Fill remaining pay periods with match-threshold contributions
-    while len(front_additions) < pay_periods:
-        remaining = target_investment - sum(front_additions)
-        periods_left = pay_periods - len(front_additions)
-        if periods_left <= 0 or remaining <= 0:
-            front_additions.append(0)
-        else:
-            contrib = max(match_threshold, remaining / periods_left)
-            front_additions.append(min(contrib, remaining))
+    even_contribution = target_investment / total_periods
+    annual_growth = annual_growth_percent / 100
+    period_growth = (1 + annual_growth) ** (1 / total_periods) - 1
 
-    # === EVEN STRATEGY ===
-    even_add = target_investment / pay_periods
-    even_additions = [even_add] * pay_periods
+    front_balance = 0
+    even_balance = 0
+    table = []
+    labels = []
+    front_contributions = []
+    even_contributions = []
 
-    # === Compound Growth Logic ===
-    def simulate_growth(additions, rate):
-        begin, end = [], []
-        balance = 0
-        for add in additions:
-            begin.append(balance)
-            balance = (balance + add) * (1 + rate)
-            end.append(balance)
-        return begin, additions, end
+    for pp in range(1, total_periods + 1):
+        labels.append(pp)
 
-    front_begin, front_adds, front_end = simulate_growth(front_additions, period_growth)
-    even_begin, even_adds, even_end = simulate_growth(even_additions, period_growth)
+        # --- Front Strategy ---
+        front_start = front_balance
+        additions = match_dollars
+        if pp <= front_load_periods:
+            additions += max_biweekly
+        elif pp == front_load_periods + 1 and one_off_amount > 0:
+            additions += one_off_amount
+        front_balance = (front_balance + additions) * (1 + period_growth)
 
-    # === DataFrame for Table ===
-    df = pd.DataFrame({
-        "PP": list(range(1, pay_periods + 1)),
-        "Front Begin": [round(x, 2) for x in front_begin],
-        "Front Additions": [round(x, 2) for x in front_adds],
-        "Front End": [round(x, 2) for x in front_end],
-        "Even Begin": [round(x, 2) for x in even_begin],
-        "Even Additions": [round(x, 2) for x in even_adds],
-        "Even End": [round(x, 2) for x in even_end],
-    })
+        # --- Even Strategy ---
+        even_start = even_balance
+        even_add = even_contribution
+        even_balance = (even_balance + even_add) * (1 + period_growth)
 
-    summary = {
-        "front_total": round(sum(front_additions), 2),
-        "even_total": round(sum(even_additions), 2),
-        "front_ending_balance": round(front_end[-1], 2),
-        "even_ending_balance": round(even_end[-1], 2),
-        "advantage": round(front_end[-1] - even_end[-1], 2),
+        table.append({
+            "PP": pp,
+            "Front Begin": front_start,
+            "Front Additions": additions,
+            "Front End": front_balance,
+            "Even Begin": even_start,
+            "Even Additions": even_add,
+            "Even End": even_balance
+        })
+
+        front_contributions.append(round(front_balance, 2))
+        even_contributions.append(round(even_balance, 2))
+
+    result = {
+        "front_ending_balance": round(front_balance, 2),
+        "even_ending_balance": round(even_balance, 2),
+        "advantage": round(front_balance - even_balance, 2),
         "front_load_periods": front_load_periods,
         "one_off_amount": round(one_off_amount, 2)
     }
 
     chart_data = {
-        "labels": list(range(1, pay_periods + 1)),
-        "front": [round(x, 2) for x in front_end],
-        "even": [round(x, 2) for x in even_end],
+        "labels": labels,
+        "front": front_contributions,
+        "even": even_contributions
     }
 
-    return summary, df, chart_data
-
+    return result, table, chart_data
