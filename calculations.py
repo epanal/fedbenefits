@@ -281,7 +281,7 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
 
         # --- Front Strategy ---
         front_start = front_balance
-        additions = match_dollars
+        additions = 0
         contrib_type = "Match Only"
 
         if pp <= front_load_periods:
