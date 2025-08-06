@@ -8,6 +8,7 @@
 </p>
 
 {% if not result %}
+<!-- === FORM === -->
 <form method="POST" class="mb-4 needs-validation" novalidate>
   <div class="row g-3">
     <div class="col-md-6">
@@ -61,7 +62,8 @@
 </script>
 
 {% else %}
-<!-- Output Summary -->
+<!-- === RESULTS === -->
+
 <div class="alert alert-info">
   <strong>${{ result["front_ending_balance"] }}</strong> vs. Even Contributions: <strong>${{ result["even_ending_balance"] }}</strong>. 
   Advantage: <strong>${{ result["advantage"] }}</strong>
@@ -79,15 +81,13 @@
   </ul>
 </div>
 
-<!-- Strategy Breakdown -->
+<!-- Strategy Summary -->
 <div class="card mb-4">
   <div class="card-header fw-bold fs-5">🧮 Contribution Strategy Summary</div>
   <div class="card-body">
     <ul class="mb-2">
       <li>Contribute <strong>${{ result["match_per_period"] }}</strong> each pay period to get the full agency match.</li>
-      {% if result["front_load_periods"] > 0 %}
-        <li>Front-load with <strong>${{ result["max_biweekly"] }}</strong> for <strong>{{ result["front_load_periods"] }}</strong> pay periods.</li>
-      {% endif %}
+      <li>Front-load with <strong>${{ result["max_biweekly"] }}</strong> for <strong>{{ result["front_load_periods"] }}</strong> pay periods.</li>
       {% if result["one_off_amount"] > result["match_per_period"] %}
         <li>Then contribute <strong>${{ result["one_off_amount"] }}</strong> for 1 pay period to reach the target.</li>
         <li>After that, continue contributing <strong>${{ result["match_per_period"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] }}</strong> pay periods.</li>
@@ -138,15 +138,10 @@
     options: {
       responsive: true,
       plugins: {
-        title: {
-          display: true,
-          text: 'TSP Growth Over Time'
-        },
+        title: { display: true, text: 'TSP Growth Over Time' },
         tooltip: {
           callbacks: {
-            label: function(ctx) {
-              return `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`;
-            }
+            label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
           }
         },
         legend: { position: 'bottom' }
@@ -155,9 +150,7 @@
         y: {
           beginAtZero: false,
           ticks: {
-            callback: function(v) {
-              return '$' + v.toLocaleString();
-            }
+            callback: v => '$' + v.toLocaleString()
           }
         }
       }
@@ -168,51 +161,12 @@
 <!-- Breakdown Table -->
 <div class="table-responsive mt-5">
   <h4>📊 Pay Period Breakdown</h4>
-
-  <!-- Simple Table -->
-  <table class="table table-bordered table-sm" id="simple-table">
-    <thead class="table-light">
-      <tr>
-        <th>PP</th>
-        <th>Front Contribution</th>
-        <th>Even Contribution</th>
-        <th>Type
-          <span data-bs-toggle="tooltip" title="Front-Load = Max early contributions. One-Off = Partial final contribution. Match Only = Minimum needed for agency match." style="cursor: help;">ℹ️</span>
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for row in table %}
-      <tr>
-        <td>{{ row['PP'] }}</td>
-        <td>${{ '{:,.2f}'.format(row['Front Additions']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
-        <td>
-          <span class="
-            {% if row['Contribution Type'] == 'Front-Load (Max)' %}
-              text-primary fw-bold
-            {% elif row['Contribution Type'] == 'One-Off Remainder' %}
-              text-warning fw-bold
-            {% else %}
-              text-muted
-            {% endif %}
-          ">
-            {{ row['Contribution Type'] }}
-          </span>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <!-- Toggle Button -->
-  <button class="btn btn-sm btn-outline-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#detailed-table" aria-expanded="false" aria-controls="detailed-table">
-    Show More Details
+  <button class="btn btn-sm btn-outline-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#detailsTable" aria-expanded="false">
+    Show Full Table
   </button>
 
-  <!-- Full Table -->
-  <div class="collapse" id="detailed-table">
-    <table class="table table-bordered table-striped table-sm mt-3">
+  <div class="collapse" id="detailsTable">
+    <table class="table table-bordered table-striped table-sm">
       <thead class="table-light">
         <tr>
           <th>PP</th>
@@ -222,6 +176,9 @@
           <th>Even Start</th>
           <th>Even Contribution</th>
           <th>Even End</th>
+          <th>Type
+            <span data-bs-toggle="tooltip" title="Front-Load = Max early contributions. One-Off = Final top-up. Match Only = Minimum to get match." style="cursor: help;">ℹ️</span>
+          </th>
           <th>Cumulative Front</th>
           <th>Cumulative Even</th>
         </tr>
@@ -236,6 +193,13 @@
           <td>${{ '{:,.2f}'.format(row['Even Begin']) }}</td>
           <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
           <td>${{ '{:,.2f}'.format(row['Even End']) }}</td>
+          <td>
+            <span class="{% if row['Contribution Type'] == 'Front-Load (Max)' %}text-primary fw-bold
+                         {% elif row['Contribution Type'] == 'One-Off Remainder' %}text-warning fw-bold
+                         {% else %}text-muted{% endif %}">
+              {{ row['Contribution Type'] }}
+            </span>
+          </td>
           <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Front']) }}</td>
           <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Even']) }}</td>
         </tr>
@@ -245,13 +209,12 @@
   </div>
 </div>
 
-
 <div class="mt-2 mb-4">
   <small class="text-muted">
     Legend: 
-    <span class="fw-bold text-primary">Front-Load (Max)</span> = Contributing the max allowed per pay period.
-    <span class="fw-bold text-warning">One-Off Remainder</span> = Final small top-up to reach goal.
-    <span class="text-muted">Match Only</span> = Minimum needed to get agency match.
+    <span class="fw-bold text-primary">Front-Load (Max)</span> = Max allowed per period.
+    <span class="fw-bold text-warning">One-Off Remainder</span> = Final partial top-up.
+    <span class="text-muted">Match Only</span> = Minimum for agency match.
   </small>
 </div>
 
