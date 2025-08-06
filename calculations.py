@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from decimal import Decimal, ROUND_DOWN
 
 def calculate_lump_sum_payment(hourly_rate: float, leave_balance_hours: float) -> float:
     """Calculate lump sum payment for unused annual leave."""
@@ -267,7 +268,11 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
 
     front_balance = 0
     even_balance = 0
-    even_contribution = round(target_investment / total_periods, 2)
+    # Ensure precise even distribution that doesn't exceed the target
+    target_decimal = Decimal(str(target_investment))
+    even_contribution_rounded = (target_decimal / total_periods).quantize(Decimal("0.01"), rounding=ROUND_DOWN)
+    partial_correction = float(target_decimal - even_contribution_rounded * (total_periods - 1))
+    even_contribution = float(even_contribution_rounded)
 
     cumulative_front = 0
     cumulative_even = 0
@@ -293,7 +298,10 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
 
         # EVEN STRATEGY
         even_start = even_balance
-        even_add = even_contribution
+        if pp < total_periods:
+            even_add = even_contribution
+        else:
+            even_add = partial_correction  # Final pay period gets remainder
         cumulative_even += even_add
         even_balance = (even_balance + even_add) * (1 + period_growth)
 
