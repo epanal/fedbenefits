@@ -509,8 +509,7 @@ def calculate_tsp_frontload(
     match_total = match_per_period * total_periods
 
     # Only need to front-load the portion above match
-    frontload_target = target_investment - match_total
-    frontload_target = max(frontload_target, 0)
+    frontload_target = max(target_investment - match_total, 0)
 
     full_frontload_periods = int(frontload_target // (max_biweekly - match_per_period))
     one_off_remainder = round(frontload_target - full_frontload_periods * (max_biweekly - match_per_period), 2)
@@ -538,7 +537,6 @@ def calculate_tsp_frontload(
 
         # FRONT STRATEGY
         front_start = front_balance
-
         if pp <= full_frontload_periods:
             employee_add = max_biweekly
             contribution_type = "Front-Load (Max)"
@@ -556,10 +554,7 @@ def calculate_tsp_frontload(
 
         # EVEN STRATEGY
         even_start = even_balance
-        if pp < total_periods:
-            even_add = even_contribution
-        else:
-            even_add = partial_correction
+        even_add = even_contribution if pp < total_periods else partial_correction
         agency_even_add = match_per_period if include_match_in_growth else 0
         cumulative_even += even_add
         even_balance = (even_balance + even_add + agency_even_add) * (1 + period_growth)
@@ -580,27 +575,27 @@ def calculate_tsp_frontload(
         front_contributions.append(round(front_balance, 2))
         even_contributions.append(round(even_balance, 2))
 
-        actual_one_off_amount = match_per_period + one_off_remainder if one_off_remainder > 0 else 0
+    actual_one_off_amount = match_per_period + one_off_remainder if one_off_remainder > 0 else 0
 
-        result = {
-            "front_ending_balance": round(front_balance, 2),
-            "even_ending_balance": round(even_balance, 2),
-            "advantage": round(front_balance - even_balance, 2),
-            "front_load_periods": full_frontload_periods,
-            "one_off_amount": round(actual_one_off_amount, 2),
-            "match_only_periods": match_only_periods,
-            "match_per_period": match_per_period,
-            "cumulative_contributed": round(cumulative_front, 2),
-            "include_match_in_growth": include_match_in_growth,
-            "max_biweekly": max_biweekly,
-            "even_contribution": float(even_contribution),
-            "even_final_correction": partial_correction
-        }
+    result = {
+        "front_ending_balance": round(front_balance, 2),
+        "even_ending_balance": round(even_balance, 2),
+        "advantage": round(front_balance - even_balance, 2),
+        "front_load_periods": full_frontload_periods,
+        "one_off_amount": round(actual_one_off_amount, 2),
+        "match_only_periods": match_only_periods,
+        "match_per_period": match_per_period,
+        "cumulative_contributed": round(cumulative_front, 2),
+        "include_match_in_growth": include_match_in_growth,
+        "max_biweekly": max_biweekly,
+        "even_contribution": float(even_contribution),
+        "even_final_correction": partial_correction
+    }
 
-        chart_data = {
-            "labels": labels,
-            "front": front_contributions,
-            "even": even_contributions
-        }
+    chart_data = {
+        "labels": labels,
+        "front": front_contributions,
+        "even": even_contributions
+    }
 
-        return result, table, chart_data
+    return result, table, chart_data
