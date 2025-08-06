@@ -34,6 +34,15 @@
       <input type="number" class="form-control" name="growth_rate" step="0.01" required
              value="{{ values.get('growth_rate', '6') }}">
     </div>
+    <div class="col-md-6 mt-2">
+    <div class="form-check mt-4">
+        <input class="form-check-input" type="checkbox" name="include_match" id="include_match"
+            {% if values.get('include_match') %}checked{% endif %}>
+        <label class="form-check-label" for="include_match">
+        Include Agency Match in Growth Calculations
+        </label>
+    </div>
+    </div>   
   </div>
   <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
     <button type="submit" class="btn btn-primary">Estimate</button>
@@ -78,8 +87,22 @@
 <div class="card mb-4">
   <div class="card-header fw-bold fs-5">🔍 Front-Loading Strategy Details</div>
   <ul class="list-group list-group-flush">
-    <li class="list-group-item">Front Load Pay Periods: {{ result["front_load_periods"] }}</li>
-    <li class="list-group-item">One-Off Contribution: ${{ result["one_off_amount"] }}</li>
+    <li class="list-group-item">
+      Front-load <strong>{{ result["front_load_periods"] }}</strong> pay periods at the max: 
+      <strong>${{ values["max_biweekly"] }}</strong>
+    </li>
+    <li class="list-group-item">
+      Follow with <strong>1</strong> pay period contributing <strong>${{ result["one_off_amount"] + result["match_per_period"] }}</strong> (remainder + match)
+    </li>
+    <li class="list-group-item">
+      Then contribute the match amount <strong>(${{ result["match_per_period"] }})</strong> for the remaining 
+      <strong>{{ result["match_only_periods"] }}</strong> pay periods
+    </li>
+    <li class="list-group-item">
+      <em>Agency match contributions were 
+        <strong>{% if result["include_match_in_growth"] %}included{% else %}not included{% endif %}</strong> in growth calculations.
+      </em>
+    </li>
   </ul>
 </div>
 

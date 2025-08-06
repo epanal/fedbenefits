@@ -313,19 +313,22 @@ def scd_calculator():
 @app.route("/tsp-frontload", methods=["GET", "POST"])
 def tsp_frontload():
     if request.method == "POST":
+        form = request.form
         try:
-            annual_salary = float(request.form["annual_salary"])
-            target_investment = float(request.form["target_investment"])
-            max_biweekly = float(request.form["max_biweekly"])
-            match_percent = float(request.form["match_percent"])
-            growth_rate = float(request.form["growth_rate"])
+            annual_salary = float(form["annual_salary"])
+            target_investment = float(form["target_investment"])
+            max_biweekly = float(form["max_biweekly"])
+            match_percent = float(form["match_percent"])
+            growth_rate = float(form["growth_rate"])
+            include_match = "include_match" in form
         except (ValueError, KeyError):
             values = {
-                "annual_salary": request.form.get("annual_salary", ""),
-                "target_investment": request.form.get("target_investment", ""),
-                "max_biweekly": request.form.get("max_biweekly", ""),
-                "match_percent": request.form.get("match_percent", ""),
-                "growth_rate": request.form.get("growth_rate", "")
+                "annual_salary": form.get("annual_salary", ""),
+                "target_investment": form.get("target_investment", ""),
+                "max_biweekly": form.get("max_biweekly", ""),
+                "match_percent": form.get("match_percent", ""),
+                "growth_rate": form.get("growth_rate", ""),
+                "include_match": "include_match" in form
             }
             return render_template("tsp_frontload.html", result=None, values=values, error="Invalid input")
 
@@ -334,7 +337,8 @@ def tsp_frontload():
             "target_investment": target_investment,
             "max_biweekly": max_biweekly,
             "match_percent": match_percent,
-            "growth_rate": growth_rate
+            "growth_rate": growth_rate,
+            "include_match": include_match
         }
 
         try:
@@ -343,7 +347,8 @@ def tsp_frontload():
                 target_investment=target_investment,
                 max_biweekly=max_biweekly,
                 match_percent=match_percent,
-                annual_growth_percent=growth_rate
+                annual_growth_percent=growth_rate,
+                include_match_in_growth=include_match  # ✅ NEW ARG
             )
         except Exception as e:
             import traceback
@@ -352,7 +357,7 @@ def tsp_frontload():
 
         return render_template("tsp_frontload.html", result=result, values=values, table=table, chart_data=chart_data)
 
-    # Safe default for GET
+    # GET request
     return render_template("tsp_frontload.html", result=None, values={})
 
 @app.errorhandler(404)
