@@ -168,33 +168,25 @@
 <!-- Breakdown Table -->
 <div class="table-responsive mt-5">
   <h4>📊 Pay Period Breakdown</h4>
-  <table class="table table-bordered table-striped table-sm">
+
+  <!-- Simple Table -->
+  <table class="table table-bordered table-sm" id="simple-table">
     <thead class="table-light">
       <tr>
         <th>PP</th>
-        <th>Front Start</th>
         <th>Front Contribution</th>
-        <th>Front End</th>
-        <th>Even Start</th>
         <th>Even Contribution</th>
-        <th>Even End</th>
         <th>Type
           <span data-bs-toggle="tooltip" title="Front-Load = Max early contributions. One-Off = Partial final contribution. Match Only = Minimum needed for agency match." style="cursor: help;">ℹ️</span>
         </th>
-        <th>Cumulative Front</th>
-        <th>Cumulative Even</th>
       </tr>
     </thead>
     <tbody>
       {% for row in table %}
       <tr>
         <td>{{ row['PP'] }}</td>
-        <td>${{ '{:,.2f}'.format(row['Front Begin']) }}</td>
         <td>${{ '{:,.2f}'.format(row['Front Additions']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Front End']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Even Begin']) }}</td>
         <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Even End']) }}</td>
         <td>
           <span class="
             {% if row['Contribution Type'] == 'Front-Load (Max)' %}
@@ -208,13 +200,51 @@
             {{ row['Contribution Type'] }}
           </span>
         </td>
-        <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Front']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Even']) }}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+
+  <!-- Toggle Button -->
+  <button class="btn btn-sm btn-outline-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#detailed-table" aria-expanded="false" aria-controls="detailed-table">
+    Show More Details
+  </button>
+
+  <!-- Full Table -->
+  <div class="collapse" id="detailed-table">
+    <table class="table table-bordered table-striped table-sm mt-3">
+      <thead class="table-light">
+        <tr>
+          <th>PP</th>
+          <th>Front Start</th>
+          <th>Front Contribution</th>
+          <th>Front End</th>
+          <th>Even Start</th>
+          <th>Even Contribution</th>
+          <th>Even End</th>
+          <th>Cumulative Front</th>
+          <th>Cumulative Even</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in table %}
+        <tr>
+          <td>{{ row['PP'] }}</td>
+          <td>${{ '{:,.2f}'.format(row['Front Begin']) }}</td>
+          <td>${{ '{:,.2f}'.format(row['Front Additions']) }}</td>
+          <td>${{ '{:,.2f}'.format(row['Front End']) }}</td>
+          <td>${{ '{:,.2f}'.format(row['Even Begin']) }}</td>
+          <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
+          <td>${{ '{:,.2f}'.format(row['Even End']) }}</td>
+          <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Front']) }}</td>
+          <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Even']) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
+
 
 <div class="mt-2 mb-4">
   <small class="text-muted">
