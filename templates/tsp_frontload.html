@@ -84,13 +84,13 @@
   <div class="card-header fw-bold fs-5">🧮 Contribution Strategy Summary</div>
   <div class="card-body">
     <ul class="mb-2">
-      <li>Contribute <strong>${{ result["match_amount"] }}</strong> each pay period to get the full agency match.</li>
+      <li>Contribute <strong>${{ result["match_per_period"] }}</strong> each pay period to get the full agency match.</li>
       <li>Front-load with <strong>${{ result["max_biweekly"] }}</strong> for <strong>{{ result["front_load_periods"] }}</strong> pay periods.</li>
-      {% if result["one_off_amount"] > result["match_amount"] %}
+      {% if result["one_off_amount"] > result["match_per_period"] %}
         <li>Then contribute <strong>${{ result["one_off_amount"] }}</strong> for 1 pay period to reach the target.</li>
-        <li>After that, continue contributing <strong>${{ result["match_amount"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] }}</strong> pay periods.</li>
+        <li>After that, continue contributing <strong>${{ result["match_per_period"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] }}</strong> pay periods.</li>
       {% else %}
-        <li>Then simply contribute <strong>${{ result["match_amount"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] + 1 }}</strong> pay periods.</li>
+        <li>Then simply contribute <strong>${{ result["match_per_period"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] + 1 }}</strong> pay periods.</li>
       {% endif %}
     </ul>
     <p class="text-muted mb-0">
