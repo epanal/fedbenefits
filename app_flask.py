@@ -337,13 +337,18 @@ def tsp_frontload():
             "growth_rate": growth_rate
         }
 
-        result, table, chart_data = calculate_tsp_frontload(
-            annual_salary=annual_salary,
-            target_investment=target_investment,
-            max_biweekly=max_biweekly,
-            match_percent=match_percent,
-            annual_growth_percent=growth_rate
-        )
+        try:
+            result, table, chart_data = calculate_tsp_frontload(
+                annual_salary=annual_salary,
+                target_investment=target_investment,
+                max_biweekly=max_biweekly,
+                match_percent=match_percent,
+                annual_growth_percent=growth_rate
+            )
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return render_template("tsp_frontload.html", result=None, values=values, error=str(e))
 
         return render_template("tsp_frontload.html", result=result, values=values, table=table, chart_data=chart_data)
 
