@@ -85,7 +85,9 @@
   <div class="card-body">
     <ul class="mb-2">
       <li>Contribute <strong>${{ result["match_per_period"] }}</strong> each pay period to get the full agency match.</li>
-      <li>Front-load with <strong>${{ result["max_biweekly"] }}</strong> for <strong>{{ result["front_load_periods"] }}</strong> pay periods.</li>
+      {% if result["front_load_periods"] > 0 %}
+        <li>Front-load with <strong>${{ result["max_biweekly"] }}</strong> for <strong>{{ result["front_load_periods"] }}</strong> pay periods.</li>
+      {% endif %}
       {% if result["one_off_amount"] > result["match_per_period"] %}
         <li>Then contribute <strong>${{ result["one_off_amount"] }}</strong> for 1 pay period to reach the target.</li>
         <li>After that, continue contributing <strong>${{ result["match_per_period"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] }}</strong> pay periods.</li>
