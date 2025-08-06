@@ -7,6 +7,8 @@
   You’ll still contribute the minimum to earn the full agency match in both cases.
 </p>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 {% if not result %}
 <!-- === FORM === -->
 <form method="POST" class="mb-4 needs-validation" novalidate>
@@ -158,14 +160,56 @@
   });
 </script>
 
-<!-- Breakdown Table -->
+<!-- Minimal Pay Period Breakdown Table (Default View) -->
 <div class="table-responsive mt-5">
   <h4>📊 Pay Period Breakdown</h4>
-  <button class="btn btn-sm btn-outline-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#detailsTable" aria-expanded="false">
-    Show Full Table
-  </button>
 
-  <div class="collapse" id="detailsTable">
+  <table class="table table-bordered table-striped table-sm">
+    <thead class="table-light">
+      <tr>
+        <th>PP</th>
+        <th>Front Contribution</th>
+        <th>Type
+          <span data-bs-toggle="tooltip" title="Front-Load = Max early contributions. One-Off = Partial final contribution. Match Only = Minimum needed for agency match." style="cursor: help;">ℹ️</span>
+        </th>
+        <th>Even Contribution</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in table %}
+      <tr>
+        <td>{{ row['PP'] }}</td>
+        <td>${{ '{:,.2f}'.format(row['Front Additions']) }}</td>
+        <td>
+          <span class="
+            {% if row['Contribution Type'] == 'Front-Load (Max)' %}
+              text-primary fw-bold
+            {% elif row['Contribution Type'] == 'One-Off Remainder' %}
+              text-warning fw-bold
+            {% else %}
+              text-muted
+            {% endif %}
+          ">
+            {{ row['Contribution Type'] }}
+          </span>
+        </td>
+        <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Expand Button -->
+  <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-2 mb-3">
+    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#fullTable" aria-expanded="false" aria-controls="fullTable">
+      Show Full Table
+    </button>
+  </div>
+</div>
+
+<!-- Full Table (Hidden by Default) -->
+<div class="collapse" id="fullTable">
+  <div class="table-responsive">
     <table class="table table-bordered table-striped table-sm">
       <thead class="table-light">
         <tr>
@@ -176,9 +220,7 @@
           <th>Even Start</th>
           <th>Even Contribution</th>
           <th>Even End</th>
-          <th>Type
-            <span data-bs-toggle="tooltip" title="Front-Load = Max early contributions. One-Off = Final top-up. Match Only = Minimum to get match." style="cursor: help;">ℹ️</span>
-          </th>
+          <th>Type</th>
           <th>Cumulative Front</th>
           <th>Cumulative Even</th>
         </tr>
@@ -194,9 +236,15 @@
           <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
           <td>${{ '{:,.2f}'.format(row['Even End']) }}</td>
           <td>
-            <span class="{% if row['Contribution Type'] == 'Front-Load (Max)' %}text-primary fw-bold
-                         {% elif row['Contribution Type'] == 'One-Off Remainder' %}text-warning fw-bold
-                         {% else %}text-muted{% endif %}">
+            <span class="
+              {% if row['Contribution Type'] == 'Front-Load (Max)' %}
+                text-primary fw-bold
+              {% elif row['Contribution Type'] == 'One-Off Remainder' %}
+                text-warning fw-bold
+              {% else %}
+                text-muted
+              {% endif %}
+            ">
               {{ row['Contribution Type'] }}
             </span>
           </td>
@@ -208,6 +256,17 @@
     </table>
   </div>
 </div>
+
+<!-- Legend -->
+<div class="mt-2 mb-4">
+  <small class="text-muted">
+    Legend: 
+    <span class="fw-bold text-primary">Front-Load (Max)</span> = Max allowed per pay period.
+    <span class="fw-bold text-warning">One-Off Remainder</span> = Final partial top-up.
+    <span class="text-muted">Match Only</span> = Minimum to earn full agency match.
+  </small>
+</div>
+
 
 <div class="mt-2 mb-4">
   <small class="text-muted">
