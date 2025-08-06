@@ -266,26 +266,25 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
 
     for pp in range(1, total_periods + 1):
         labels.append(pp)
+
         # ---- FRONT STRATEGY ----
         front_start = front_balance
         additions = 0
-        contribution_type = "Match Minimum"
+        contribution_type = ""
 
         if cumulative_contribution < target_investment:
-            max_possible = max_biweekly
             remaining_needed = round(target_investment - cumulative_contribution, 2)
 
-            if remaining_needed >= max_possible:
-                additions = max_possible
+            if remaining_needed >= max_biweekly:
+                additions = max_biweekly
                 contribution_type = "Front-Load (Max)"
+                front_load_periods += 1
             else:
                 additions = remaining_needed
                 contribution_type = "One-Off Remainder"
 
             cumulative_contribution += additions
-            front_load_periods += 1 if contribution_type == "Front-Load (Max)" else 0
         else:
-            # Just maintain the match minimum after target is reached
             additions = min_contribution
             contribution_type = "Match Only"
 
@@ -316,7 +315,8 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
         "advantage": round(front_balance - even_balance, 2),
         "front_load_periods": front_load_periods,
         "one_off_amount": round(target_investment - (front_load_periods * max_biweekly), 2)
-                           if target_investment > (front_load_periods * max_biweekly) else 0.0
+                           if target_investment > (front_load_periods * max_biweekly) else 0.0,
+        "cumulative_contributed": round(cumulative_contribution, 2)
     }
 
     chart_data = {
