@@ -1,9 +1,10 @@
 {% extends "base.html" %}
-{% block title %}TSP Front-Loading Calculator{% endblock %}
+{% block title %}TSP Front-Loading Estimator{% endblock %}
 {% block content %}
-<h2 class="mb-3">TSP Front-Loading Advantage Estimator 🚀</h2>
+<h2 class="mb-3">TSP Front-Loading Estimator 🚀</h2>
 <p class="text-muted" style="font-size: 0.95rem;">
-  This calculator compares front-loading your TSP contributions versus spreading them evenly throughout the year. It assumes consistent pay periods, market growth, and minimum contributions to preserve agency matching eligibility.
+  This tool compares two strategies for reaching your TSP investment goal: front-loading (maximizing early contributions) vs. even contributions throughout the year.
+  You’ll still contribute the minimum to earn the full agency match in both cases.
 </p>
 
 {% if not result %}
@@ -11,38 +12,31 @@
   <div class="row g-3">
     <div class="col-md-6">
       <label class="form-label">Annual Salary ($)</label>
-      <input type="number" class="form-control" name="annual_salary" step="0.01" required
-             value="{{ values.get('annual_salary', '') }}">
+      <input type="number" class="form-control" name="annual_salary" step="0.01" required value="{{ values.get('annual_salary', '') }}">
     </div>
     <div class="col-md-6">
       <label class="form-label">Agency Match (%)</label>
-      <input type="number" class="form-control" name="match_percent" step="0.01" min="0" max="10" required
-             value="{{ values.get('match_percent', '5') }}">
+      <input type="number" class="form-control" name="match_percent" step="0.01" min="0" max="10" required value="{{ values.get('match_percent', '5') }}">
     </div>
     <div class="col-md-6">
       <label class="form-label">Target Investment ($)</label>
-      <input type="number" class="form-control" name="target_investment" step="0.01" required
-             value="{{ values.get('target_investment', '23500') }}">
+      <input type="number" class="form-control" name="target_investment" step="0.01" required value="{{ values.get('target_investment', '23500') }}">
     </div>
     <div class="col-md-6">
-      <label class="form-label">Max Biweekly Contribution ($)</label>
-      <input type="number" class="form-control" name="max_biweekly" step="0.01" required
-             value="{{ values.get('max_biweekly', '') }}">
+      <label class="form-label">Max Per-Pay Contribution ($)</label>
+      <input type="number" class="form-control" name="max_biweekly" step="0.01" required value="{{ values.get('max_biweekly', '') }}">
     </div>
     <div class="col-md-6">
       <label class="form-label">Estimated Annual Growth (%)</label>
-      <input type="number" class="form-control" name="growth_rate" step="0.01" required
-             value="{{ values.get('growth_rate', '6') }}">
+      <input type="number" class="form-control" name="growth_rate" step="0.01" required value="{{ values.get('growth_rate', '6') }}">
     </div>
-    <div class="col-md-6 mt-2">
-    <div class="form-check mt-4">
-        <input class="form-check-input" type="checkbox" name="include_match" id="include_match"
-            {% if values.get('include_match') %}checked{% endif %}>
-        <label class="form-check-label" for="include_match">
-        Include Agency Match in Growth Calculations
-        </label>
+    <div class="col-md-6 form-check mt-4">
+      <input class="form-check-input" type="checkbox" name="include_match_in_growth" value="yes"
+        {% if values.get('include_match_in_growth') == 'yes' %}checked{% endif %}>
+      <label class="form-check-label">
+        Include agency match in growth calculations
+      </label>
     </div>
-    </div>   
   </div>
   <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
     <button type="submit" class="btn btn-primary">Estimate</button>
@@ -67,12 +61,13 @@
 </script>
 
 {% else %}
-<!-- Summary Output -->
+<!-- Output Summary -->
 <div class="alert alert-info">
-  <strong>${{ result["front_ending_balance"] }}</strong> vs. even contributions: <strong>${{ result["even_ending_balance"] }}</strong>. 
+  <strong>${{ result["front_ending_balance"] }}</strong> vs. Even Contributions: <strong>${{ result["even_ending_balance"] }}</strong>. 
   Advantage: <strong>${{ result["advantage"] }}</strong>
 </div>
 
+<!-- Inputs Summary -->
 <div class="card mb-4">
   <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
   <ul class="list-group list-group-flush">
@@ -84,30 +79,33 @@
   </ul>
 </div>
 
+<!-- Strategy Breakdown -->
 <div class="card mb-4">
-  <div class="card-header fw-bold fs-5">🔍 Front-Loading Strategy Details</div>
-  <ul class="list-group list-group-flush">
-    <li class="list-group-item">
-      Front-load <strong>{{ result["front_load_periods"] }}</strong> pay periods at the max: 
-      <strong>${{ values["max_biweekly"] }}</strong>
-    </li>
-    <li class="list-group-item">
-      Follow with <strong>1</strong> pay period contributing <strong>${{ result["one_off_amount"] + result["match_per_period"] }}</strong> (remainder + match)
-    </li>
-    <li class="list-group-item">
-      Then contribute the match amount <strong>(${{ result["match_per_period"] }})</strong> for the remaining 
-      <strong>{{ result["match_only_periods"] }}</strong> pay periods
-    </li>
-    <li class="list-group-item">
-      <em>Agency match contributions were 
-        <strong>{% if result["include_match_in_growth"] %}included{% else %}not included{% endif %}</strong> in growth calculations.
-      </em>
-    </li>
-  </ul>
+  <div class="card-header fw-bold fs-5">🧮 Contribution Strategy Summary</div>
+  <div class="card-body">
+    <ul class="mb-2">
+      <li>Contribute <strong>${{ result["match_amount"] }}</strong> each pay period to get the full agency match.</li>
+      <li>Front-load with <strong>${{ result["max_biweekly"] }}</strong> for <strong>{{ result["front_load_periods"] }}</strong> pay periods.</li>
+      {% if result["one_off_amount"] > result["match_amount"] %}
+        <li>Then contribute <strong>${{ result["one_off_amount"] }}</strong> for 1 pay period to reach the target.</li>
+        <li>After that, continue contributing <strong>${{ result["match_amount"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] }}</strong> pay periods.</li>
+      {% else %}
+        <li>Then simply contribute <strong>${{ result["match_amount"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] + 1 }}</strong> pay periods.</li>
+      {% endif %}
+    </ul>
+    <p class="text-muted mb-0">
+      {% if values.get('include_match_in_growth') == 'yes' %}
+        Agency match contributions <strong>were included</strong> in growth calculations.
+      {% else %}
+        Agency match contributions <strong>were not included</strong> in growth calculations.
+      {% endif %}
+    </p>
+  </div>
 </div>
 
-<!-- Chart Display -->
+<!-- Chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<canvas id="frontloadChart" class="mb-5" height="100"></canvas>
 <script>
   const labels = JSON.parse('{{ chart_data.labels | tojson | safe }}');
   const front = JSON.parse('{{ chart_data.front | tojson | safe }}');
@@ -149,9 +147,7 @@
             }
           }
         },
-        legend: {
-          position: 'bottom'
-        }
+        legend: { position: 'bottom' }
       },
       scales: {
         y: {
@@ -167,22 +163,24 @@
   });
 </script>
 
-<!-- Pay Period Breakdown Table -->
+<!-- Breakdown Table -->
 <div class="table-responsive mt-5">
-  <h4>Pay Period Comparison Table</h4>
+  <h4>📊 Pay Period Breakdown</h4>
   <table class="table table-bordered table-striped table-sm">
     <thead class="table-light">
       <tr>
         <th>PP</th>
-        <th>Front Begin</th>
-        <th>Front Additions</th>
+        <th>Front Start</th>
+        <th>Front Contribution</th>
         <th>Front End</th>
-        <th>Even Begin</th>
-        <th>Even Additions</th>
+        <th>Even Start</th>
+        <th>Even Contribution</th>
         <th>Even End</th>
-        <th>Contribution Type</th>
-        <th>Cumulative (Front)</th>
-        <th>Cumulative (Even)</th>
+        <th>Type
+          <span data-bs-toggle="tooltip" title="Front-Load = Max early contributions. One-Off = Partial final contribution. Match Only = Minimum needed for agency match." style="cursor: help;">ℹ️</span>
+        </th>
+        <th>Cumulative Front</th>
+        <th>Cumulative Even</th>
       </tr>
     </thead>
     <tbody>
@@ -216,15 +214,15 @@
   </table>
 </div>
 
-<div class="mt-3 mb-2">
-  <small class="text-muted">Legend: 
-    <span class="fw-bold text-primary">Front-Load (Max)</span>, 
-    <span class="fw-bold text-warning">One-Off Remainder</span>, 
-    <span class="text-muted">Match Only</span>
+<div class="mt-2 mb-4">
+  <small class="text-muted">
+    Legend: 
+    <span class="fw-bold text-primary">Front-Load (Max)</span> = Contributing the max allowed per pay period.
+    <span class="fw-bold text-warning">One-Off Remainder</span> = Final small top-up to reach goal.
+    <span class="text-muted">Match Only</span> = Minimum needed to get agency match.
   </small>
 </div>
 
-<!-- Navigation -->
 <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
   <a href="/tsp-frontload" class="btn btn-outline-secondary">Back to Calculator</a>
   <a href="/" class="btn btn-outline-primary">Back to Home</a>
