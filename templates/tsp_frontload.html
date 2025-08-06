@@ -61,13 +61,13 @@
 </script>
 
 {% else %}
-<!-- Output Summary -->
+<!-- Summary Alert -->
 <div class="alert alert-info">
   <strong>${{ result["front_ending_balance"] }}</strong> vs. Even Contributions: <strong>${{ result["even_ending_balance"] }}</strong>. 
   Advantage: <strong>${{ result["advantage"] }}</strong>
 </div>
 
-<!-- Inputs Summary -->
+<!-- Input Summary -->
 <div class="card mb-4">
   <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
   <ul class="list-group list-group-flush">
@@ -79,7 +79,7 @@
   </ul>
 </div>
 
-<!-- Strategy Breakdown -->
+<!-- Strategy Summary -->
 <div class="card mb-4">
   <div class="card-header fw-bold fs-5">🧮 Contribution Strategy Summary</div>
   <div class="card-body">
@@ -165,36 +165,27 @@
   });
 </script>
 
-<!-- Breakdown Table -->
+<!-- Table Section -->
 <div class="table-responsive mt-5">
   <h4>📊 Pay Period Breakdown</h4>
-  <table class="table table-bordered table-striped table-sm">
+
+  <!-- Minimal Table -->
+  <table class="table table-sm table-bordered align-middle">
     <thead class="table-light">
       <tr>
         <th>PP</th>
-        <th>Front Start</th>
         <th>Front Contribution</th>
-        <th>Front End</th>
-        <th>Even Start</th>
-        <th>Even Contribution</th>
-        <th>Even End</th>
         <th>Type
           <span data-bs-toggle="tooltip" title="Front-Load = Max early contributions. One-Off = Partial final contribution. Match Only = Minimum needed for agency match." style="cursor: help;">ℹ️</span>
         </th>
-        <th>Cumulative Front</th>
-        <th>Cumulative Even</th>
+        <th>Even Contribution</th>
       </tr>
     </thead>
     <tbody>
       {% for row in table %}
       <tr>
         <td>{{ row['PP'] }}</td>
-        <td>${{ '{:,.2f}'.format(row['Front Begin']) }}</td>
         <td>${{ '{:,.2f}'.format(row['Front Additions']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Front End']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Even Begin']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Even End']) }}</td>
         <td>
           <span class="
             {% if row['Contribution Type'] == 'Front-Load (Max)' %}
@@ -208,23 +199,71 @@
             {{ row['Contribution Type'] }}
           </span>
         </td>
-        <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Front']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Even']) }}</td>
+        <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+
+  <!-- Legend -->
+  <div class="mt-2 mb-2">
+    <small class="text-muted">
+      Legend: 
+      <span class="fw-bold text-primary">Front-Load (Max)</span> = Contributing the max allowed per pay period.
+      <span class="fw-bold text-warning">One-Off Remainder</span> = Final small top-up to reach goal.
+      <span class="text-muted">Match Only</span> = Minimum needed to get agency match.
+    </small>
+  </div>
+
+  <!-- Toggle Button -->
+  <button class="btn btn-sm btn-outline-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#fullBreakdown" aria-expanded="false" aria-controls="fullBreakdown">
+    Show Full Breakdown
+  </button>
+
+  <!-- Full Table -->
+  <div class="collapse mt-3" id="fullBreakdown">
+    <table class="table table-bordered table-striped table-sm mt-2">
+      <thead class="table-light">
+        <tr>
+          <th>PP</th>
+          <th>Front Start</th>
+          <th>Front Contribution</th>
+          <th>Front End</th>
+          <th>Even Start</th>
+          <th>Even Contribution</th>
+          <th>Even End</th>
+          <th>Type</th>
+          <th>Cumulative Front</th>
+          <th>Cumulative Even</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in table %}
+        <tr>
+          <td>{{ row['PP'] }}</td>
+          <td>${{ '{:,.2f}'.format(row['Front Begin']) }}</td>
+          <td>${{ '{:,.2f}'.format(row['Front Additions']) }}</td>
+          <td>${{ '{:,.2f}'.format(row['Front End']) }}</td>
+          <td>${{ '{:,.2f}'.format(row['Even Begin']) }}</td>
+          <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
+          <td>${{ '{:,.2f}'.format(row['Even End']) }}</td>
+          <td>{{ row['Contribution Type'] }}</td>
+          <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Front']) }}</td>
+          <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Even']) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 
-<div class="mt-2 mb-4">
-  <small class="text-muted">
-    Legend: 
-    <span class="fw-bold text-primary">Front-Load (Max)</span> = Contributing the max allowed per pay period.
-    <span class="fw-bold text-warning">One-Off Remainder</span> = Final small top-up to reach goal.
-    <span class="text-muted">Match Only</span> = Minimum needed to get agency match.
-  </small>
-</div>
+<!-- Bootstrap Tooltip Activation -->
+<script>
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+</script>
 
+<!-- Back Buttons -->
 <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
   <a href="/tsp-frontload" class="btn btn-outline-secondary">Back to Calculator</a>
   <a href="/" class="btn btn-outline-primary">Back to Home</a>
