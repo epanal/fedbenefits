@@ -248,11 +248,16 @@ def calculate_tsp_loan(
 
 def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, match_percent, annual_growth_percent):
     total_periods = 26
-    min_contribution = round((annual_salary * match_percent / 100) / total_periods, 2)
-    front_balance = 0
-    even_balance = 0
+    match_per_period = round((annual_salary * match_percent / 100) / total_periods, 2)
+    match_total = match_per_period * total_periods
 
-    even_contribution = target_investment / total_periods
+    # Only need to front-load the portion above match
+    frontload_target = target_investment - match_total
+    frontload_target = max(frontload_target, 0)
+
+    full_frontload_periods = int(frontload_target // (max_biweekly - match_per_period))
+    one_off_remainder = round(frontload_target - full_frontload_periods * (max_biweekly - match_per_period), 2)
+
     period_growth = (1 + annual_growth_percent / 100) ** (1 / total_periods) - 1
 
     labels = []
@@ -260,39 +265,36 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
     front_contributions = []
     even_contributions = []
 
-    cumulative_contribution = 0
-    front_load_periods = 0
-    one_off_amount = 0.0
+    front_balance = 0
+    even_balance = 0
+    even_contribution = round(target_investment / total_periods, 2)
+
+    cumulative_front = 0
+    cumulative_even = 0
 
     for pp in range(1, total_periods + 1):
         labels.append(pp)
 
-        # ---- FRONT STRATEGY ----
+        # FRONT STRATEGY
         front_start = front_balance
-        additions = 0
-        contribution_type = ""
 
-        if cumulative_contribution < target_investment:
-            remaining_needed = round(target_investment - cumulative_contribution, 2)
-
-            if remaining_needed >= max_biweekly:
-                additions = max_biweekly
-                contribution_type = "Front-Load (Max)"
-                front_load_periods += 1
-            else:
-                additions = remaining_needed
-                contribution_type = "One-Off Remainder"
-
-            cumulative_contribution += additions
+        if pp <= full_frontload_periods:
+            additions = max_biweekly
+            contribution_type = "Front-Load (Max)"
+        elif pp == full_frontload_periods + 1 and one_off_remainder > 0:
+            additions = match_per_period + one_off_remainder
+            contribution_type = "One-Off Remainder"
         else:
-            additions = min_contribution
+            additions = match_per_period
             contribution_type = "Match Only"
 
+        cumulative_front += additions
         front_balance = (front_balance + additions) * (1 + period_growth)
 
-        # ---- EVEN STRATEGY ----
+        # EVEN STRATEGY
         even_start = even_balance
         even_add = even_contribution
+        cumulative_even += even_add
         even_balance = (even_balance + even_add) * (1 + period_growth)
 
         table.append({
@@ -304,7 +306,8 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
             "Even Additions": even_add,
             "Even End": even_balance,
             "Contribution Type": contribution_type,
-            "Cumulative Contribution": cumulative_contribution
+            "Cumulative Contribution Front": cumulative_front,
+            "Cumulative Contribution Even": cumulative_even,
         })
 
         front_contributions.append(round(front_balance, 2))
@@ -314,10 +317,9 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
         "front_ending_balance": round(front_balance, 2),
         "even_ending_balance": round(even_balance, 2),
         "advantage": round(front_balance - even_balance, 2),
-        "front_load_periods": front_load_periods,
-        "one_off_amount": round(target_investment - (front_load_periods * max_biweekly), 2)
-                           if target_investment > (front_load_periods * max_biweekly) else 0.0,
-        "cumulative_contributed": round(cumulative_contribution, 2)
+        "front_load_periods": full_frontload_periods,
+        "one_off_amount": one_off_remainder,
+        "cumulative_contributed": round(cumulative_front, 2)
     }
 
     chart_data = {
