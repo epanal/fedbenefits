@@ -303,7 +303,7 @@ def calculate_tsp_frontload(annual_salary, target_investment, max_biweekly, matc
             "Even Begin": even_start,
             "Even Additions": even_add,
             "Even End": even_balance,
-            "Type": contribution_type
+            "Contribution Type": contribution_type
         })
 
         front_contributions.append(round(front_balance, 2))
