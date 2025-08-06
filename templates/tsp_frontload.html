@@ -158,7 +158,8 @@
         <th>Even Additions</th>
         <th>Even End</th>
         <th>Contribution Type</th>
-        <th>Cumulative Contribution</th> <!-- NEW COLUMN -->
+        <th>Cumulative (Front)</th>
+        <th>Cumulative (Even)</th>
       </tr>
     </thead>
     <tbody>
@@ -184,7 +185,8 @@
             {{ row['Contribution Type'] }}
           </span>
         </td>
-        <td>${{ '{:,.2f}'.format(row['Cumulative Contribution']) }}</td> <!-- NEW COLUMN -->
+        <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Front']) }}</td>
+        <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Even']) }}</td>
       </tr>
       {% endfor %}
     </tbody>
