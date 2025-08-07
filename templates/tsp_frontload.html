@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block title %}TSP Front-Loading Estimator{% endblock %}
 {% block content %}
+
 <h2 class="mb-3">TSP Front-Loading Estimator 🚀</h2>
 <p class="text-muted" style="font-size: 0.95rem;">
-  This tool compares two strategies for reaching your TSP investment goal: front-loading (maximizing early contributions) vs. even contributions throughout the year.
+  This tool compares two strategies for reaching your TSP investment goal: front-loading (maximizing early contributions) vs. evenly distributing your contributions over the year.
   You’ll still contribute the minimum to earn the full agency match in both cases.
 </p>
 
@@ -12,7 +13,7 @@
   <div class="row g-3">
     <div class="col-md-6">
       <label class="form-label">Annual Salary ($)</label>
-      <input type="number" class="form-control" name="annual_salary" step="0.01" required value="{{ values.get('annual_salary', '100000') }}">
+      <input type="number" class="form-control" name="annual_salary" step="0.01" required value="{{ values.get('annual_salary', '') }}">
     </div>
     <div class="col-md-6">
       <label class="form-label">Agency Match (%)</label>
@@ -61,10 +62,35 @@
 </script>
 
 {% else %}
-<!-- Result Comparison -->
-<div class="alert alert-info">
-  <strong>${{ result["front_ending_balance"] }}</strong> vs. Even Contributions: <strong>${{ result["even_ending_balance"] }}</strong>.
-  Advantage: <strong>${{ result["advantage"] }}</strong>
+
+<!-- Contribution Strategy Summary -->
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">🧮 Contribution Strategy Summary</div>
+  <div class="card-body">
+    <div class="alert alert-info">
+      The projected TSP balance from front-loading is <strong>${{ result["front_ending_balance"] }}</strong> vs.
+      <strong>${{ result["even_ending_balance"] }}</strong> from even contributions —
+      a projected growth advantage of <strong>${{ result["advantage"] }}</strong> by the end of the year.
+    </div>
+
+    <ul class="mb-2">
+      <li>Always contribute at least <strong>${{ result["match_per_period"] }}</strong> per pay period to receive the full agency match.</li>
+      {% if result["front_load_periods"] > 0 %}
+        <li>First, contribute <strong>${{ result["max_biweekly"] }}</strong> for <strong>{{ result["front_load_periods"] }}</strong> pay periods.</li>
+      {% endif %}
+      {% if result["one_off_amount"] > result["match_per_period"] %}
+        <li>Then contribute <strong>${{ result["one_off_amount"] }}</strong> for 1 pay period.</li>
+      {% endif %}
+      <li>Finally, continue contributing <strong>${{ result["match_per_period"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] }}</strong> pay periods.</li>
+    </ul>
+    <p class="text-muted mb-0">
+      {% if values.get('include_match_in_growth') %}
+        Agency match contributions <strong>were included</strong> in growth calculations.
+      {% else %}
+        Agency match contributions <strong>were not included</strong> in growth calculations.
+      {% endif %}
+    </p>
+  </div>
 </div>
 
 <!-- Inputs Used -->
@@ -79,33 +105,9 @@
   </ul>
 </div>
 
-<!-- Contribution Strategy Summary -->
-<div class="card mb-4">
-  <div class="card-header fw-bold fs-5">🧮 Contribution Strategy Summary</div>
-  <div class="card-body">
-    <ul class="mb-2">
-      <li>Always contribute at least <strong>${{ result["match_per_period"] }}</strong> per pay period to receive the full agency match!</li>
-      {% if result["front_load_periods"] > 0 %}
-        <li>First, contribute <strong>${{ result["max_biweekly"] }}</strong> for <strong>{{ result["front_load_periods"] }}</strong> pay periods.</li>
-      {% endif %}
-      {% if result["one_off_amount"] > result["match_per_period"] %}
-        <li>Additionally, contribute <strong>${{ result["one_off_amount"] }}</strong> for 1 pay period.</li>
-      {% endif %}
-      <li>Then, continue contributing <strong>${{ result["match_per_period"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] }}</strong> pay periods.</li>
-    </ul>
-    <p class="text-muted mb-0">
-      {% if values.get('include_match_in_growth') %}
-        Agency match contributions <strong>were included</strong> in growth calculations.
-      {% else %}
-        Agency match contributions <strong>were not included</strong> in growth calculations.
-      {% endif %}
-    </p>
-  </div>
-</div>
-
 <!-- Chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<canvas id="frontloadChart" class="mb-5" height="100"></canvas>
+<canvas id="frontloadChart" class="mb-5" height="160"></canvas>
 <script>
   const labels = JSON.parse('{{ chart_data.labels | tojson | safe }}');
   const front = JSON.parse('{{ chart_data.front | tojson | safe }}');
@@ -147,7 +149,13 @@
             }
           }
         },
-        legend: { position: 'bottom' }
+        legend: {
+          position: 'bottom',
+          labels: {
+            boxWidth: 15,
+            padding: 20
+          }
+        }
       },
       scales: {
         y: {
@@ -227,16 +235,13 @@
   </tbody>
 </table>
 
-
-
-  <div class="mt-2 mb-2">
-    <small class="text-muted">
-      Legend:
-      <span class="fw-bold text-primary">Front-Load (Max)</span> = Contributing the max allowed per pay period.
-      <span class="fw-bold text-warning">One-Off Remainder</span> = Final small top-up to reach goal.
-      <span class="text-muted">Match Only</span> = Minimum needed to get agency match.
-    </small>
-  </div>
+<div class="mt-2 mb-4">
+  <small class="text-muted d-block">
+    <strong class="text-primary">Front-Load (Max)</strong>: Max allowed contribution per pay period.
+    <strong class="text-warning">One-Off Remainder</strong>: Final small top-up to reach your goal.
+    <span class="text-muted">Match Only</span>: Minimum to get full agency match.
+  </small>
+</div>
 
 <!-- Bootstrap Tooltip Activation -->
 <script>
@@ -249,5 +254,6 @@
   <a href="/tsp-frontload" class="btn btn-outline-secondary">Back to Calculator</a>
   <a href="/" class="btn btn-outline-primary">Back to Home</a>
 </div>
+
 {% endif %}
 {% endblock %}
