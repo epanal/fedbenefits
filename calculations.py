@@ -506,83 +506,83 @@ def calculate_tsp_frontload(
 ):
     num_periods = 26
     match_per_period = round(annual_salary * (match_percent / 100) / num_periods, 2)
-    total_match = match_per_period * num_periods
 
-    # Reserve enough to get full match for 26 periods
-    match_reserved_total = match_per_period * num_periods
-    available_for_frontload = target_investment - match_reserved_total
+    # Reserve match for every period and determine remaining target
+    employee_only_target = target_investment  # match not counted toward goal
+    frontload_target_remaining = employee_only_target
 
-    if available_for_frontload < 0:
-        # Match alone exceeds target, so only contribute match amount each period
-        front_load_periods = 0
+    # Determine how many max contributions we can do
+    frontload_periods = int(frontload_target_remaining // max_biweekly)
+    frontload_amount = max_biweekly
+    one_off_amount = round(frontload_target_remaining - (frontload_periods * frontload_amount), 2)
+
+    # If remainder is basically zero (e.g., floating point), skip one-off
+    if one_off_amount < 0.01:
         one_off_amount = 0
+        match_only_periods = num_periods - frontload_periods
     else:
-        # Determine front-load amount (can’t exceed max_biweekly or available)
-        front_load_amount = min(available_for_frontload, max_biweekly)
-        front_load_periods = int(available_for_frontload // front_load_amount)
-        remainder = round(available_for_frontload - (front_load_amount * front_load_periods), 2)
-        one_off_amount = remainder if remainder > 0 else 0
+        match_only_periods = num_periods - frontload_periods - 1
 
-    match_only_periods = num_periods - front_load_periods - (1 if one_off_amount > 0 else 0)
-
-    # Build per-period contribution schedule
-    front_contributions = []
-    labels = []
+    # Build schedule
     table = []
-    cumulative_front = 0
-    cumulative_even = 0
-
-    # Equal contribution each period
-    even_per_period = round(target_investment / num_periods, 2)
-
-    # Growth calculations
+    labels = []
     front_balance = 0
     even_balance = 0
+    cumulative_front = 0
+    cumulative_even = 0
+    even_per_period = round(employee_only_target / num_periods, 2)
     growth_rate = (1 + annual_growth_percent / 100) ** (1 / num_periods)
 
     for i in range(1, num_periods + 1):
-        if i <= front_load_periods:
-            contrib = front_load_amount + match_per_period
+        if i <= frontload_periods:
+            emp_contrib = frontload_amount
             label = "Front-Load (Max)"
-        elif i == front_load_periods + 1 and one_off_amount > 0:
-            contrib = one_off_amount + match_per_period
+        elif i == frontload_periods + 1 and one_off_amount > 0:
+            emp_contrib = one_off_amount
             label = "One-Off Remainder"
         else:
-            contrib = match_per_period
+            emp_contrib = 0
             label = "Match Only"
 
-        front_contributions.append(contrib)
-        cumulative_front += contrib
-        cumulative_even += even_per_period + match_per_period
+        total_contrib = emp_contrib + match_per_period
+        cumulative_front += emp_contrib
+        cumulative_even += even_per_period
 
-        # Growth
         front_start = front_balance
         even_start = even_balance
 
-        front_balance = (front_balance + (contrib if include_match_in_growth else contrib - match_per_period)) * growth_rate
-        even_contrib = even_per_period + match_per_period
-        even_balance = (even_balance + (even_contrib if include_match_in_growth else even_per_period)) * growth_rate
+        # Growth logic
+        front_balance += emp_contrib
+        if include_match_in_growth:
+            front_balance += match_per_period
+        front_balance *= growth_rate
+
+        even_balance += even_per_period
+        if include_match_in_growth:
+            even_balance += match_per_period
+        even_balance *= growth_rate
 
         table.append({
             "PP": i,
-            "Front Additions": contrib,
-            "Even Additions": even_contrib,
+            "Front Additions": round(total_contrib, 2),
+            "Even Additions": round(even_per_period + match_per_period, 2),
             "Contribution Type": label,
-            "Cumulative Contribution Front": cumulative_front,
-            "Cumulative Contribution Even": cumulative_even,
-            "Front Begin": front_start,
-            "Front End": front_balance,
-            "Even Begin": even_start,
-            "Even End": even_balance
+            "Cumulative Contribution Front": round(cumulative_front, 2),
+            "Cumulative Contribution Even": round(cumulative_even, 2),
+            "Front Begin": round(front_start, 2),
+            "Front End": round(front_balance, 2),
+            "Even Begin": round(even_start, 2),
+            "Even End": round(even_balance, 2)
         })
+
         labels.append(i)
 
     result = {
-        "match_per_period": round(match_per_period, 2),
-        "front_load_periods": front_load_periods,
+        "match_per_period": match_per_period,
+        "front_load_periods": frontload_periods,
         "one_off_amount": one_off_amount,
         "match_only_periods": match_only_periods,
-        "max_biweekly": round(front_load_amount, 2) if available_for_frontload > 0 else 0,
+        "max_biweekly": max_biweekly,
         "front_ending_balance": round(front_balance, 2),
         "even_ending_balance": round(even_balance, 2),
         "advantage": round(front_balance - even_balance, 2)
