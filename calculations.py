@@ -506,84 +506,87 @@ def calculate_tsp_frontload(
 ):
     num_periods = 26
     match_per_period = round(annual_salary * (match_percent / 100) / num_periods, 2)
-    employee_only_target = target_investment  # match not counted toward goal
+    match_total = round(match_per_period * num_periods, 2)
 
-    # Ensure minimum match contributions for all pay periods
-    reserved_match_total = round(num_periods * match_per_period, 2)
-    max_frontload_cap = round(employee_only_target - (num_periods - 1) * match_per_period, 2)
+    # Reserve minimum contribution for all periods to get full match
+    min_contribution_per_period = match_per_period  # Must match at least this to receive full match
+    min_total_contrib = round(min_contribution_per_period * num_periods, 2)
 
-    # Downgrade max_biweekly if needed to avoid overcontribution
-    frontload_amount = min(max_biweekly, max_frontload_cap)
+    if target_investment < min_total_contrib:
+        raise ValueError("Target investment must be at least enough to receive full match.")
 
-    # Determine how many max contributions we can do
-    frontload_periods = int(employee_only_target // frontload_amount)
-    one_off_amount = round(employee_only_target - (frontload_periods * frontload_amount), 2)
+    # Remaining target after match-contribution baseline
+    frontload_target = round(target_investment - min_total_contrib, 2)
 
-    # If remainder is small, skip one-off
-    if one_off_amount < 0.01:
-        one_off_amount = 0
-        match_only_periods = num_periods - frontload_periods
-    else:
-        match_only_periods = num_periods - frontload_periods - 1
+    # Determine front-load periods and one-off amount
+    frontload_periods = int(frontload_target // (max_biweekly - min_contribution_per_period))
+    remainder = round(frontload_target - frontload_periods * (max_biweekly - min_contribution_per_period), 2)
 
-    # Build schedule
+    one_off_needed = remainder > 0
+    one_off_amount = round(remainder + min_contribution_per_period, 2) if one_off_needed else 0
+
+    # Adjust match-only periods to fit within 26
+    total_contribution_periods = frontload_periods + (1 if one_off_needed else 0)
+    match_only_periods = max(0, num_periods - total_contribution_periods)
+
+    # Prepare even strategy contribution
+    even_per_period = round(target_investment / num_periods, 2)
+
+    # Growth setup
+    growth_rate = (1 + annual_growth_percent / 100) ** (1 / num_periods)
+
     table = []
-    labels = []
     front_balance = 0
     even_balance = 0
     cumulative_front = 0
     cumulative_even = 0
-    even_contributions = []
-
-    # Build even strategy with rounding fix
-    even_base = round(employee_only_target / num_periods, 2)
-    for i in range(num_periods - 1):
-        even_contributions.append(even_base)
-    last_even = round(employee_only_target - sum(even_contributions), 2)
-    even_contributions.append(last_even)
-
-    growth_rate = (1 + annual_growth_percent / 100) ** (1 / num_periods)
+    labels = []
 
     for i in range(1, num_periods + 1):
+        # Front-load logic
         if i <= frontload_periods:
-            emp_contrib = frontload_amount
+            emp_contrib = max_biweekly
             label = "Front-Load (Max)"
-        elif i == frontload_periods + 1 and one_off_amount > 0:
+        elif i == frontload_periods + 1 and one_off_needed:
             emp_contrib = one_off_amount
             label = "One-Off Remainder"
         else:
-            emp_contrib = match_per_period
+            emp_contrib = min_contribution_per_period
             label = "Match Only"
 
-        total_contrib = emp_contrib + match_per_period
-        cumulative_front += emp_contrib
-        cumulative_even += even_contributions[i - 1]
+        # Even contribution (no logic change)
+        even_emp_contrib = even_per_period
 
+        # Track cumulative contributions (employee-only)
+        cumulative_front += emp_contrib
+        cumulative_even += even_emp_contrib
+
+        # Start balances
         front_start = front_balance
         even_start = even_balance
 
-        # Growth logic
+        # Apply growth and match (if enabled)
         front_balance += emp_contrib
         if include_match_in_growth:
             front_balance += match_per_period
         front_balance *= growth_rate
 
-        even_balance += even_contributions[i - 1]
+        even_balance += even_emp_contrib
         if include_match_in_growth:
             even_balance += match_per_period
         even_balance *= growth_rate
 
         table.append({
             "PP": i,
-            "Front Additions": round(total_contrib, 2),
-            "Even Additions": round(even_contributions[i - 1] + match_per_period, 2),
-            "Contribution Type": label,
-            "Cumulative Contribution Front": round(cumulative_front, 2),
-            "Cumulative Contribution Even": round(cumulative_even, 2),
-            "Front Begin": round(front_start, 2),
-            "Front End": round(front_balance, 2),
-            "Even Begin": round(even_start, 2),
-            "Even End": round(even_balance, 2)
+            "Front Contribution": round(emp_contrib, 2),
+            "Even Contribution": round(even_emp_contrib, 2),
+            "Type": label,
+            "Cumulative Front": round(cumulative_front, 2),
+            "Cumulative Even": round(cumulative_even, 2),
+            "Front Start Balance": round(front_start, 2),
+            "Front End Balance": round(front_balance, 2),
+            "Even Start Balance": round(even_start, 2),
+            "Even End Balance": round(even_balance, 2),
         })
 
         labels.append(i)
@@ -593,7 +596,7 @@ def calculate_tsp_frontload(
         "front_load_periods": frontload_periods,
         "one_off_amount": one_off_amount,
         "match_only_periods": match_only_periods,
-        "max_biweekly": frontload_amount,
+        "max_biweekly": max_biweekly,
         "front_ending_balance": round(front_balance, 2),
         "even_ending_balance": round(even_balance, 2),
         "advantage": round(front_balance - even_balance, 2)
@@ -601,8 +604,8 @@ def calculate_tsp_frontload(
 
     chart_data = {
         "labels": labels,
-        "front": [round(row["Front End"], 2) for row in table],
-        "even": [round(row["Even End"], 2) for row in table]
+        "front": [row["Front End Balance"] for row in table],
+        "even": [row["Even End Balance"] for row in table]
     }
 
     return result, table, chart_data
