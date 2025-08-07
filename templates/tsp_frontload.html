@@ -94,7 +94,7 @@
       <li>Finally, continue contributing <strong>${{ result["match_per_period"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] }}</strong> pay periods.</li>
     </ul>
     <p class="text-muted mb-0">
-      {% if values.get('include_match_in_growth') == 'yes' %}
+      {% if values.get('include_match_in_growth') %}
         Agency match contributions <strong>were included</strong> in growth calculations.
       {% else %}
         Agency match contributions <strong>were not included</strong> in growth calculations.
