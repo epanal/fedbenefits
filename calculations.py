@@ -508,14 +508,22 @@ def calculate_tsp_frontload(
     match_per_period = round((annual_salary * match_percent / 100) / total_periods, 2)
     match_total = match_per_period * total_periods
 
-    # Only need to front-load the portion above match
+    # Front-load target excludes match unless explicitly included
     frontload_target = max(target_investment - match_total, 0)
 
     full_frontload_periods = int(frontload_target // (max_biweekly - match_per_period))
     one_off_remainder = round(frontload_target - full_frontload_periods * (max_biweekly - match_per_period), 2)
-    match_only_periods = total_periods - full_frontload_periods - (1 if one_off_remainder > 0 else 0)
+
+    has_one_off = one_off_remainder > 0
+    match_only_periods = total_periods - full_frontload_periods - (1 if has_one_off else 0)
 
     period_growth = (1 + annual_growth_percent / 100) ** (1 / total_periods) - 1
+
+    from decimal import Decimal, ROUND_DOWN
+    target_decimal = Decimal(str(target_investment))
+    even_contribution_rounded = (target_decimal / total_periods).quantize(Decimal("0.01"), rounding=ROUND_DOWN)
+    even_contribution = float(even_contribution_rounded)
+    even_final_correction = float(target_decimal - even_contribution_rounded * (total_periods - 1))
 
     labels = []
     table = []
@@ -524,23 +532,17 @@ def calculate_tsp_frontload(
 
     front_balance = 0
     even_balance = 0
-    target_decimal = Decimal(str(target_investment))
-    even_contribution_rounded = (target_decimal / total_periods).quantize(Decimal("0.01"), rounding=ROUND_DOWN)
-    partial_correction = float(target_decimal - even_contribution_rounded * (total_periods - 1))
-    even_contribution = float(even_contribution_rounded)
-
     cumulative_front = 0
     cumulative_even = 0
 
     for pp in range(1, total_periods + 1):
         labels.append(pp)
 
-        # FRONT STRATEGY
-        front_start = front_balance
+        # --- FRONT STRATEGY ---
         if pp <= full_frontload_periods:
             employee_add = max_biweekly
             contribution_type = "Front-Load (Max)"
-        elif pp == full_frontload_periods + 1 and one_off_remainder > 0:
+        elif pp == full_frontload_periods + 1 and has_one_off:
             employee_add = match_per_period + one_off_remainder
             contribution_type = "One-Off Remainder"
         else:
@@ -552,19 +554,19 @@ def calculate_tsp_frontload(
         cumulative_front += employee_add
         front_balance = (front_balance + total_add) * (1 + period_growth)
 
-        # EVEN STRATEGY
-        even_start = even_balance
-        even_add = even_contribution if pp < total_periods else partial_correction
+        # --- EVEN STRATEGY ---
+        even_add = even_contribution if pp < total_periods else even_final_correction
         agency_even_add = match_per_period if include_match_in_growth else 0
         cumulative_even += even_add
         even_balance = (even_balance + even_add + agency_even_add) * (1 + period_growth)
 
+        # --- Save Row ---
         table.append({
             "PP": pp,
-            "Front Begin": front_start,
+            "Front Begin": front_balance / (1 + period_growth) - total_add,
             "Front Additions": employee_add,
             "Front End": front_balance,
-            "Even Begin": even_start,
+            "Even Begin": even_balance / (1 + period_growth) - (even_add + agency_even_add),
             "Even Additions": even_add,
             "Even End": even_balance,
             "Contribution Type": contribution_type,
@@ -575,7 +577,7 @@ def calculate_tsp_frontload(
         front_contributions.append(round(front_balance, 2))
         even_contributions.append(round(even_balance, 2))
 
-    actual_one_off_amount = match_per_period + one_off_remainder if one_off_remainder > 0 else 0
+    actual_one_off_amount = match_per_period + one_off_remainder if has_one_off else 0
 
     result = {
         "front_ending_balance": round(front_balance, 2),
@@ -588,14 +590,15 @@ def calculate_tsp_frontload(
         "cumulative_contributed": round(cumulative_front, 2),
         "include_match_in_growth": include_match_in_growth,
         "max_biweekly": max_biweekly,
-        "even_contribution": float(even_contribution),
-        "even_final_correction": partial_correction
+        "even_contribution": even_contribution,
+        "even_final_correction": even_final_correction,
+        "has_one_off": has_one_off
     }
 
     chart_data = {
         "labels": labels,
-        "front": front_contributions,
-        "even": even_contributions
+        "front": [round(val, 2) for val in front_contributions],
+        "even": [round(val, 2) for val in even_contributions]
     }
 
     return result, table, chart_data
