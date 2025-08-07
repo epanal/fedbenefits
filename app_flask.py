@@ -320,7 +320,7 @@ def tsp_frontload():
             max_biweekly = float(form["max_biweekly"])
             match_percent = float(form["match_percent"])
             growth_rate = float(form["growth_rate"])
-            include_match = "include_match" in form
+            include_match = "include_match_in_growth" in form  
         except (ValueError, KeyError):
             values = {
                 "annual_salary": form.get("annual_salary", ""),
@@ -328,7 +328,7 @@ def tsp_frontload():
                 "max_biweekly": form.get("max_biweekly", ""),
                 "match_percent": form.get("match_percent", ""),
                 "growth_rate": form.get("growth_rate", ""),
-                "include_match": "include_match" in form
+                "include_match_in_growth": "include_match_in_growth" in form  
             }
             return render_template("tsp_frontload.html", result=None, values=values, error="Invalid input")
 
@@ -338,7 +338,7 @@ def tsp_frontload():
             "max_biweekly": max_biweekly,
             "match_percent": match_percent,
             "growth_rate": growth_rate,
-            "include_match": include_match
+            "include_match_in_growth": include_match  
         }
 
         try:
@@ -348,7 +348,7 @@ def tsp_frontload():
                 max_biweekly=max_biweekly,
                 match_percent=match_percent,
                 annual_growth_percent=growth_rate,
-                include_match_in_growth=include_match  # ✅ NEW ARG
+                include_match_in_growth=include_match
             )
         except Exception as e:
             import traceback
@@ -359,6 +359,7 @@ def tsp_frontload():
 
     # GET request
     return render_template("tsp_frontload.html", result=None, values={})
+
 
 @app.errorhandler(404)
 def not_found(e):
