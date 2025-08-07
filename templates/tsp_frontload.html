@@ -8,15 +8,66 @@
 </p>
 
 {% if not result %}
-  <!-- FORM (unchanged) -->
+<form method="POST" class="mb-4 needs-validation" novalidate>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Annual Salary ($)</label>
+      <input type="number" class="form-control" name="annual_salary" step="0.01" required value="{{ values.get('annual_salary', '') }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Agency Match (%)</label>
+      <input type="number" class="form-control" name="match_percent" step="0.01" min="0" max="10" required value="{{ values.get('match_percent', '5') }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Target Investment ($)</label>
+      <input type="number" class="form-control" name="target_investment" step="0.01" required value="{{ values.get('target_investment', '23500') }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Max Per-Pay Contribution ($)</label>
+      <input type="number" class="form-control" name="max_biweekly" step="0.01" required value="{{ values.get('max_biweekly', '') }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Estimated Annual Growth (%)</label>
+      <input type="number" class="form-control" name="growth_rate" step="0.01" required value="{{ values.get('growth_rate', '6') }}">
+    </div>
+    <div class="col-md-6 form-check mt-4">
+      <input class="form-check-input" type="checkbox" name="include_match_in_growth" value="yes"
+        {% if values.get('include_match_in_growth') == 'yes' %}checked{% endif %}>
+      <label class="form-check-label">
+        Include agency match in growth calculations
+      </label>
+    </div>
+  </div>
+  <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+    <button type="submit" class="btn btn-primary">Estimate</button>
+    <a href="/" class="btn btn-outline-secondary">Back to Home</a>
+  </div>
+</form>
+
+<script>
+(function () {
+  'use strict';
+  const forms = document.querySelectorAll('.needs-validation');
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', e => {
+      if (!form.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    }, false);
+  });
+})();
+</script>
+
 {% else %}
-<!-- Summary Alert -->
+<!-- Result Comparison -->
 <div class="alert alert-info">
-  <strong>${{ result["front_ending_balance"] }}</strong> vs. Even Contributions: <strong>${{ result["even_ending_balance"] }}</strong>. 
+  <strong>${{ result["front_ending_balance"] }}</strong> vs. Even Contributions: <strong>${{ result["even_ending_balance"] }}</strong>.
   Advantage: <strong>${{ result["advantage"] }}</strong>
 </div>
 
-<!-- Input Summary -->
+<!-- Inputs Used -->
 <div class="card mb-4">
   <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
   <ul class="list-group list-group-flush">
@@ -28,7 +79,7 @@
   </ul>
 </div>
 
-<!-- Strategy Summary -->
+<!-- Contribution Strategy Summary -->
 <div class="card mb-4">
   <div class="card-header fw-bold fs-5">🧮 Contribution Strategy Summary</div>
   <div class="card-body">
@@ -38,11 +89,9 @@
         <li>First, contribute <strong>${{ result["max_biweekly"] }}</strong> for <strong>{{ result["front_load_periods"] }}</strong> pay periods.</li>
       {% endif %}
       {% if result["one_off_amount"] > result["match_per_period"] %}
-        <li>Then contribute a one-off <strong>${{ result["one_off_amount"] }}</strong> in the next pay period to hit your goal.</li>
-        <li>After that, continue contributing <strong>${{ result["match_per_period"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] }}</strong> pay periods.</li>
-      {% else %}
-        <li>Then continue contributing <strong>${{ result["match_per_period"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] + 1 }}</strong> pay periods.</li>
+        <li>Then contribute <strong>${{ result["one_off_amount"] }}</strong> for 1 pay period to reach the target.</li>
       {% endif %}
+      <li>Finally, continue contributing <strong>${{ result["match_per_period"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] }}</strong> pay periods.</li>
     </ul>
     <p class="text-muted mb-0">
       {% if values.get('include_match_in_growth') == 'yes' %}
@@ -114,17 +163,18 @@
   });
 </script>
 
-<!-- Minimal Table -->
+<!-- Pay Period Breakdown Table -->
 <div class="table-responsive mt-5">
   <h4>📊 Pay Period Breakdown</h4>
 
+  <!-- Minimal Table -->
   <table class="table table-sm table-bordered align-middle">
     <thead class="table-light">
       <tr>
         <th>PP</th>
         <th>Front Contribution</th>
-        <th>
-          Type <span data-bs-toggle="tooltip" title="Front-Load = Max early contributions. One-Off = Final top-up. Match Only = Minimum for agency match." style="cursor: help;">ℹ️</span>
+        <th>Type
+          <span data-bs-toggle="tooltip" title="Front-Load = Max early contributions. One-Off = Partial top-up. Match Only = Minimum for agency match." style="cursor: help;">ℹ️</span>
         </th>
         <th>Even Contribution</th>
       </tr>
@@ -136,9 +186,9 @@
         <td>${{ '{:,.2f}'.format(row['Front Additions']) }}</td>
         <td>
           <span class="
-            {% if 'Front-Load' in row['Contribution Type'] %}
+            {% if row['Contribution Type'] == 'Front-Load (Max)' %}
               text-primary fw-bold
-            {% elif 'One-Off' in row['Contribution Type'] %}
+            {% elif row['Contribution Type'] == 'One-Off Remainder' %}
               text-warning fw-bold
             {% else %}
               text-muted
@@ -153,12 +203,13 @@
     </tbody>
   </table>
 
+  <!-- Legend -->
   <div class="mt-2 mb-2">
     <small class="text-muted">
-      Legend:
-      <span class="fw-bold text-primary">Front-Load (Max)</span> = Max contribution per pay period.
-      <span class="fw-bold text-warning">One-Off Remainder</span> = Final partial contribution to meet target.
-      <span class="text-muted">Match Only</span> = Minimum required for agency match.
+      Legend: 
+      <span class="fw-bold text-primary">Front-Load (Max)</span> = Contributing the max allowed per pay period.
+      <span class="fw-bold text-warning">One-Off Remainder</span> = Partial final top-up to meet your target.
+      <span class="text-muted">Match Only</span> = Minimum needed to receive full agency match.
     </small>
   </div>
 
@@ -204,11 +255,13 @@
   </div>
 </div>
 
+<!-- Bootstrap Tooltip Activation -->
 <script>
   const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
   tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
 </script>
 
+<!-- Navigation Buttons -->
 <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
   <a href="/tsp-frontload" class="btn btn-outline-secondary">Back to Calculator</a>
   <a href="/" class="btn btn-outline-primary">Back to Home</a>
