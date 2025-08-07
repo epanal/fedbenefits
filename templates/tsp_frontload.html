@@ -84,14 +84,14 @@
   <div class="card-header fw-bold fs-5">🧮 Contribution Strategy Summary</div>
   <div class="card-body">
     <ul class="mb-2">
-      <li>Always contribute at least <strong>${{ result["match_per_period"] }}</strong> per pay period to receive the full agency match.</li>
+      <li>Always contribute at least <strong>${{ result["match_per_period"] }}</strong> per pay period to receive the full agency match!</li>
       {% if result["front_load_periods"] > 0 %}
         <li>First, contribute <strong>${{ result["max_biweekly"] }}</strong> for <strong>{{ result["front_load_periods"] }}</strong> pay periods.</li>
       {% endif %}
       {% if result["one_off_amount"] > result["match_per_period"] %}
-        <li>Then contribute <strong>${{ result["one_off_amount"] }}</strong> for 1 pay period to reach the target.</li>
+        <li>Additionally, contribute <strong>${{ result["one_off_amount"] }}</strong> for 1 pay period.</li>
       {% endif %}
-      <li>Finally, continue contributing <strong>${{ result["match_per_period"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] }}</strong> pay periods.</li>
+      <li>Then, continue contributing <strong>${{ result["match_per_period"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] }}</strong> pay periods.</li>
     </ul>
     <p class="text-muted mb-0">
       {% if values.get('include_match_in_growth') %}
@@ -163,56 +163,71 @@
   });
 </script>
 
-<!-- 📊 Full Pay Period Breakdown -->
-<div class="table-responsive mt-5">
-  <h4>📊 Pay Period Breakdown</h4>
+<!-- Growth Comparison Table -->
+<h4 class="mt-4">📈 Growth Comparison</h4>
+<table class="table table-bordered table-striped table-sm align-middle">
+  <thead class="table-light">
+    <tr>
+      <th>PP</th>
+      <th>Front Start Balance</th>
+      <th>Front End Balance</th>
+      <th>Even Start Balance</th>
+      <th>Even End Balance</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in table %}
+    <tr>
+      <td>{{ row['PP'] }}</td>
+      <td>${{ '{:,.2f}'.format(row['Front Begin']) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Front End']) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Even Begin']) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Even End']) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
-  <table class="table table-bordered table-striped table-sm align-middle">
-    <thead class="table-light">
-      <tr>
-        <th>PP</th>
-        <th>Front Start</th>
-        <th>Front Contribution</th>
-        <th>Front End</th>
-        <th>Even Start</th>
-        <th>Even Contribution</th>
-        <th>Even End</th>
-        <th>Type
-          <span data-bs-toggle="tooltip" title="Front-Load = Max early contributions. One-Off = Partial final contribution. Match Only = Minimum needed for agency match." style="cursor: help;">ℹ️</span>
-        </th>
-        <th>Cumulative Front</th>
-        <th>Cumulative Even</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for row in table %}
-      <tr>
-        <td>{{ row['PP'] }}</td>
-        <td>${{ '{:,.2f}'.format(row['Front Begin']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Front Additions']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Front End']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Even Begin']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Even End']) }}</td>
-        <td>
-          <span class="
-            {% if row['Contribution Type'] == 'Front-Load (Max)' %}
-              text-primary fw-bold
-            {% elif row['Contribution Type'] == 'One-Off Remainder' %}
-              text-warning fw-bold
-            {% else %}
-              text-muted
-            {% endif %}
-          ">
-            {{ row['Contribution Type'] }}
-          </span>
-        </td>
-        <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Front']) }}</td>
-        <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Even']) }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<!-- Contribution Comparison Table -->
+<h4 class="mt-4">🧾 Contribution Comparison</h4>
+<table class="table table-bordered table-striped table-sm align-middle">
+  <thead class="table-light">
+    <tr>
+      <th>PP</th>
+      <th>Front Contribution</th>
+      <th>Even Contribution</th>
+      <th>Type</th>
+      <th>Cumulative Front</th>
+      <th>Cumulative Even</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in table %}
+    <tr>
+      <td>{{ row['PP'] }}</td>
+      <td>${{ '{:,.2f}'.format(row['Front Additions']) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
+      <td>
+        <span class="
+          {% if row['Contribution Type'] == 'Front-Load (Max)' %}
+            text-primary fw-bold
+          {% elif row['Contribution Type'] == 'One-Off Remainder' %}
+            text-warning fw-bold
+          {% else %}
+            text-muted
+          {% endif %}
+        ">
+          {{ row['Contribution Type'] }}
+        </span>
+      </td>
+      <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Front']) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Even']) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
 
   <div class="mt-2 mb-2">
     <small class="text-muted">
