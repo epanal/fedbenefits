@@ -511,23 +511,30 @@ def calculate_tsp_frontload(
     # Ensure minimum contribution to receive match
     min_contribution = match_amount
 
+    # Cap the max_biweekly if it exceeds the target investment
+    if max_biweekly > target_investment:
+        max_biweekly = target_investment
+
     # Calculate front-load contributions
     front_contributions = [min_contribution] * pay_periods
     cumulative = 0
     front_load_periods = 0
+    one_off_amount = 0
 
     for i in range(pay_periods):
-        if cumulative + (max_biweekly - min_contribution) < target_investment:
+        remaining = target_investment - cumulative
+
+        if remaining > max_biweekly:
             front_contributions[i] = max_biweekly
             cumulative += max_biweekly
             front_load_periods += 1
+        elif remaining > min_contribution:
+            front_contributions[i] = round(remaining, 2)
+            cumulative += remaining
+            one_off_amount = round(remaining, 2)
+            break
         else:
-            remainder = target_investment - cumulative
-            if remainder > min_contribution:
-                front_contributions[i] = remainder
-                cumulative += remainder
-            else:
-                front_contributions[i] = min_contribution
+            # Already reached target or remaining is too small
             break
 
     # Remaining periods are match-only
@@ -544,23 +551,21 @@ def calculate_tsp_frontload(
     table = []
 
     for pp in range(1, pay_periods + 1):
-        # Get current contributions
         f_contrib = round(front_contributions[pp - 1], 2)
         e_contrib = round(even_contributions[pp - 1], 2)
 
-        # Add growth and new contributions for front-load strategy
+        # Start of period balances
         front_start = front_balance
+        even_start = even_balance
+
+        # Apply growth and contributions
         front_balance = front_balance * (1 + growth_per_period) + f_contrib
+        even_balance = even_balance * (1 + growth_per_period) + e_contrib
+
         if include_match_in_growth:
             front_balance += match_amount
-
-        # Add growth and new contributions for even strategy
-        even_start = even_balance
-        even_balance = even_balance * (1 + growth_per_period) + e_contrib
-        if include_match_in_growth:
             even_balance += match_amount
 
-        # Update cumulative contributions
         front_cumulative += f_contrib
         even_cumulative += e_contrib
 
@@ -589,8 +594,8 @@ def calculate_tsp_frontload(
         "match_per_period": round(min_contribution, 2),
         "max_biweekly": round(max_biweekly, 2),
         "front_load_periods": front_load_periods,
-        "one_off_amount": round(max(front_contributions) if front_load_periods < pay_periods else 0, 2),
-        "match_only_periods": pay_periods - (front_load_periods + (1 if front_load_periods < pay_periods else 0)),
+        "one_off_amount": one_off_amount,
+        "match_only_periods": pay_periods - front_load_periods - (1 if one_off_amount else 0),
         "front_ending_balance": round(front_balance, 2),
         "even_ending_balance": round(even_balance, 2),
         "advantage": round(front_balance - even_balance, 2),
