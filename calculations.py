@@ -506,17 +506,20 @@ def calculate_tsp_frontload(
 ):
     num_periods = 26
     match_per_period = round(annual_salary * (match_percent / 100) / num_periods, 2)
-
-    # Reserve match for every period and determine remaining target
     employee_only_target = target_investment  # match not counted toward goal
-    frontload_target_remaining = employee_only_target
+
+    # Ensure minimum match contributions for all pay periods
+    reserved_match_total = round(num_periods * match_per_period, 2)
+    max_frontload_cap = round(employee_only_target - (num_periods - 1) * match_per_period, 2)
+
+    # Downgrade max_biweekly if needed to avoid overcontribution
+    frontload_amount = min(max_biweekly, max_frontload_cap)
 
     # Determine how many max contributions we can do
-    frontload_periods = int(frontload_target_remaining // max_biweekly)
-    frontload_amount = max_biweekly
-    one_off_amount = round(frontload_target_remaining - (frontload_periods * frontload_amount), 2)
+    frontload_periods = int(employee_only_target // frontload_amount)
+    one_off_amount = round(employee_only_target - (frontload_periods * frontload_amount), 2)
 
-    # If remainder is basically zero (e.g., floating point), skip one-off
+    # If remainder is small, skip one-off
     if one_off_amount < 0.01:
         one_off_amount = 0
         match_only_periods = num_periods - frontload_periods
@@ -530,7 +533,15 @@ def calculate_tsp_frontload(
     even_balance = 0
     cumulative_front = 0
     cumulative_even = 0
-    even_per_period = round(employee_only_target / num_periods, 2)
+    even_contributions = []
+
+    # Build even strategy with rounding fix
+    even_base = round(employee_only_target / num_periods, 2)
+    for i in range(num_periods - 1):
+        even_contributions.append(even_base)
+    last_even = round(employee_only_target - sum(even_contributions), 2)
+    even_contributions.append(last_even)
+
     growth_rate = (1 + annual_growth_percent / 100) ** (1 / num_periods)
 
     for i in range(1, num_periods + 1):
@@ -541,12 +552,12 @@ def calculate_tsp_frontload(
             emp_contrib = one_off_amount
             label = "One-Off Remainder"
         else:
-            emp_contrib = 0
+            emp_contrib = match_per_period
             label = "Match Only"
 
         total_contrib = emp_contrib + match_per_period
         cumulative_front += emp_contrib
-        cumulative_even += even_per_period
+        cumulative_even += even_contributions[i - 1]
 
         front_start = front_balance
         even_start = even_balance
@@ -557,7 +568,7 @@ def calculate_tsp_frontload(
             front_balance += match_per_period
         front_balance *= growth_rate
 
-        even_balance += even_per_period
+        even_balance += even_contributions[i - 1]
         if include_match_in_growth:
             even_balance += match_per_period
         even_balance *= growth_rate
@@ -565,7 +576,7 @@ def calculate_tsp_frontload(
         table.append({
             "PP": i,
             "Front Additions": round(total_contrib, 2),
-            "Even Additions": round(even_per_period + match_per_period, 2),
+            "Even Additions": round(even_contributions[i - 1] + match_per_period, 2),
             "Contribution Type": label,
             "Cumulative Contribution Front": round(cumulative_front, 2),
             "Cumulative Contribution Even": round(cumulative_even, 2),
@@ -582,7 +593,7 @@ def calculate_tsp_frontload(
         "front_load_periods": frontload_periods,
         "one_off_amount": one_off_amount,
         "match_only_periods": match_only_periods,
-        "max_biweekly": max_biweekly,
+        "max_biweekly": frontload_amount,
         "front_ending_balance": round(front_balance, 2),
         "even_ending_balance": round(even_balance, 2),
         "advantage": round(front_balance - even_balance, 2)
@@ -595,5 +606,3 @@ def calculate_tsp_frontload(
     }
 
     return result, table, chart_data
-
-
