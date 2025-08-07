@@ -194,7 +194,6 @@
     <tr>
       <td>{{ row['PP'] }}</td>
       <td>${{ '{:,.2f}'.format(row['Front Additions']) }}</td>
-      <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
       <td>
         <span class="
           {% if row['Contribution Type'] == 'Front-Load (Max)' %}
@@ -208,6 +207,7 @@
           {{ row['Contribution Type'] }}
         </span>
       </td>
+      <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
       <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Front']) }}</td>
       <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Even']) }}</td>
     </tr>
