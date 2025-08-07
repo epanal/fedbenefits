@@ -63,6 +63,18 @@
 
 {% else %}
 
+<!-- Inputs Used -->
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Annual Salary: ${{ values["annual_salary"] }}</li>
+    <li class="list-group-item">Agency Match %: {{ values["match_percent"] }}%</li>
+    <li class="list-group-item">Target Investment: ${{ values["target_investment"] }}</li>
+    <li class="list-group-item">Max Per-Pay Contribution: ${{ values["max_biweekly"] }}</li>
+    <li class="list-group-item">Annual Growth Estimate: {{ values["growth_rate"] }}%</li>
+  </ul>
+</div>
+
 <!-- Contribution Strategy Summary -->
 <div class="card mb-4">
   <div class="card-header fw-bold fs-5">🧮 Contribution Strategy Summary</div>
@@ -91,18 +103,6 @@
       {% endif %}
     </p>
   </div>
-</div>
-
-<!-- Inputs Used -->
-<div class="card mb-4">
-  <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
-  <ul class="list-group list-group-flush">
-    <li class="list-group-item">Annual Salary: ${{ values["annual_salary"] }}</li>
-    <li class="list-group-item">Agency Match %: {{ values["match_percent"] }}%</li>
-    <li class="list-group-item">Target Investment: ${{ values["target_investment"] }}</li>
-    <li class="list-group-item">Max Per-Pay Contribution: ${{ values["max_biweekly"] }}</li>
-    <li class="list-group-item">Annual Growth Estimate: {{ values["growth_rate"] }}%</li>
-  </ul>
 </div>
 
 <!-- Chart -->
@@ -171,31 +171,6 @@
   });
 </script>
 
-<!-- Growth Comparison Table -->
-<h4 class="mt-4">📈 Growth Comparison</h4>
-<table class="table table-bordered table-striped table-sm align-middle">
-  <thead class="table-light sticky-top bg-white">
-    <tr>
-      <th>PP</th>
-      <th>Front Start Balance</th>
-      <th>Front End Balance</th>
-      <th>Even Start Balance</th>
-      <th>Even End Balance</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for row in table %}
-    <tr>
-      <td>{{ row['PP'] }}</td>
-      <td>${{ '{:,.2f}'.format(row['Front Begin']) }}</td>
-      <td>${{ '{:,.2f}'.format(row['Front End']) }}</td>
-      <td>${{ '{:,.2f}'.format(row['Even Begin']) }}</td>
-      <td>${{ '{:,.2f}'.format(row['Even End']) }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
 <!-- Contribution Comparison Table -->
 <h4 class="mt-4">🧾 Contribution Comparison</h4>
 <table class="table table-bordered table-striped table-sm align-middle">
@@ -235,13 +210,36 @@
   </tbody>
 </table>
 
-<div class="mt-2 mb-4">
-  <small class="text-muted d-block">
-    <strong class="text-primary">Front-Load (Max)</strong>: Max allowed contribution per pay period.
-    <strong class="text-warning">One-Off Remainder</strong>: Final small top-up to reach your goal.
-    <span class="text-muted">Match Only</span>: Minimum to get full agency match.
-  </small>
+<div class="mt-2 mb-4 text-muted small">
+  <div><strong class="text-primary">Front-Load (Max)</strong>: Max allowed contribution per pay period.</div>
+  <div><strong class="text-warning">One-Off Remainder</strong>: Final small top-up to reach your goal.</div>
+  <div><span class="text-muted">Match Only</span>: Minimum to get full agency match.</div>
 </div>
+
+<!-- Growth Comparison Table -->
+<h4 class="mt-4">📈 Growth Comparison</h4>
+<table class="table table-bordered table-striped table-sm align-middle">
+  <thead class="table-light sticky-top bg-white">
+    <tr>
+      <th>PP</th>
+      <th>Front Start Balance</th>
+      <th>Front End Balance</th>
+      <th>Even Start Balance</th>
+      <th>Even End Balance</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in table %}
+    <tr>
+      <td>{{ row['PP'] }}</td>
+      <td>${{ '{:,.2f}'.format(row['Front Begin']) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Front End']) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Even Begin']) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Even End']) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
 <!-- Bootstrap Tooltip Activation -->
 <script>
