@@ -364,32 +364,51 @@ def calculate_scd(current_start_str, prior_periods):
     adjusted_scd = (current_start - timedelta(days=total_days)).date()
     return adjusted_scd, total_days, period_breakdown
 
-def calculate_tsp_growth(current_balance, annual_contribution, years, annual_rate):
-    r = annual_rate / 100
-    P = current_balance
-    PMT = annual_contribution
-    yearly_data = []
+def calculate_tsp_growth(current_balance, annual_salary, employee_percent,
+                         employer_percent, years, annual_rate, inflation_rate):
+    """
+    Calculates TSP growth with separate salary, employee %, employer %, 
+    and inflation adjustment.
 
-    balance = P
+    Returns:
+        dict with:
+        - future_value_nominal
+        - future_value_real
+        - total_contributions
+        - growth
+        - yearly_data (list of dicts)
+    """
+
+    # Calculate annual contribution from employee + employer
+    annual_contribution = annual_salary * (employee_percent + employer_percent) / 100
+
+    balance = current_balance
+    yearly_data = []
+    total_contributions = 0
+
     for year in range(1, years + 1):
-        balance = balance * (1 + r) + PMT
-        contributions = PMT * year
-        growth = balance - contributions - P
+        # Add contributions for the year
+        balance += annual_contribution
+        total_contributions += annual_contribution
+
+        # Apply growth
+        balance *= (1 + annual_rate / 100)
+
+        # Track breakdown for chart
         yearly_data.append({
             "year": year,
-            "balance": round(balance, 2),
-            "contributions": round(contributions, 2),
-            "growth": round(growth, 2)
+            "contributions": round(total_contributions, 2),
+            "growth": round(balance - total_contributions - current_balance, 2)
         })
 
-    future_value = balance
-    total_contributions = PMT * years
-    growth_total = future_value - total_contributions - P
+    future_value_nominal = balance
+    future_value_real = balance / ((1 + inflation_rate / 100) ** years)
 
     return {
-        "future_value": round(future_value, 2),
+        "future_value_nominal": round(future_value_nominal, 2),
+        "future_value_real": round(future_value_real, 2),
         "total_contributions": round(total_contributions, 2),
-        "growth": round(growth_total, 2),
+        "growth": round(future_value_nominal - current_balance - total_contributions, 2),
         "yearly_data": yearly_data
     }
 

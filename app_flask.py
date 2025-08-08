@@ -76,27 +76,54 @@ def show_drp_comparison_form():
 @app.route("/tsp-growth", methods=["GET", "POST"])
 def tsp_growth():
     if request.method == "POST":
-        current_balance = float(request.form["current_balance"])
-        annual_contribution = float(request.form["annual_contribution"])
-        years = int(request.form["years"])
-        annual_rate = float(request.form["annual_rate"])
+        f = request.form
 
-        # Save inputs in session for displaying later
+        # New inputs
+        current_balance   = float(f["current_balance"])
+        annual_salary     = float(f["annual_salary"])
+        employee_percent  = float(f["employee_percent"])
+        employer_percent  = float(f.get("employer_percent", 0) or 0)
+        years             = int(f["years"])
+        annual_rate       = float(f["annual_rate"])
+        inflation_rate    = float(f.get("inflation_rate", 0) or 0)
+
+        # Persist what user entered (handy for repopulating the form)
         session["tsp_inputs"] = {
             "current_balance": current_balance,
-            "annual_contribution": annual_contribution,
+            "annual_salary": annual_salary,
+            "employee_percent": employee_percent,
+            "employer_percent": employer_percent,
             "years": years,
-            "annual_rate": annual_rate
+            "annual_rate": annual_rate,
+            "inflation_rate": inflation_rate,
         }
 
-        result = calculate_tsp_growth(current_balance, annual_contribution, years, annual_rate)
-        return render_template("tsp_growth.html", result=result,
-                               current_balance=current_balance,
-                               annual_contribution=annual_contribution,
-                               years=years,
-                               annual_rate=annual_rate)
+        result = calculate_tsp_growth(
+            current_balance=current_balance,
+            annual_salary=annual_salary,
+            employee_percent=employee_percent,
+            employer_percent=employer_percent,
+            years=years,
+            annual_rate=annual_rate,
+            inflation_rate=inflation_rate,
+        )
 
-    return render_template("tsp_growth.html", result=None)
+        return render_template(
+            "tsp_growth.html",
+            result=result,
+            # Pass through for the “Inputs Used” card
+            current_balance=current_balance,
+            annual_salary=annual_salary,
+            employee_percent=employee_percent,
+            employer_percent=employer_percent,
+            years=years,
+            annual_rate=annual_rate,
+            inflation_rate=inflation_rate,
+        )
+
+    # GET: optionally prefill from last run
+    values = session.get("tsp_inputs", {})
+    return render_template("tsp_growth.html", result=None, values=values)
 
 @app.route("/tsp-loan", methods=["GET", "POST"])
 def tsp_loan():

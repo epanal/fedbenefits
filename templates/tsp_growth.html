@@ -8,21 +8,43 @@
 <!-- Input Form -->
 <form method="POST" class="mb-4">
   <div class="mb-3">
-    <label for="current_balance" class="form-label">Current Account Balance ($)</label>
+    <label class="form-label">Current Account Balance ($)</label>
     <input type="number" step="0.01" class="form-control" name="current_balance" min="0" required>
   </div>
+
   <div class="mb-3">
-    <label for="annual_contribution" class="form-label">Annual Contribution + TSP Match ($)</label>
-    <input type="number" step="0.01" class="form-control" name="annual_contribution" min="0" required>
+    <label class="form-label">Annual Salary ($)</label>
+    <input type="number" step="0.01" class="form-control" name="annual_salary" min="0" required>
   </div>
+
   <div class="mb-3">
-    <label for="years" class="form-label">Number of Years Until Retirement</label>
+    <label class="form-label">Employee Contribution (% of salary)</label>
+    <input type="number" step="0.01" class="form-control" name="employee_percent" min="0" max="100" required>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Employer Match (% of salary)</label>
+    <input type="number" step="0.01" class="form-control" name="employer_percent" min="0" max="100" required>
+    <div class="form-text text-muted">
+      For most federal employees, this is 5%.
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Years Until Retirement</label>
     <input type="number" class="form-control" name="years" min="1" required>
   </div>
+
   <div class="mb-3">
-    <label for="annual_rate" class="form-label">Expected Annual Rate of Return (%)</label>
+    <label class="form-label">Expected Annual Rate of Return (%)</label>
     <input type="number" step="0.1" class="form-control" name="annual_rate" value="6.5" required>
   </div>
+
+  <div class="mb-3">
+    <label class="form-label">Expected Annual Inflation (%)</label>
+    <input type="number" step="0.1" class="form-control" name="inflation_rate" value="2.5" required>
+  </div>
+
   <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
     <button type="submit" class="btn btn-primary">Calculate</button>
     <a href="/" class="btn btn-outline-secondary">Back to Home</a>
@@ -30,10 +52,9 @@
 </form>
 
 {% else %}
-<!-- Results Section -->
 <!-- Disclaimer -->
 <p class="text-muted mt-3" style="font-size: 12px;">
-  *This is a simplified projection. It does not account for inflation, wage increases, changes in contribution limits, or tax implications.*
+  *This is a simplified projection. It does not account for changes in contribution limits, unexpected market events, or tax implications.*
 </p>
 
 <!-- Inputs Used -->
@@ -41,9 +62,12 @@
   <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
   <ul class="list-group list-group-flush">
     <li class="list-group-item">Current Balance: ${{ "{:,.2f}".format(current_balance) }}</li>
-    <li class="list-group-item">Annual Contribution + Match: ${{ "{:,.2f}".format(annual_contribution) }}</li>
+    <li class="list-group-item">Annual Salary: ${{ "{:,.2f}".format(annual_salary) }}</li>
+    <li class="list-group-item">Employee Contribution: {{ employee_percent }}%</li>
+    <li class="list-group-item">Employer Match: {{ employer_percent }}%</li>
     <li class="list-group-item">Years Until Retirement: {{ years }}</li>
     <li class="list-group-item">Expected Annual Return: {{ annual_rate }}%</li>
+    <li class="list-group-item">Expected Inflation: {{ inflation_rate }}%</li>
   </ul>
 </div>
 
@@ -52,20 +76,23 @@
   <div class="card-header fw-bold fs-5">📊 Results</div>
   <ul class="list-group list-group-flush">
     <li class="list-group-item">
-      Estimated Future Balance:
-      <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.future_value) }}</span>
+      Future Balance (Nominal): 
+      <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.future_value_nominal) }}</span>
+    </li>
+    <li class="list-group-item">
+      Future Balance (Today’s Dollars): 
+      <span class="fw-bold text-success">${{ "{:,.2f}".format(result.future_value_real) }}</span>
     </li>
     <li class="list-group-item">Total Contributions: ${{ "{:,.2f}".format(result.total_contributions) }}</li>
-    <li class="list-group-item">Growth: ${{ "{:,.2f}".format(result.growth) }}</li>
+    <li class="list-group-item">Total Growth: ${{ "{:,.2f}".format(result.growth) }}</li>
   </ul>
 </div>
 
-<!-- JSON Data for Chart -->
+<!-- Chart -->
 <script id="yearly-data" type="application/json">
   {{ result.yearly_data | tojson }}
 </script>
 
-<!-- Chart Container -->
 <div style="height: 400px;" class="mb-4">
   <canvas id="growthChart"></canvas>
 </div>
@@ -76,8 +103,7 @@ const labels = yearlyData.map(item => item.year);
 const contributions = yearlyData.map(item => item.contributions);
 const growth = yearlyData.map(item => item.growth);
 
-const ctx = document.getElementById('growthChart');
-new Chart(ctx, {
+new Chart(document.getElementById('growthChart'), {
   type: 'bar',
   data: {
     labels: labels,
@@ -102,40 +128,28 @@ new Chart(ctx, {
     plugins: {
       title: {
         display: true,
-        text: 'Year-by-Year TSP Growth (Stacked)'
+        text: 'Year-by-Year TSP Growth (Nominal)'
       },
       tooltip: {
         callbacks: {
-          title: function (tooltipItems) {
-            return `Year: ${tooltipItems[0].label}`;
-          },
-          label: function (context) {
-            return `${context.dataset.label}: $${context.parsed.y.toLocaleString()}`;
-          }
+          label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
         }
       },
-      legend: {
-        position: 'bottom'
-      }
+      legend: { position: 'bottom' }
     },
     scales: {
-      x: {
-        stacked: true
-      },
-      y: {
+      x: { stacked: true },
+      y: { 
         stacked: true,
         beginAtZero: true,
-        ticks: {
-          callback: value => '$' + value.toLocaleString()
-        }
+        ticks: { callback: v => '$' + v.toLocaleString() }
       }
     }
   }
 });
 </script>
 
-
-<!-- Navigation Buttons -->
+<!-- Navigation -->
 <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
   <a href="/tsp-growth" class="btn btn-outline-secondary">Back to Calculator</a>
   <a href="/" class="btn btn-outline-primary">Back to Home</a>
