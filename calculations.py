@@ -507,33 +507,36 @@ def calculate_tsp_frontload(
     num_periods = 26
     match_per_period = round(annual_salary * (match_percent / 100) / num_periods, 2)
 
-    # Reserve match for every period and determine remaining target
-    employee_only_target = target_investment  # match not counted toward goal
-    frontload_target_remaining = employee_only_target
+    # Employee-only target (match not counted toward goal)
+    employee_only_target = target_investment
+    remaining_target = employee_only_target
 
-    # Determine how many max contributions we can do
-    frontload_periods = int(frontload_target_remaining // max_biweekly)
+    # Determine front-load periods
+    frontload_periods = int(remaining_target // max_biweekly)
     frontload_amount = max_biweekly
-    one_off_amount = round(frontload_target_remaining - (frontload_periods * frontload_amount), 2)
+    one_off_amount = round(remaining_target - (frontload_periods * frontload_amount), 2)
 
-    # If remainder is basically zero (e.g., floating point), skip one-off
+    # Handle near-zero remainder
     if one_off_amount < 0.01:
         one_off_amount = 0
         match_only_periods = num_periods - frontload_periods
     else:
         match_only_periods = num_periods - frontload_periods - 1
 
-    # Build schedule
+    # Even contribution per period (employee only)
+    even_per_period = round(employee_only_target / num_periods, 2)
+
+    # Prepare tracking
     table = []
     labels = []
-    front_balance = 0
-    even_balance = 0
-    cumulative_front = 0
-    cumulative_even = 0
-    even_per_period = round(employee_only_target / num_periods, 2)
+    front_balance = 0.0
+    even_balance = 0.0
+    cumulative_front = 0.0
+    cumulative_even = 0.0
     growth_rate = (1 + annual_growth_percent / 100) ** (1 / num_periods)
 
     for i in range(1, num_periods + 1):
+        # Determine employee contribution for front-load strategy
         if i <= frontload_periods:
             emp_contrib = frontload_amount
             label = "Front-Load (Max)"
@@ -541,17 +544,18 @@ def calculate_tsp_frontload(
             emp_contrib = one_off_amount
             label = "One-Off Remainder"
         else:
-            emp_contrib = 0
+            emp_contrib = 0.0
             label = "Match Only"
 
-        total_contrib = emp_contrib + match_per_period
-        cumulative_front += emp_contrib
-        cumulative_even += even_per_period
+        # Update cumulative (employee only)
+        cumulative_front = min(round(cumulative_front + emp_contrib, 2), employee_only_target)
+        cumulative_even = min(round(cumulative_even + even_per_period, 2), employee_only_target)
 
+        # Record starting balances for growth tracking
         front_start = front_balance
         even_start = even_balance
 
-        # Growth logic
+        # Apply contributions + optional match to balances
         front_balance += emp_contrib
         if include_match_in_growth:
             front_balance += match_per_period
@@ -562,13 +566,14 @@ def calculate_tsp_frontload(
             even_balance += match_per_period
         even_balance *= growth_rate
 
+        # Add to table (employee-only contributions in "Additions" & cumulative columns)
         table.append({
             "PP": i,
-            "Front Additions": round(total_contrib, 2),
-            "Even Additions": round(even_per_period + match_per_period, 2),
+            "Front Additions": round(emp_contrib, 2),
+            "Even Additions": round(even_per_period, 2),
             "Contribution Type": label,
-            "Cumulative Contribution Front": round(cumulative_front, 2),
-            "Cumulative Contribution Even": round(cumulative_even, 2),
+            "Cumulative Contribution Front": cumulative_front,
+            "Cumulative Contribution Even": cumulative_even,
             "Front Begin": round(front_start, 2),
             "Front End": round(front_balance, 2),
             "Even Begin": round(even_start, 2),
@@ -590,8 +595,8 @@ def calculate_tsp_frontload(
 
     chart_data = {
         "labels": labels,
-        "front": [round(row["Front End"], 2) for row in table],
-        "even": [round(row["Even End"], 2) for row in table]
+        "front": [row["Front End"] for row in table],
+        "even": [row["Even End"] for row in table]
     }
 
     return result, table, chart_data
