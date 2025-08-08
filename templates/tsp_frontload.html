@@ -106,15 +106,11 @@
     </div>
 
     <ul class="mb-2">
-      <li>Always contribute at least <strong>${{ result["match_per_period"] }}</strong> per pay period to receive the full agency match.</li>
-      {% if result["front_load_periods"] > 0 %}
-        <li>First, contribute <strong>${{ result["max_biweekly"] }}</strong> for <strong>{{ result["front_load_periods"] }}</strong> pay periods.</li>
-      {% endif %}
-      {% if result["one_off_amount"] > result["match_per_period"] %}
-        <li>Then contribute <strong>${{ result["one_off_amount"] }}</strong> for 1 pay period.</li>
-      {% endif %}
-      <li>Finally, continue contributing <strong>${{ result["match_per_period"] }}</strong> for the remaining <strong>{{ result["match_only_periods"] }}</strong> pay periods.</li>
+      {% for line in result["summary_lines"] %}
+        <li>{{ line }}</li>
+      {% endfor %}
     </ul>
+
     <p class="text-muted mb-0">
       {% if values.get('include_match_in_growth') %}
         Agency match contributions <strong>were included</strong> in growth calculations.
@@ -213,28 +209,35 @@
     {% for row in table %}
     <tr>
       <td>{{ row['PP'] }}</td>
-      <td>${{ '{:,.2f}'.format(row['Front Additions']) }}</td>
+
+      <!-- Front Contribution (employee-only) -->
+      <td>${{ '{:,.2f}'.format(row['Front Contribution']|default(0)) }}</td>
+
+      <!-- Even Contribution (employee-only) -->
+      <td>${{ '{:,.2f}'.format(row['Even Contribution']|default(0)) }}</td>
+
+      <!-- Type -->
       <td>
         <span class="
-          {% if row['Contribution Type'] == 'Front-Load (Max)' %}
+          {% if row['Type'] == 'Front-Load (Max)' %}
             text-primary fw-bold
-          {% elif row['Contribution Type'] == 'One-Off Remainder' %}
+          {% elif row['Type'] == 'One-Off Remainder' %}
             text-warning fw-bold
           {% else %}
             text-muted
           {% endif %}
         ">
-          {{ row['Contribution Type'] }}
+          {{ row['Type'] }}
         </span>
       </td>
-      <td>${{ '{:,.2f}'.format(row['Even Additions']) }}</td>
-      <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Front']) }}</td>
-      <td>${{ '{:,.2f}'.format(row['Cumulative Contribution Even']) }}</td>
+
+      <!-- Cumulatives (employee-only) -->
+      <td>${{ '{:,.2f}'.format(row['Cumulative Front']|default(0)) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Cumulative Even']|default(0)) }}</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
-
 
 <!-- Growth Comparison Table -->
 <h4 class="mt-4">📈 Growth Comparison</h4>
@@ -252,10 +255,10 @@
     {% for row in table %}
     <tr>
       <td>{{ row['PP'] }}</td>
-      <td>${{ '{:,.2f}'.format(row['Front Begin']) }}</td>
-      <td>${{ '{:,.2f}'.format(row['Front End']) }}</td>
-      <td>${{ '{:,.2f}'.format(row['Even Begin']) }}</td>
-      <td>${{ '{:,.2f}'.format(row['Even End']) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Front Begin']|default(0)) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Front End']|default(0)) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Even Begin']|default(0)) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Even End']|default(0)) }}</td>
     </tr>
     {% endfor %}
   </tbody>

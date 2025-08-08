@@ -497,141 +497,159 @@ def calculate_tsp_loan(
     }
 
 def calculate_tsp_frontload(
-    annual_salary: float,
-    target_investment: float,
-    max_biweekly: float,
-    match_percent: float,
-    annual_growth_percent: float,
-    include_match_in_growth: bool = False
+    annual_salary,
+    target_investment,
+    max_biweekly,
+    match_percent,
+    annual_growth_percent,
+    include_match_in_growth=False
 ):
-    from decimal import Decimal, ROUND_DOWN, ROUND_HALF_UP
+    # --- constants / base values ---
+    num_periods = 26
+    # Employee minimum needed each PP to qualify for match (employee-only dollars)
+    base = round(annual_salary * (match_percent / 100) / num_periods, 2)
 
-    NUM_PERIODS = 26
-
-    # Match per period (the minimum employee contribution we assume needed to get full match)
-    match_per_period = round(annual_salary * (match_percent / 100.0) / NUM_PERIODS, 2)
-
-    # You said: both strategies still contribute the minimum needed to get the match.
-    # Enforce that the target is at least the match-minimum across the year.
-    min_required_total = round(match_per_period * NUM_PERIODS, 2)
-    if target_investment < min_required_total:
+    # Require enough target to fund the base all year (otherwise you can't earn full match)
+    min_year_employee = round(base * num_periods, 2)
+    if target_investment < min_year_employee:
         raise ValueError(
-            f"Annual contribution must be at least ${min_required_total:,.2f} "
-            f"to receive the full match across all pay periods."
+            f"Target investment (${target_investment:,.2f}) must be at least "
+            f"the yearly minimum to receive full match (${min_year_employee:,.2f})."
         )
 
-    # Extra dollars beyond the match-minimum that we can front-load
-    extra_total = round(target_investment - min_required_total, 2)
+    # Extra dollars you can front-load beyond the reserved base in every period
+    extra_front_budget = round(target_investment - min_year_employee, 2)
 
-    # Per-period cap on how much "extra" we can add on top of the match-minimum
-    max_extra_per_period = max(0.0, round(max_biweekly - match_per_period, 2))
+    # The most EXTRA you can add in any front-load period (employee-only)
+    per_period_extra_cap = max(0.0, round(max_biweekly - base, 2))
 
-    # Even strategy (employee-only) — avoid rounding drift: floor 25 periods, fix the last one
-    target_dec = Decimal(str(target_investment))
-    even_floor = (target_dec / Decimal(NUM_PERIODS)).quantize(Decimal("0.01"), rounding=ROUND_DOWN)
-    even_contribs = [float(even_floor)] * (NUM_PERIODS - 1)
-    even_contribs.append(float((target_dec - even_floor * (NUM_PERIODS - 1)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)))
+    # How many full "max" periods fit, then a one-off remainder (employee-only extras)
+    if per_period_extra_cap > 0:
+        full_max_periods = int(extra_front_budget // per_period_extra_cap)
+        extra_remainder = round(extra_front_budget - full_max_periods * per_period_extra_cap, 2)
+    else:
+        full_max_periods = 0
+        extra_remainder = 0.0
 
-    # Front-load schedule (employee-only)
-    front_emp_contribs = []
-    labels = []
-    extra_left = extra_total
-    front_load_periods = 0
-    one_off_amount = 0.0
-    hit_one_off = False
-
-    for i in range(NUM_PERIODS):
-        if extra_left <= 0:
-            # Only the match-minimum remains
-            emp = match_per_period
-            label = "Match Only"
+    # --- build schedules (employee-only amounts) ---
+    # Front plan: base in all 26 periods, plus extras up front
+    front_emp = []
+    for i in range(1, num_periods + 1):
+        if i <= full_max_periods:
+            # base + full extra -> equals max_biweekly (employee-only)
+            emp = round(base + per_period_extra_cap, 2)
+            label = "Front-Load (Max)"
+        elif i == full_max_periods + 1 and extra_remainder > 0:
+            emp = round(base + extra_remainder, 2)
+            label = "One-Off Remainder"
         else:
-            # Take as much extra as allowed this period (but not more than what's left)
-            take = min(max_extra_per_period, extra_left)
-            emp = round(match_per_period + take, 2)
-            extra_left = round(extra_left - take, 2)
+            emp = round(base, 2)
+            label = "Match Only"
+        front_emp.append((emp, label))
 
-            if take == max_extra_per_period and max_extra_per_period > 0:
-                # A full "max" front-load period
-                label = "Front-Load (Max)"
-                front_load_periods += 1
-            else:
-                # This is the partial period where we burn the last bit of extra
-                label = "One-Off Remainder"
-                one_off_amount = emp
-                hit_one_off = True
+    # Even plan: distribute employee-only dollars in cents, put remainder in LAST period
+    tgt_cents = int(round(target_investment * 100))          # total employee cents
+    base_even_cents = tgt_cents // num_periods               # floor per period
+    leftover_cents = tgt_cents - base_even_cents * num_periods
+    even_emp = []
+    for i in range(1, num_periods + 1):
+        cents = base_even_cents + (leftover_cents if i == num_periods else 0)
+        even_emp.append(round(cents / 100.0, 2))
 
-        front_emp_contribs.append(emp)
-        labels.append(i + 1)
-
-    # Count remaining match-only periods
-    match_only_periods = NUM_PERIODS - front_load_periods - (1 if hit_one_off else 0)
-    if match_only_periods < 0:
-        match_only_periods = 0  # just in case
-
-    # Growth calc (balance series)
-    period_growth = (1 + annual_growth_percent / 100.0) ** (1.0 / NUM_PERIODS)
+    # --- growth calculation (optionally include employer match in the account growth) ---
+    growth_rate = (1 + annual_growth_percent / 100) ** (1 / num_periods)
+    match_per_period = base  # employer contribution per period (not shown in table, used for growth if flagged)
 
     front_balance = 0.0
     even_balance = 0.0
     cumulative_front = 0.0
     cumulative_even = 0.0
-
     table = []
-    for i in range(NUM_PERIODS):
-        # Employee-only contributions for the comparison table
-        fe = round(front_emp_contribs[i], 2)
-        ee = round(even_contribs[i], 2)
-        cumulative_front = round(cumulative_front + fe, 2)
-        cumulative_even = round(cumulative_even + ee, 2)
+    labels = []
 
-        # Label already determined above for front; generate even label solely for table visuals
-        label = (
-            "Front-Load (Max)" if fe == round(match_per_period + max_extra_per_period, 2) and max_extra_per_period > 0
-            else "One-Off Remainder" if fe > match_per_period
-            else "Match Only"
-        )
+    for i in range(1, num_periods + 1):
+        f_emp, f_label = front_emp[i - 1]
+        e_emp = even_emp[i - 1]
 
-        # Growth balances (optionally include match)
-        front_start = front_balance
-        even_start = even_balance
+        # cumulative (employee-only)
+        cumulative_front = round(cumulative_front + f_emp, 2)
+        cumulative_even = round(cumulative_even + e_emp, 2)
 
-        front_in = fe + (match_per_period if include_match_in_growth else 0.0)
-        even_in = ee + (match_per_period if include_match_in_growth else 0.0)
+        # growth step
+        f_begin = front_balance
+        e_begin = even_balance
 
-        front_balance = (front_balance + front_in) * period_growth
-        even_balance = (even_balance + even_in) * period_growth
+        # front account
+        add_front = f_emp + (match_per_period if include_match_in_growth else 0.0)
+        front_balance = (front_balance + add_front) * growth_rate
+
+        # even account
+        add_even = e_emp + (match_per_period if include_match_in_growth else 0.0)
+        even_balance = (even_balance + add_even) * growth_rate
 
         table.append({
-            "PP": i + 1,
-            # EMPLOYEE-ONLY numbers in the comparison table:
-            "Front Additions": fe,
-            "Even Additions": ee,
-            "Contribution Type": label,
-            "Cumulative Contribution Front": cumulative_front,
-            "Cumulative Contribution Even": cumulative_even,
-            # Growth rows:
-            "Front Begin": round(front_start, 2),
+            "PP": i,
+            "Front Contribution": round(f_emp, 2),     # employee-only
+            "Even Contribution": round(e_emp, 2),      # employee-only
+            "Type": f_label,
+            "Cumulative Front": round(cumulative_front, 2),
+            "Cumulative Even": round(cumulative_even, 2),
+            "Front Begin": round(f_begin, 2),
             "Front End": round(front_balance, 2),
-            "Even Begin": round(even_start, 2),
+            "Even Begin": round(e_begin, 2),
             "Even End": round(even_balance, 2),
         })
+        labels.append(i)
+
+    # --- derive summary from actual schedule (not assumptions) ---
+    front_max_count = sum(1 for emp, _lbl in front_emp if emp == round(max_biweekly, 2))
+    # a one-off is any period strictly between base and max (employee-only)
+    one_off_emp = next((emp for emp, _ in front_emp if base < emp < round(max_biweekly, 2)), 0.0)
+    match_only_count = sum(1 for emp, _ in front_emp if emp == base)
+
+    if front_max_count > 0 and one_off_emp > 0:
+        summary_lines = [
+            f"Always contribute at least ${base} per pay period to receive the full agency match.",
+            f"First, contribute ${round(max_biweekly,2)} for {front_max_count} pay periods.",
+            f"Then contribute ${round(one_off_emp,2)} for 1 pay period.",
+            f"Finally, continue contributing ${base} for the remaining {match_only_count} pay periods."
+        ]
+    elif front_max_count > 0 and one_off_emp == 0:
+        summary_lines = [
+            f"Always contribute at least ${base} per pay period to receive the full agency match.",
+            f"First, contribute ${round(max_biweekly,2)} for {front_max_count} pay periods.",
+            f"Finally, continue contributing ${base} for the remaining {match_only_count} pay periods."
+        ]
+    elif front_max_count == 0 and one_off_emp > 0:
+        # Edge case: only a one-off (includes the base that period)
+        # Compute “remaining” match-only periods correctly
+        remaining = match_only_count - 1 if match_only_count > 0 else 0
+        summary_lines = [
+            f"Always contribute at least ${base} per pay period to receive the full agency match.",
+            f"Make a one-off of ${round(one_off_emp,2)} in the first pay period,",
+            f"then contribute ${base} for the remaining {remaining} pay periods."
+        ]
+    else:
+        summary_lines = [
+            f"Contribute ${base} in each pay period to receive the full agency match."
+        ]
 
     result = {
-        "match_per_period": round(match_per_period, 2),
-        "front_load_periods": front_load_periods,
-        "one_off_amount": round(one_off_amount, 2) if hit_one_off else 0.0,
-        "match_only_periods": match_only_periods,
-        "max_biweekly": round(match_per_period + max_extra_per_period, 2) if max_extra_per_period > 0 else round(match_per_period, 2),
+        "match_per_period": round(base, 2),
+        "front_load_periods": front_max_count,
+        "one_off_amount": round(one_off_emp, 2),
+        "match_only_periods": match_only_count,
+        "max_biweekly": round(max_biweekly, 2),  # employee-only max per PP
         "front_ending_balance": round(front_balance, 2),
         "even_ending_balance": round(even_balance, 2),
-        "advantage": round(front_balance - even_balance, 2)
+        "advantage": round(front_balance - even_balance, 2),
+        "summary_lines": summary_lines,
     }
 
     chart_data = {
         "labels": labels,
-        "front": [round(r["Front End"], 2) for r in table],
-        "even": [round(r["Even End"], 2) for r in table],
+        "front": [row["Front End"] for row in table],
+        "even": [row["Even End"] for row in table],
     }
 
     return result, table, chart_data
