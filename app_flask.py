@@ -80,83 +80,72 @@ def tsp_growth():
 
         # Always required
         current_balance = float(f.get("current_balance", 0) or 0)
+        annual_salary   = float(f.get("annual_salary", 0) or 0)
         years           = int(f.get("years", 0) or 0)
         annual_rate     = float(f.get("annual_rate", 0) or 0)
         inflation_rate  = float(f.get("inflation_rate", 0) or 0)
 
         # Toggle: 'percent' or 'dollar'
-        mode = f.get("contrib_mode", "percent")
+        mode = f.get("contribution_type", "percent")
 
-        # Convert to dollars for the calc function
         if mode == "percent":
-            annual_salary    = float(f.get("annual_salary", 0) or 0)
-            employee_percent = float(f.get("employee_percent", 0) or 0)
+            # Percent mode
+            employee_percent = float(f.get("contribution_percent", 0) or 0)
             employer_percent = float(f.get("employer_percent", 0) or 0)
-
-            employee_amount = annual_salary * (employee_percent / 100.0)
-            employer_amount = annual_salary * (employer_percent / 100.0)
-
-        else:  # dollar mode
-            employee_amount = float(f.get("employee_amount", 0) or 0)
+            contribution_dollar = 0
+            employer_amount = 0
+        else:
+            # Dollar mode
+            employee_amount = float(f.get("contribution_dollar", 0) or 0)
             employer_amount = float(f.get("employer_amount", 0) or 0)
-            # Optional: if user also typed a salary, we’ll pass it through for display
-            annual_salary    = float(f.get("annual_salary", 0) or 0)
-            employee_percent = float(f.get("employee_percent", 0) or 0)
-            employer_percent = float(f.get("employer_percent", 0) or 0)
+            contribution_dollar = employee_amount
+            employee_percent = (employee_amount / annual_salary * 100) if annual_salary else 0
+            employer_percent = (employer_amount / annual_salary * 100) if annual_salary else 0
 
-        annual_contribution = round(employee_amount + employer_amount, 2)
-
-        # Call your existing calculation (unchanged signature)
+        # Call the calculation function
         result = calculate_tsp_growth(
             current_balance=current_balance,
-            annual_contribution=annual_contribution,
+            annual_salary=annual_salary,
+            employee_percent=employee_percent,
+            employer_percent=employer_percent,
             years=years,
             annual_rate=annual_rate,
+            inflation_rate=inflation_rate
         )
 
-        # Optional: show a "real" (inflation-adjusted) future value for context
-        if inflation_rate > 0:
-            discount = (1 + inflation_rate / 100.0) ** years
-            result["real_future_value"] = round(result["future_value"] / discount, 2)
-        else:
-            result["real_future_value"] = None
-
-        # Persist everything to repopulate the form
+        # Persist everything for pre-filling form later
         session["tsp_inputs"] = {
             "contrib_mode": mode,
             "current_balance": current_balance,
             "annual_salary": annual_salary,
             "employee_percent": employee_percent,
             "employer_percent": employer_percent,
-            "employee_amount": round(employee_amount, 2),
-            "employer_amount": round(employer_amount, 2),
+            "contribution_dollar": contribution_dollar,
+            "employer_amount": employer_amount,
             "years": years,
             "annual_rate": annual_rate,
-            "inflation_rate": inflation_rate,
-            "annual_contribution": annual_contribution,
+            "inflation_rate": inflation_rate
         }
 
-        # Pass through fields your template might show in the "Inputs Used" card
         return render_template(
             "tsp_growth.html",
             result=result,
             current_balance=current_balance,
-            annual_contribution=annual_contribution,  # what the calc used
-            years=years,
-            annual_rate=annual_rate,
-            inflation_rate=inflation_rate,
-            # breakdown for display (use or ignore in template)
-            contrib_mode=mode,
             annual_salary=annual_salary,
             employee_percent=employee_percent,
             employer_percent=employer_percent,
-            employee_amount=round(employee_amount, 2),
-            employer_amount=round(employer_amount, 2),
+            contribution_dollar=contribution_dollar,
+            employer_amount=employer_amount,
+            years=years,
+            annual_rate=annual_rate,
+            inflation_rate=inflation_rate,
+            contrib_mode=mode
         )
 
-    # GET: prefill from last run (if any)
+    # GET: prefill from last run
     values = session.get("tsp_inputs", {})
     return render_template("tsp_growth.html", result=None, values=values)
+
 
 @app.route("/tsp-loan", methods=["GET", "POST"])
 def tsp_loan():

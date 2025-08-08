@@ -9,34 +9,40 @@
 <form method="POST" class="mb-4">
   <div class="mb-3">
     <label class="form-label">Current Account Balance ($)</label>
-    <input type="number" step="0.01" class="form-control" name="current_balance" min="0" required>
+    <input type="number" step="0.01" class="form-control" name="current_balance" min="0"
+           value="{{ values.get('current_balance','') }}" required>
   </div>
 
   <div class="mb-3">
     <label class="form-label">Annual Salary ($)</label>
-    <input type="number" step="0.01" class="form-control" name="annual_salary" min="0" required>
+    <input type="number" step="0.01" class="form-control" name="annual_salary" min="0"
+           value="{{ values.get('annual_salary','') }}" required>
   </div>
 
   <div class="mb-3">
     <label class="form-label">Contribution Type</label><br>
     <div class="form-check form-check-inline">
-      <input class="form-check-input" type="radio" name="contribution_type" value="percent" checked>
+      <input class="form-check-input" type="radio" name="contribution_type" value="percent"
+             {% if values.get('contrib_mode','percent') != 'dollar' %}checked{% endif %}>
       <label class="form-check-label">Percentage of Salary</label>
     </div>
     <div class="form-check form-check-inline">
-      <input class="form-check-input" type="radio" name="contribution_type" value="dollar">
+      <input class="form-check-input" type="radio" name="contribution_type" value="dollar"
+             {% if values.get('contrib_mode') == 'dollar' %}checked{% endif %}>
       <label class="form-check-label">Dollar Amount</label>
     </div>
   </div>
 
-  <div id="percentInput" class="mb-3">
+  <div id="percentInput" class="mb-3" {% if values.get('contrib_mode') == 'dollar' %}style="display:none;"{% endif %}>
     <label class="form-label">Employee Contribution (% of Salary)</label>
-    <input type="number" step="0.1" class="form-control" name="contribution_percent" min="0" max="100">
+    <input type="number" step="0.1" class="form-control" name="contribution_percent" min="0" max="100"
+           value="{{ values.get('employee_percent','') }}">
   </div>
 
-  <div id="dollarInput" class="mb-3" style="display: none;">
+  <div id="dollarInput" class="mb-3" {% if values.get('contrib_mode') != 'dollar' %}style="display:none;"{% endif %}>
     <label class="form-label">Annual Employee Contribution ($)</label>
-    <input type="number" step="0.01" class="form-control" name="contribution_dollar" min="0">
+    <input type="number" step="0.01" class="form-control" name="contribution_dollar" min="0"
+           value="{{ values.get('contribution_dollar','') }}">
   </div>
 
   <script>
@@ -50,7 +56,8 @@
 
   <div class="mb-3">
     <label class="form-label">Employer Match (% of salary)</label>
-    <input type="number" step="0.01" class="form-control" name="employer_percent" min="0" max="100" required>
+    <input type="number" step="0.01" class="form-control" name="employer_percent" min="0" max="100"
+           value="{{ values.get('employer_percent','') }}" required>
     <div class="form-text text-muted">
       For most federal employees, this is 5%.
     </div>
@@ -58,17 +65,20 @@
 
   <div class="mb-3">
     <label class="form-label">Years Until Retirement</label>
-    <input type="number" class="form-control" name="years" min="1" required>
+    <input type="number" class="form-control" name="years" min="1"
+           value="{{ values.get('years','') }}" required>
   </div>
 
   <div class="mb-3">
     <label class="form-label">Expected Annual Rate of Return (%)</label>
-    <input type="number" step="0.1" class="form-control" name="annual_rate" value="6.5" required>
+    <input type="number" step="0.1" class="form-control" name="annual_rate"
+           value="{{ values.get('annual_rate','6.5') }}" required>
   </div>
 
   <div class="mb-3">
     <label class="form-label">Expected Annual Inflation (%)</label>
-    <input type="number" step="0.1" class="form-control" name="inflation_rate" value="2.5" required>
+    <input type="number" step="0.1" class="form-control" name="inflation_rate"
+           value="{{ values.get('inflation_rate','2.5') }}" required>
   </div>
 
   <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
@@ -89,8 +99,15 @@
   <ul class="list-group list-group-flush">
     <li class="list-group-item">Current Balance: ${{ "{:,.2f}".format(current_balance) }}</li>
     <li class="list-group-item">Annual Salary: ${{ "{:,.2f}".format(annual_salary) }}</li>
-    <li class="list-group-item">Employee Contribution: {{ employee_percent }}%</li>
-    <li class="list-group-item">Employer Match: {{ employer_percent }}%</li>
+
+    {% if contrib_mode == "percent" %}
+      <li class="list-group-item">Employee Contribution: {{ employee_percent }}% of salary</li>
+      <li class="list-group-item">Employer Match: {{ employer_percent }}% of salary</li>
+    {% else %}
+      <li class="list-group-item">Employee Contribution: ${{ "{:,.2f}".format(contribution_dollar) }} per year</li>
+      <li class="list-group-item">Employer Match: ${{ "{:,.2f}".format(employer_amount) }} per year</li>
+    {% endif %}
+
     <li class="list-group-item">Years Until Retirement: {{ years }}</li>
     <li class="list-group-item">Expected Annual Return: {{ annual_rate }}%</li>
     <li class="list-group-item">Expected Inflation: {{ inflation_rate }}%</li>
