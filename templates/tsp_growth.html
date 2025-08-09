@@ -1,16 +1,5 @@
-{% extends "base.html" %}
-{% block title %}TSP Growth Calculator{% endblock %}
-{% block content %}
-
-<h2 class="mb-3">TSP Growth Calculator 📈</h2>
-
-{% if error %}
-  <div class="alert alert-danger">{{ error }}</div>
-{% endif %}
-
-{% if not result %}
-<form method="POST" class="mb-4" novalidate>
-  <!-- Shared inputs -->
+<form method="POST" class="mb-4" id="tspGrowthForm" novalidate>
+  <!-- Shared -->
   <div class="mb-3">
     <label class="form-label">Current Account Balance ($)</label>
     <input type="number" step="0.01" min="0" class="form-control" name="current_balance" required
@@ -19,7 +8,7 @@
 
   <div class="mb-3">
     <label class="form-label">Annual Salary ($)</label>
-    <input type="number" step="0.01" min="0" class="form-control" name="annual_salary" required
+    <input id="annual_salary" type="number" step="0.01" min="0" class="form-control" name="annual_salary" required
            value="{{ values.get('annual_salary','') }}">
   </div>
 
@@ -43,9 +32,9 @@
 
   <hr class="my-4">
 
-  <!-- Contribution type radios -->
+  <!-- Contribution type affects EMPLOYEE only -->
   <div class="mb-2">
-    <label class="form-label">Contribution Type</label><br>
+    <label class="form-label">Employee Contribution Type</label><br>
     <div class="form-check form-check-inline">
       <input class="form-check-input" id="modePercent" type="radio" name="contribution_type" value="percent"
              {% if values.get('contrib_mode','percent') == 'percent' %}checked{% endif %}>
@@ -58,8 +47,8 @@
     </div>
   </div>
 
-  <!-- Percent mode fields -->
-  <div id="mode-percent" class="border rounded p-3 mb-3">
+  <!-- Employee: Percent -->
+  <div id="employee-percent" class="border rounded p-3 mb-3">
     <div class="row g-3">
       <div class="col-md-6">
         <label class="form-label">Employee Contribution (%)</label>
@@ -68,18 +57,11 @@
                value="{{ values.get('employee_percent','') }}">
         <div class="form-text">0–100</div>
       </div>
-      <div class="col-md-6">
-        <label class="form-label">Employer Match (%)</label>
-        <input id="employer_percent" type="number" step="0.01" min="0" max="100"
-               class="form-control" name="employer_percent"
-               value="{{ values.get('employer_percent','') }}">
-        <div class="form-text">0–100</div>
-      </div>
     </div>
   </div>
 
-  <!-- Dollar mode fields -->
-  <div id="mode-dollar" class="border rounded p-3 mb-3">
+  <!-- Employee: Dollar -->
+  <div id="employee-dollar" class="border rounded p-3 mb-3">
     <div class="row g-3">
       <div class="col-md-6">
         <label class="form-label">Annual Employee Dollars ($)</label>
@@ -87,14 +69,24 @@
                class="form-control" name="contribution_dollar"
                value="{{ values.get('contribution_dollar','') }}">
       </div>
+    </div>
+  </div>
+
+  <!-- Employer: always percent -->
+  <div class="border rounded p-3 mb-3">
+    <div class="row g-3">
       <div class="col-md-6">
-        <label class="form-label">Annual Employer Dollars ($)</label>
-        <input id="employer_amount" type="number" step="0.01" min="0"
-               class="form-control" name="employer_amount"
-               value="{{ values.get('employer_amount','') }}">
+        <label class="form-label">Employer Match (%)</label>
+        <input id="employer_percent" type="number" step="0.01" min="0" max="100"
+               class="form-control" name="employer_percent"
+               value="{{ values.get('employer_percent','') }}">
+        <div class="form-text">Typically 5% for federal employees.</div>
       </div>
     </div>
   </div>
+
+  <!-- Hidden field used ONLY for Dollar mode to satisfy backend -->
+  <input type="hidden" id="employer_amount" name="employer_amount" value="{{ values.get('employer_amount','') }}">
 
   <div class="d-grid gap-2 d-md-flex">
     <button type="submit" class="btn btn-primary">Calculate</button>
@@ -104,30 +96,55 @@
 
 <script>
 (function () {
-  function setMode(mode) {
-    const percentWrap = document.getElementById('mode-percent');
-    const dollarWrap  = document.getElementById('mode-dollar');
-    const percentInputs = percentWrap.querySelectorAll('input');
-    const dollarInputs  = dollarWrap.querySelectorAll('input');
+  const form = document.getElementById('tspGrowthForm');
+  const percentWrap = document.getElementById('employee-percent');
+  const dollarWrap  = document.getElementById('employee-dollar');
 
-    const activate = (nodes) => nodes.forEach(i => { i.disabled = false; i.required = true; i.setCustomValidity(''); });
-    const deactivate = (nodes) => nodes.forEach(i => { i.disabled = true; i.required = false; i.setCustomValidity(''); });
+  const employeePercent = document.getElementById('employee_percent');
+  const employeeDollar  = document.getElementById('contribution_dollar');
+
+  const employerPercent = document.getElementById('employer_percent');
+  const employerAmountHidden = document.getElementById('employer_amount');
+  const annualSalaryInput = document.getElementById('annual_salary');
+
+  function setMode(mode) {
+    const activate = (el) => { el.querySelectorAll('input').forEach(i => { i.disabled = false; i.required = true; i.setCustomValidity(''); }); };
+    const deactivate = (el) => { el.querySelectorAll('input').forEach(i => { i.disabled = true; i.required = false; i.setCustomValidity(''); }); };
 
     if (mode === 'percent') {
-      activate(percentInputs); deactivate(dollarInputs);
+      activate(percentWrap); deactivate(dollarWrap);
       percentWrap.style.display = ''; dollarWrap.style.display = 'none';
     } else {
-      activate(dollarInputs); deactivate(percentInputs);
+      activate(dollarWrap); deactivate(percentWrap);
       percentWrap.style.display = 'none'; dollarWrap.style.display = '';
     }
+
+    // Employer stays percent and is always active/required
+    employerPercent.disabled = false;
+    employerPercent.required = true;
   }
 
+  // Toggle by radio
   const radios = document.querySelectorAll('input[name="contribution_type"]');
   radios.forEach(r => r.addEventListener('change', () => setMode(r.value)));
 
-  // initialize on load
+  // Init on load
   const selected = document.querySelector('input[name="contribution_type"]:checked');
   setMode(selected ? selected.value : 'percent');
+
+  // Before submit: if Dollar mode, compute employer_amount = employer_percent * salary
+  form.addEventListener('submit', function (e) {
+    const mode = document.querySelector('input[name="contribution_type"]:checked')?.value || 'percent';
+    if (mode === 'dollar') {
+      const sal = parseFloat(annualSalaryInput.value || '0');
+      const empPct = parseFloat(employerPercent.value || '0');
+      const employerAmt = sal > 0 ? (empPct / 100) * sal : 0;
+      employerAmountHidden.value = employerAmt.toFixed(2);
+    } else {
+      // Not used by backend in percent mode
+      employerAmountHidden.value = '';
+    }
+  });
 })();
 </script>
 
