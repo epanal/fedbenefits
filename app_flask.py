@@ -78,31 +78,77 @@ def tsp_growth():
     if request.method == "POST":
         f = request.form
 
-        # Always required
         current_balance = float(f.get("current_balance", 0) or 0)
         annual_salary   = float(f.get("annual_salary", 0) or 0)
         years           = int(f.get("years", 0) or 0)
         annual_rate     = float(f.get("annual_rate", 0) or 0)
         inflation_rate  = float(f.get("inflation_rate", 0) or 0)
+        mode            = f.get("contribution_type", "percent")
 
-        # Toggle: 'percent' or 'dollar'
-        mode = f.get("contribution_type", "percent")
+        # defaults for template
+        contribution_dollar = 0.0
+        employer_amount = 0.0
 
         if mode == "percent":
-            # Percent mode
-            employee_percent = float(f.get("contribution_percent", 0) or 0)
-            employer_percent = float(f.get("employer_percent", 0) or 0)
-            contribution_dollar = 0
-            employer_amount = 0
+            # Only validate percent inputs
+            try:
+                employee_percent = float(f.get("contribution_percent", ""))
+                employer_percent = float(f.get("employer_percent", ""))
+            except ValueError:
+                return render_template("tsp_growth.html", result=None, values={
+                    **session.get("tsp_inputs", {}),
+                    "contrib_mode": "percent",
+                    "current_balance": current_balance,
+                    "annual_salary": annual_salary,
+                    "years": years,
+                    "annual_rate": annual_rate,
+                    "inflation_rate": inflation_rate,
+                }, error="Please enter valid percentages for employee and employer.")
+
+            if not (0 <= employee_percent <= 100 and 0 <= employer_percent <= 100):
+                return render_template("tsp_growth.html", result=None, values={
+                    "contrib_mode": "percent",
+                    "current_balance": current_balance,
+                    "annual_salary": annual_salary,
+                    "employee_percent": employee_percent,
+                    "employer_percent": employer_percent,
+                    "years": years,
+                    "annual_rate": annual_rate,
+                    "inflation_rate": inflation_rate,
+                }, error="Percent values must be between 0 and 100.")
         else:
-            # Dollar mode
-            employee_amount = float(f.get("contribution_dollar", 0) or 0)
+            # Only validate dollar inputs
+            try:
+                contribution_dollar = float(f.get("contribution_dollar", ""))
+            except ValueError:
+                return render_template("tsp_growth.html", result=None, values={
+                    "contrib_mode": "dollar",
+                    "current_balance": current_balance,
+                    "annual_salary": annual_salary,
+                    "contribution_dollar": f.get("contribution_dollar", ""),
+                    "years": years,
+                    "annual_rate": annual_rate,
+                    "inflation_rate": inflation_rate,
+                }, error="Please enter a valid annual employee dollar contribution.")
+
             employer_amount = float(f.get("employer_amount", 0) or 0)
-            contribution_dollar = employee_amount
-            employee_percent = (employee_amount / annual_salary * 100) if annual_salary else 0
+            if contribution_dollar < 0 or employer_amount < 0:
+                return render_template("tsp_growth.html", result=None, values={
+                    "contrib_mode": "dollar",
+                    "current_balance": current_balance,
+                    "annual_salary": annual_salary,
+                    "contribution_dollar": contribution_dollar,
+                    "employer_amount": employer_amount,
+                    "years": years,
+                    "annual_rate": annual_rate,
+                    "inflation_rate": inflation_rate,
+                }, error="Dollar contributions cannot be negative.")
+
+            # convert to percents (safe when annual_salary == 0)
+            employee_percent = (contribution_dollar / annual_salary * 100) if annual_salary else 0
             employer_percent = (employer_amount / annual_salary * 100) if annual_salary else 0
 
-        # Call the calculation function
+        # Calculate
         result = calculate_tsp_growth(
             current_balance=current_balance,
             annual_salary=annual_salary,
@@ -113,15 +159,15 @@ def tsp_growth():
             inflation_rate=inflation_rate
         )
 
-        # Persist everything for pre-filling form later
+        # Persist for GET prefill
         session["tsp_inputs"] = {
             "contrib_mode": mode,
             "current_balance": current_balance,
             "annual_salary": annual_salary,
             "employee_percent": employee_percent,
             "employer_percent": employer_percent,
-            "contribution_dollar": contribution_dollar,
-            "employer_amount": employer_amount,
+            "contribution_dollar": round(contribution_dollar, 2),
+            "employer_amount": round(employer_amount, 2),
             "years": years,
             "annual_rate": annual_rate,
             "inflation_rate": inflation_rate
@@ -134,18 +180,17 @@ def tsp_growth():
             annual_salary=annual_salary,
             employee_percent=employee_percent,
             employer_percent=employer_percent,
-            contribution_dollar=contribution_dollar,
-            employer_amount=employer_amount,
+            contribution_dollar=round(contribution_dollar, 2),
+            employer_amount=round(employer_amount, 2),
             years=years,
             annual_rate=annual_rate,
             inflation_rate=inflation_rate,
             contrib_mode=mode
         )
 
-    # GET: prefill from last run
+    # GET
     values = session.get("tsp_inputs", {})
     return render_template("tsp_growth.html", result=None, values=values)
-
 
 @app.route("/tsp-loan", methods=["GET", "POST"])
 def tsp_loan():

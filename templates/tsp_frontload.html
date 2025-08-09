@@ -14,12 +14,14 @@
 
     <div class="col-md-6">
       <label class="form-label">Annual Salary ($)</label>
-      <input type="number" class="form-control" name="annual_salary" step="0.01" min="0" required value="{{ values.get('annual_salary', '') }}">
+      <input type="number" class="form-control" name="annual_salary" step="0.01" min="0" required
+             value="{{ values.get('annual_salary', '') }}" inputmode="decimal">
     </div>
 
     <div class="col-md-6">
       <label class="form-label">Agency Match (%)</label>
-      <input type="number" class="form-control" name="match_percent" step="0.01" min="0" max="10" required value="{{ values.get('match_percent', '5') }}">
+      <input type="number" class="form-control" name="match_percent" step="0.01" min="0" max="10" required
+             value="{{ values.get('match_percent', '5') }}" inputmode="decimal">
       <div class="form-text text-muted">
         Typically 5% for most federal employees.
       </div>
@@ -27,7 +29,8 @@
 
     <div class="col-md-6">
       <label class="form-label">Annual Contribution Limit ($)</label>
-      <input type="number" class="form-control" name="target_investment" step="0.01" min="0" required value="{{ values.get('target_investment', '23500') }}">
+      <input type="number" class="form-control" name="target_investment" step="0.01" min="0" required
+             value="{{ values.get('target_investment', '23500') }}" inputmode="decimal">
       <div class="form-text text-muted">
         Example: $23,500 for 2025. This is the total you want to contribute this year (excluding agency match).
       </div>
@@ -35,7 +38,8 @@
 
     <div class="col-md-6">
       <label class="form-label">Max Per-Pay Contribution ($)</label>
-      <input type="number" class="form-control" name="max_biweekly" step="0.01" min="0" required value="{{ values.get('max_biweekly', '9999') }}">
+      <input type="number" class="form-control" name="max_biweekly" step="0.01" min="0" required
+             value="{{ values.get('max_biweekly', '9999') }}" inputmode="decimal">
       <div class="form-text text-muted">
         The most you'd contribute in a single pay period. You can start with a high value (e.g. $9,999) to let the calculator find the front-load limit.
       </div>
@@ -43,16 +47,17 @@
 
     <div class="col-md-6">
       <label class="form-label">Estimated Annual Growth (%)</label>
-      <input type="number" class="form-control" name="growth_rate" step="0.01" min="0" required value="{{ values.get('growth_rate', '6') }}">
+      <input type="number" class="form-control" name="growth_rate" step="0.01" min="0" required
+             value="{{ values.get('growth_rate', '6') }}" inputmode="decimal">
       <div class="form-text text-muted">
         Example: 6 for 6% expected annual return.
       </div>
     </div>
 
     <div class="col-md-6 form-check mt-4">
-      <input class="form-check-input" type="checkbox" name="include_match_in_growth" value="yes"
-        {% if values.get('include_match_in_growth') == 'yes' %}checked{% endif %}>
-      <label class="form-check-label">
+      <input class="form-check-input" id="include_match_in_growth" type="checkbox" name="include_match_in_growth" value="yes"
+        {% if values.get('include_match_in_growth') %}checked{% endif %}>
+      <label class="form-check-label" for="include_match_in_growth">
         Include agency match in growth calculations
       </label>
     </div>
@@ -87,11 +92,11 @@
 <div class="card mb-4">
   <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
   <ul class="list-group list-group-flush">
-    <li class="list-group-item">Annual Salary: ${{ values["annual_salary"] }}</li>
-    <li class="list-group-item">Agency Match %: {{ values["match_percent"] }}%</li>
-    <li class="list-group-item">Target Investment: ${{ values["target_investment"] }}</li>
-    <li class="list-group-item">Max Per-Pay Contribution: ${{ values["max_biweekly"] }}</li>
-    <li class="list-group-item">Annual Growth Estimate: {{ values["growth_rate"] }}%</li>
+    <li class="list-group-item">Annual Salary: ${{ '{:,.2f}'.format(values['annual_salary']) }}</li>
+    <li class="list-group-item">Agency Match %: {{ values['match_percent'] }}%</li>
+    <li class="list-group-item">Target Investment: ${{ '{:,.2f}'.format(values['target_investment']) }}</li>
+    <li class="list-group-item">Max Per-Pay Contribution: ${{ '{:,.2f}'.format(values['max_biweekly']) }}</li>
+    <li class="list-group-item">Annual Growth Estimate: {{ values['growth_rate'] }}%</li>
   </ul>
 </div>
 
@@ -100,9 +105,9 @@
   <div class="card-header fw-bold fs-5">🧮 Contribution Strategy Summary</div>
   <div class="card-body">
     <div class="alert alert-info">
-      The projected TSP balance from front-loading is <strong>${{ result["front_ending_balance"] }}</strong> vs.
-      <strong>${{ result["even_ending_balance"] }}</strong> from even contributions —
-      a projected growth advantage of <strong>${{ result["advantage"] }}</strong> by the end of the year.
+      The projected TSP balance from front-loading is <strong>${{ '{:,.2f}'.format(result['front_ending_balance']) }}</strong> vs.
+      <strong>${{ '{:,.2f}'.format(result['even_ending_balance']) }}</strong> from even contributions —
+      a projected growth advantage of <strong>${{ '{:,.2f}'.format(result['advantage']) }}</strong> by the end of the year.
     </div>
 
     <ul class="mb-2">
@@ -127,7 +132,7 @@
 <script>
   const labels = JSON.parse('{{ chart_data.labels | tojson | safe }}');
   const front = JSON.parse('{{ chart_data.front | tojson | safe }}');
-  const even = JSON.parse('{{ chart_data.even | tojson | safe }}');
+  const even  = JSON.parse('{{ chart_data.even  | tojson | safe }}');
 
   const ctx = document.getElementById("frontloadChart").getContext('2d');
   new Chart(ctx, {
@@ -167,19 +172,14 @@
         },
         legend: {
           position: 'bottom',
-          labels: {
-            boxWidth: 15,
-            padding: 20
-          }
+          labels: { boxWidth: 15, padding: 20 }
         }
       },
       scales: {
         y: {
           beginAtZero: false,
           ticks: {
-            callback: function(v) {
-              return '$' + v.toLocaleString();
-            }
+            callback: function(v) { return '$' + v.toLocaleString(); }
           }
         }
       }
@@ -209,14 +209,8 @@
     {% for row in table %}
     <tr>
       <td>{{ row['PP'] }}</td>
-
-      <!-- Front Contribution (employee-only) -->
       <td>${{ '{:,.2f}'.format(row['Front Contribution']|default(0)) }}</td>
-
-      <!-- Even Contribution (employee-only) -->
       <td>${{ '{:,.2f}'.format(row['Even Contribution']|default(0)) }}</td>
-
-      <!-- Type -->
       <td>
         <span class="
           {% if row['Type'] == 'Front-Load (Max)' %}
@@ -226,12 +220,8 @@
           {% else %}
             text-muted
           {% endif %}
-        ">
-          {{ row['Type'] }}
-        </span>
+        ">{{ row['Type'] }}</span>
       </td>
-
-      <!-- Cumulatives (employee-only) -->
       <td>${{ '{:,.2f}'.format(row['Cumulative Front']|default(0)) }}</td>
       <td>${{ '{:,.2f}'.format(row['Cumulative Even']|default(0)) }}</td>
     </tr>
