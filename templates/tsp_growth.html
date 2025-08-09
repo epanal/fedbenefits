@@ -77,15 +77,32 @@
       <!-- Employee contribution type -->
       <div class="mb-2">
         <label class="form-label mb-2">Employee Contribution Type</label><br>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" id="modePercent" type="radio" name="contribution_type" value="percent"
-                 {% if values.get('contrib_mode','percent') == 'percent' %}checked{% endif %}>
-          <label class="form-check-label" for="modePercent">Percentage of Salary</label>
-        </div>
+
+        <!-- Dollar first & default -->
         <div class="form-check form-check-inline">
           <input class="form-check-input" id="modeDollar" type="radio" name="contribution_type" value="dollar"
-                 {% if values.get('contrib_mode') == 'dollar' %}checked{% endif %}>
+                 {% if values.get('contrib_mode','dollar') == 'dollar' %}checked{% endif %}>
           <label class="form-check-label" for="modeDollar">Dollar Amount (annual)</label>
+        </div>
+
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" id="modePercent" type="radio" name="contribution_type" value="percent"
+                 {% if values.get('contrib_mode') == 'percent' %}checked{% endif %}>
+          <label class="form-check-label" for="modePercent">Percentage of Salary</label>
+        </div>
+      </div>
+
+      <!-- Employee: Dollar -->
+      <div id="employee-dollar" class="border rounded p-3 mb-3">
+        <div class="mb-2 fw-semibold small text-muted">Employee contribution (annual dollars)</div>
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Annual Employee Dollars ($)</label>
+            <input id="contribution_dollar" type="number" step="0.01" min="0" inputmode="decimal"
+                   class="form-control" name="contribution_dollar"
+                   value="{{ values.get('contribution_dollar','') }}">
+            <div class="invalid-feedback">Enter a dollar amount (≥ 0).</div>
+          </div>
         </div>
       </div>
 
@@ -100,20 +117,6 @@
                    value="{{ values.get('employee_percent','') }}">
             <div class="form-text">Allowed range: 0–100.</div>
             <div class="invalid-feedback">Enter a percent between 0 and 100.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Employee: Dollar -->
-      <div id="employee-dollar" class="border rounded p-3 mb-3">
-        <div class="mb-2 fw-semibold small text-muted">Employee contribution (annual dollars)</div>
-        <div class="row g-3">
-          <div class="col-12 col-md-6">
-            <label class="form-label">Annual Employee Dollars ($)</label>
-            <input id="contribution_dollar" type="number" step="0.01" min="0" inputmode="decimal"
-                   class="form-control" name="contribution_dollar"
-                   value="{{ values.get('contribution_dollar','') }}">
-            <div class="invalid-feedback">Enter a dollar amount (≥ 0).</div>
           </div>
         </div>
       </div>
@@ -198,7 +201,7 @@
   }
 
   function updateEmployerDollarPreview() {
-    const mode = document.querySelector('input[name="contribution_type"]:checked')?.value || 'percent';
+    const mode = document.querySelector('input[name="contribution_type"]:checked')?.value || 'dollar';
     if (mode === 'dollar') {
       const amt = impliedEmployerDollars();
       employerDollarPreview.textContent = `Implied Employer: $${formatMoney(amt)} / yr (from % × salary)`;
@@ -217,13 +220,13 @@
     el.addEventListener('change', updateEmployerDollarPreview);
   });
 
-  // Initialize on load
+  // Initialize on load (default to 'dollar' if nothing is selected)
   const selected = document.querySelector('input[name="contribution_type"]:checked');
-  setMode(selected ? selected.value : 'percent');
+  setMode(selected ? selected.value : 'dollar');
 
   // Native validation styling helper (Bootstrap-like)
   form.addEventListener('submit', function (e) {
-    const mode = document.querySelector('input[name="contribution_type"]:checked')?.value || 'percent';
+    const mode = document.querySelector('input[name="contribution_type"]:checked')?.value || 'dollar';
 
     // If Dollar mode, compute employer_amount = employer_percent * salary with guards
     if (mode === 'dollar') {
@@ -249,7 +252,6 @@
       employerAmountHidden.value = '';
     }
 
-    // Let native HTML5 validation show messages, then add 'was-validated' for CSS
     if (!form.checkValidity()) {
       e.preventDefault();
       e.stopPropagation();
