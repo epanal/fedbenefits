@@ -10,108 +10,130 @@
 
 {% if not result %}
 <form method="POST" class="mb-4" id="tspGrowthForm">
-  <!-- Shared inputs -->
-  <div class="mb-4">
-    <div class="form-text mb-1">Account & pay</div>
-    <div class="mb-3">
-      <label class="form-label">Current Account Balance ($)</label>
-      <input type="number" step="0.01" min="0" inputmode="decimal"
-             class="form-control" name="current_balance" required
-             value="{{ values.get('current_balance','') }}">
+  <!-- Account & Pay -->
+  <div class="card mb-4">
+    <div class="card-header py-2">
+      <h6 class="m-0 text-uppercase text-muted fw-semibold" style="letter-spacing:.02em;">Account & Pay</h6>
     </div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label class="form-label">Current Account Balance ($)</label>
+        <input type="number" step="0.01" min="0" inputmode="decimal"
+               class="form-control" name="current_balance" required
+               value="{{ values.get('current_balance','') }}">
+        <div class="invalid-feedback">Enter your current TSP balance (≥ 0).</div>
+      </div>
 
-    <div class="mb-3">
-      <label class="form-label">Annual Salary ($)</label>
-      <input id="annual_salary" type="number" step="0.01" min="0" inputmode="decimal"
-             class="form-control" name="annual_salary" required
-             value="{{ values.get('annual_salary','') }}">
-    </div>
-  </div>
-
-  <!-- Planning assumptions -->
-  <div class="mb-4">
-    <div class="form-text mb-1">Planning assumptions</div>
-
-    <div class="mb-3">
-      <label class="form-label">Years Until Retirement</label>
-      <input type="number" min="0" class="form-control" name="years" required
-             value="{{ values.get('years','') }}">
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Expected Annual Return (%)</label>
-      <input type="number" step="0.01" inputmode="decimal"
-             class="form-control" name="annual_rate" required
-             value="{{ values.get('annual_rate','') }}">
-      <div class="form-text">e.g., 6 for 6%.</div>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Inflation (%)</label>
-      <input type="number" step="0.01" inputmode="decimal"
-             class="form-control" name="inflation_rate" required
-             value="{{ values.get('inflation_rate','') }}">
-      <div class="form-text">Used to show results in today’s dollars.</div>
-    </div>
-  </div>
-
-  <hr class="my-4">
-
-  <!-- Employee contribution type -->
-  <div class="mb-2">
-    <label class="form-label">Employee Contribution Type</label><br>
-    <div class="form-check form-check-inline">
-      <input class="form-check-input" id="modePercent" type="radio" name="contribution_type" value="percent"
-             {% if values.get('contrib_mode','percent') == 'percent' %}checked{% endif %}>
-      <label class="form-check-label" for="modePercent">Percentage of Salary</label>
-    </div>
-    <div class="form-check form-check-inline">
-      <input class="form-check-input" id="modeDollar" type="radio" name="contribution_type" value="dollar"
-             {% if values.get('contrib_mode') == 'dollar' %}checked{% endif %}>
-      <label class="form-check-label" for="modeDollar">Dollar Amount (annual)</label>
-    </div>
-  </div>
-
-  <!-- Employee: Percent -->
-  <div id="employee-percent" class="border rounded p-3 mb-3">
-    <div class="mb-2 fw-semibold small text-muted">Employee contribution (% of salary)</div>
-    <div class="row g-3">
-      <div class="col-12 col-md-6">
-        <label class="form-label">Employee Contribution (%)</label>
-        <input id="employee_percent" type="number" step="0.01" min="0" max="100" inputmode="decimal"
-               class="form-control" name="contribution_percent"
-               value="{{ values.get('employee_percent','') }}">
-        <div class="form-text">0–100</div>
+      <div class="mb-0">
+        <label class="form-label">Annual Salary ($)</label>
+        <input id="annual_salary" type="number" step="0.01" min="0" inputmode="decimal"
+               class="form-control" name="annual_salary" required
+               value="{{ values.get('annual_salary','') }}">
+        <div class="form-text">Used to compute %-based contributions and implied employer dollars.</div>
+        <div class="invalid-feedback">Enter annual salary (≥ 0).</div>
       </div>
     </div>
   </div>
 
-  <!-- Employee: Dollar -->
-  <div id="employee-dollar" class="border rounded p-3 mb-3">
-    <div class="mb-2 fw-semibold small text-muted">Employee contribution (annual dollars)</div>
-    <div class="row g-3">
-      <div class="col-12 col-md-6">
-        <label class="form-label">Annual Employee Dollars ($)</label>
-        <input id="contribution_dollar" type="number" step="0.01" min="0" inputmode="decimal"
-               class="form-control" name="contribution_dollar"
-               value="{{ values.get('contribution_dollar','') }}">
+  <!-- Planning Assumptions -->
+  <div class="card mb-4">
+    <div class="card-header py-2">
+      <h6 class="m-0 text-uppercase text-muted fw-semibold" style="letter-spacing:.02em;">Planning Assumptions</h6>
+    </div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label class="form-label">Years to Invest</label>
+        <input type="number" min="0" class="form-control" name="years" required
+               value="{{ values.get('years','') }}">
+        <div class="invalid-feedback">Enter years (≥ 0).</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Expected Annual Return (%)</label>
+        <input type="number" step="0.01" inputmode="decimal"
+               class="form-control" name="annual_rate" required
+               value="{{ values.get('annual_rate','') }}">
+        <div class="form-text">Example: 6 for 6% expected return.</div>
+        <div class="invalid-feedback">Enter an expected return (e.g., 6).</div>
+      </div>
+
+      <div class="mb-0">
+        <label class="form-label">Inflation (CPI) (%)</label>
+        <input type="number" step="0.01" inputmode="decimal"
+               class="form-control" name="inflation_rate" required
+               value="{{ values.get('inflation_rate','') }}">
+        <div class="form-text">Used to convert nominal results to today’s dollars.</div>
+        <div class="invalid-feedback">Enter an inflation estimate (e.g., 2.5).</div>
       </div>
     </div>
   </div>
 
-  <!-- Employer: always percent -->
-  <div class="border rounded p-3 mb-3">
-    <div class="mb-2 fw-semibold small text-muted">Employer match</div>
-    <div class="row g-3">
-      <div class="col-12 col-md-6">
-        <label class="form-label">Employer Match (%)</label>
-        <input id="employer_percent" type="number" step="0.01" min="0" max="100" inputmode="decimal"
-               class="form-control" name="employer_percent"
-               value="{{ values.get('employer_percent','') }}" required>
-        <div class="form-text">Typically ~5% for federal employees. 0–100 allowed.</div>
+  <!-- Contributions -->
+  <div class="card mb-4">
+    <div class="card-header py-2">
+      <h6 class="m-0 text-uppercase text-muted fw-semibold" style="letter-spacing:.02em;">Contributions</h6>
+    </div>
+    <div class="card-body">
+      <!-- Employee contribution type -->
+      <div class="mb-2">
+        <label class="form-label mb-2">Employee Contribution Type</label><br>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" id="modePercent" type="radio" name="contribution_type" value="percent"
+                 {% if values.get('contrib_mode','percent') == 'percent' %}checked{% endif %}>
+          <label class="form-check-label" for="modePercent">Percentage of Salary</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" id="modeDollar" type="radio" name="contribution_type" value="dollar"
+                 {% if values.get('contrib_mode') == 'dollar' %}checked{% endif %}>
+          <label class="form-check-label" for="modeDollar">Dollar Amount (annual)</label>
+        </div>
       </div>
-      <div class="col-12 col-md-6 d-flex align-items-end">
-        <div class="text-muted small" id="employerDollarPreview" aria-live="polite"></div>
+
+      <!-- Employee: Percent -->
+      <div id="employee-percent" class="border rounded p-3 mb-3">
+        <div class="mb-2 fw-semibold small text-muted">Employee contribution (% of salary)</div>
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Employee Contribution (%)</label>
+            <input id="employee_percent" type="number" step="0.01" min="0" max="100" inputmode="decimal"
+                   class="form-control" name="contribution_percent"
+                   value="{{ values.get('employee_percent','') }}">
+            <div class="form-text">Allowed range: 0–100.</div>
+            <div class="invalid-feedback">Enter a percent between 0 and 100.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employee: Dollar -->
+      <div id="employee-dollar" class="border rounded p-3 mb-3">
+        <div class="mb-2 fw-semibold small text-muted">Employee contribution (annual dollars)</div>
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Annual Employee Dollars ($)</label>
+            <input id="contribution_dollar" type="number" step="0.01" min="0" inputmode="decimal"
+                   class="form-control" name="contribution_dollar"
+                   value="{{ values.get('contribution_dollar','') }}">
+            <div class="invalid-feedback">Enter a dollar amount (≥ 0).</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employer: always percent -->
+      <div class="border rounded p-3">
+        <div class="mb-2 fw-semibold small text-muted">Employer match</div>
+        <div class="row g-3 align-items-end">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Employer Match (%)</label>
+            <input id="employer_percent" type="number" step="0.01" min="0" max="100" inputmode="decimal"
+                   class="form-control" name="employer_percent"
+                   value="{{ values.get('employer_percent','') }}" required>
+            <div class="form-text">Typically ~5% for federal employees.</div>
+            <div class="invalid-feedback">Enter a percent between 0 and 100.</div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="text-muted small" id="employerDollarPreview" aria-live="polite"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -160,7 +182,6 @@
     employerPercent.disabled = false;
     employerPercent.required = true;
 
-    // Update preview text visibility
     updateEmployerDollarPreview();
   }
 
@@ -196,14 +217,15 @@
     el.addEventListener('change', updateEmployerDollarPreview);
   });
 
-  // Init on load
+  // Initialize on load
   const selected = document.querySelector('input[name="contribution_type"]:checked');
   setMode(selected ? selected.value : 'percent');
 
-  // Before submit: if Dollar mode, compute employer_amount = employer_percent * salary.
-  // Also guard that Employer % and Salary are present to avoid accidental $0.
+  // Native validation styling helper (Bootstrap-like)
   form.addEventListener('submit', function (e) {
     const mode = document.querySelector('input[name="contribution_type"]:checked')?.value || 'percent';
+
+    // If Dollar mode, compute employer_amount = employer_percent * salary with guards
     if (mode === 'dollar') {
       const sal = parseFloat(annualSalaryInput.value || '0');
       const empPct = parseFloat(employerPercent.value || 'NaN');
@@ -226,6 +248,13 @@
     } else {
       employerAmountHidden.value = '';
     }
+
+    // Let native HTML5 validation show messages, then add 'was-validated' for CSS
+    if (!form.checkValidity()) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    form.classList.add('was-validated');
   });
 })();
 </script>
@@ -251,9 +280,9 @@
       <li class="list-group-item">Employer Match: ${{ "{:,.2f}".format(employer_amount) }} per year</li>
     {% endif %}
 
-    <li class="list-group-item">Years Until Retirement: {{ years }}</li>
+    <li class="list-group-item">Years to Invest: {{ years }}</li>
     <li class="list-group-item">Expected Annual Return: {{ annual_rate }}%</li>
-    <li class="list-group-item">Expected Inflation: {{ inflation_rate }}%</li>
+    <li class="list-group-item">Inflation: {{ inflation_rate }}%</li>
   </ul>
 </div>
 
@@ -294,18 +323,8 @@ new Chart(document.getElementById('growthChart'), {
   data: {
     labels: labels,
     datasets: [
-      {
-        label: 'Contributions',
-        data: contributions,
-        backgroundColor: '#28a745',
-        stack: 'stack1'
-      },
-      {
-        label: 'Growth',
-        data: growth,
-        backgroundColor: '#ffc107',
-        stack: 'stack1'
-      }
+      { label: 'Contributions', data: contributions, backgroundColor: '#28a745', stack: 'stack1' },
+      { label: 'Growth', data: growth, backgroundColor: '#ffc107', stack: 'stack1' }
     ]
   },
   options: {
@@ -318,11 +337,7 @@ new Chart(document.getElementById('growthChart'), {
     },
     scales: {
       x: { stacked: true },
-      y: { 
-        stacked: true,
-        beginAtZero: true,
-        ticks: { callback: v => '$' + v.toLocaleString() }
-      }
+      y: { stacked: true, beginAtZero: true, ticks: { callback: v => '$' + v.toLocaleString() } }
     }
   }
 });
