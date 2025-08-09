@@ -188,6 +188,7 @@
 </script>
 
 <!-- Contribution Comparison Table -->
+<!-- Contribution Comparison Table -->
 <h4 class="mt-4">🧾 Contribution Comparison</h4>
 <div class="mt-2 mb-4 text-muted small">
   <div><strong class="text-primary">Front-Load (Max)</strong>: Max allowed contribution per pay period.</div>
@@ -200,7 +201,6 @@
       <th>PP</th>
       <th>Front Contribution</th>
       <th>Even Contribution</th>
-      <th>Type</th>
       <th>Cumulative Front</th>
       <th>Cumulative Even</th>
     </tr>
@@ -209,20 +209,29 @@
     {% for row in table %}
     <tr>
       <td>{{ row['PP'] }}</td>
-      <td>${{ '{:,.2f}'.format(row['Front Contribution']|default(0)) }}</td>
-      <td>${{ '{:,.2f}'.format(row['Even Contribution']|default(0)) }}</td>
-      <td>
-        <span class="
-          {% if row['Type'] == 'Front-Load (Max)' %}
-            text-primary fw-bold
-          {% elif row['Type'] == 'One-Off Remainder' %}
-            text-warning fw-bold
-          {% else %}
-            text-muted
-          {% endif %}
-        ">{{ row['Type'] }}</span>
+      <td class="
+        {% if row['Type'] == 'Front-Load (Max)' %}
+          text-primary fw-bold
+        {% elif row['Type'] == 'One-Off Remainder' %}
+          text-warning fw-bold
+        {% else %}
+          text-muted
+        {% endif %}
+      ">
+        ${{ '{:,.2f}'.format(row['Front Contribution']|default(0)) }}
       </td>
-      <td>${{ '{:,.2f}'.format(row['Cumulative Front']|default(0)) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Even Contribution']|default(0)) }}</td>
+      <td class="
+        {% if row['Type'] == 'Front-Load (Max)' %}
+          text-primary fw-bold
+        {% elif row['Type'] == 'One-Off Remainder' %}
+          text-warning fw-bold
+        {% else %}
+          text-muted
+        {% endif %}
+      ">
+        ${{ '{:,.2f}'.format(row['Cumulative Front']|default(0)) }}
+      </td>
       <td>${{ '{:,.2f}'.format(row['Cumulative Even']|default(0)) }}</td>
     </tr>
     {% endfor %}
