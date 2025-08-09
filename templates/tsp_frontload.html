@@ -188,20 +188,19 @@
 </script>
 
 <!-- Contribution Comparison Table -->
-<!-- Contribution Comparison Table -->
 <h4 class="mt-4">🧾 Contribution Comparison</h4>
-<div class="mt-2 mb-4 text-muted small">
-  <div><strong class="text-primary">Front-Load (Max)</strong>: Max allowed contribution per pay period.</div>
-  <div><strong class="text-warning">One-Off Remainder</strong>: Final small top-up to reach your goal.</div>
-  <div><span class="text-muted">Match Only</span>: Minimum to get full agency match.</div>
+<div class="mt-2 mb-4 small">
+  <span class="badge bg-primary">Front-Load (Max)</span> Max allowed contribution per pay period.  
+  <span class="badge bg-warning text-dark">One-Off Remainder</span> Final small top-up to reach your goal.  
+  <span class="badge bg-secondary">Match Only</span> Minimum to get full agency match.  
 </div>
 <table class="table table-bordered table-striped table-sm align-middle">
   <thead class="table-light sticky-top bg-white">
     <tr>
       <th>PP</th>
       <th>Front Contribution</th>
-      <th>Even Contribution</th>
       <th>Cumulative Front</th>
+      <th>Even Contribution</th>
       <th>Cumulative Even</th>
     </tr>
   </thead>
@@ -209,6 +208,8 @@
     {% for row in table %}
     <tr>
       <td>{{ row['PP'] }}</td>
+
+      <!-- Front Contribution -->
       <td class="
         {% if row['Type'] == 'Front-Load (Max)' %}
           text-primary fw-bold
@@ -220,7 +221,8 @@
       ">
         ${{ '{:,.2f}'.format(row['Front Contribution']|default(0)) }}
       </td>
-      <td>${{ '{:,.2f}'.format(row['Even Contribution']|default(0)) }}</td>
+
+      <!-- Cumulative Front -->
       <td class="
         {% if row['Type'] == 'Front-Load (Max)' %}
           text-primary fw-bold
@@ -232,6 +234,11 @@
       ">
         ${{ '{:,.2f}'.format(row['Cumulative Front']|default(0)) }}
       </td>
+
+      <!-- Even Contribution -->
+      <td>${{ '{:,.2f}'.format(row['Even Contribution']|default(0)) }}</td>
+
+      <!-- Cumulative Even -->
       <td>${{ '{:,.2f}'.format(row['Cumulative Even']|default(0)) }}</td>
     </tr>
     {% endfor %}
