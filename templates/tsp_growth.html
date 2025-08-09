@@ -10,11 +10,8 @@
 
 {% if not result %}
 <form method="POST" class="mb-4" id="tspGrowthForm">
-  <!-- Account & Pay -->
+  <!-- Account & Pay (header removed for simplicity) -->
   <div class="card mb-4">
-    <div class="card-header py-2">
-      <h6 class="m-0 text-uppercase text-muted fw-semibold" style="letter-spacing:.02em;">Account & Pay</h6>
-    </div>
     <div class="card-body">
       <div class="mb-3">
         <label class="form-label">Current Account Balance ($)</label>
@@ -35,7 +32,7 @@
     </div>
   </div>
 
-  <!-- Planning Assumptions -->
+  <!-- Planning Assumptions (kept header; not redundant with field labels) -->
   <div class="card mb-4">
     <div class="card-header py-2">
       <h6 class="m-0 text-uppercase text-muted fw-semibold" style="letter-spacing:.02em;">Planning Assumptions</h6>
@@ -68,15 +65,15 @@
     </div>
   </div>
 
-  <!-- Contributions -->
+  <!-- Contributions (simplified labels) -->
   <div class="card mb-4">
     <div class="card-header py-2">
       <h6 class="m-0 text-uppercase text-muted fw-semibold" style="letter-spacing:.02em;">Contributions</h6>
     </div>
     <div class="card-body">
       <!-- Employee contribution type -->
-      <div class="mb-2">
-        <label class="form-label mb-2">Employee Contribution Type</label><br>
+      <div class="mb-3">
+        <label class="form-label mb-2">Contribution Type</label><br>
 
         <!-- Dollar first & default -->
         <div class="form-check form-check-inline">
@@ -92,9 +89,8 @@
         </div>
       </div>
 
-      <!-- Employee: Dollar -->
+      <!-- Employee: Dollar (no mini-headers) -->
       <div id="employee-dollar" class="border rounded p-3 mb-3">
-        <div class="mb-2 fw-semibold small text-muted">Employee contribution (annual dollars)</div>
         <div class="row g-3">
           <div class="col-12 col-md-6">
             <label class="form-label">Annual Employee Dollars ($)</label>
@@ -106,9 +102,8 @@
         </div>
       </div>
 
-      <!-- Employee: Percent -->
+      <!-- Employee: Percent (no mini-headers) -->
       <div id="employee-percent" class="border rounded p-3 mb-3">
-        <div class="mb-2 fw-semibold small text-muted">Employee contribution (% of salary)</div>
         <div class="row g-3">
           <div class="col-12 col-md-6">
             <label class="form-label">Employee Contribution (%)</label>
@@ -121,10 +116,9 @@
         </div>
       </div>
 
-      <!-- Employer: always percent -->
+      <!-- Employer: simplified -->
       <div class="border rounded p-3">
-        <div class="mb-2 fw-semibold small text-muted">Employer match</div>
-        <div class="row g-3 align-items-end">
+        <div class="row g-3">
           <div class="col-12 col-md-6">
             <label class="form-label">Employer Match (%)</label>
             <input id="employer_percent" type="number" step="0.01" min="0" max="100" inputmode="decimal"
@@ -133,7 +127,7 @@
             <div class="form-text">Typically ~5% for federal employees.</div>
             <div class="invalid-feedback">Enter a percent between 0 and 100.</div>
           </div>
-          <div class="col-12 col-md-6">
+          <div class="col-12 col-md-6 d-flex align-items-end">
             <div class="text-muted small" id="employerDollarPreview" aria-live="polite"></div>
           </div>
         </div>
@@ -141,7 +135,7 @@
     </div>
   </div>
 
-  <!-- Hidden field used ONLY for Dollar mode so backend gets employer_amount -->
+  <!-- Hidden: only for Dollar mode to send employer_amount -->
   <input type="hidden" id="employer_amount" name="employer_amount" value="{{ values.get('employer_amount','') }}">
 
   <div class="d-grid gap-2 d-md-flex">
@@ -157,9 +151,6 @@
   // Employee blocks
   const percentWrap = document.getElementById('employee-percent');
   const dollarWrap  = document.getElementById('employee-dollar');
-
-  const employeePercent = document.getElementById('employee_percent');
-  const employeeDollar  = document.getElementById('contribution_dollar');
 
   // Employer fields (always percent)
   const employerPercent = document.getElementById('employer_percent');
@@ -220,15 +211,14 @@
     el.addEventListener('change', updateEmployerDollarPreview);
   });
 
-  // Initialize on load (default to 'dollar' if nothing is selected)
+  // Initialize on load (default to 'dollar')
   const selected = document.querySelector('input[name="contribution_type"]:checked');
   setMode(selected ? selected.value : 'dollar');
 
-  // Native validation styling helper (Bootstrap-like)
+  // Validation + hidden field calc
   form.addEventListener('submit', function (e) {
     const mode = document.querySelector('input[name="contribution_type"]:checked')?.value || 'dollar';
 
-    // If Dollar mode, compute employer_amount = employer_percent * salary with guards
     if (mode === 'dollar') {
       const sal = parseFloat(annualSalaryInput.value || '0');
       const empPct = parseFloat(employerPercent.value || 'NaN');
