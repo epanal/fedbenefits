@@ -10,27 +10,18 @@
 
 {% if not result %}
 <form method="POST" class="mb-4 needs-validation" novalidate>
-  {# SHOW SERVER-SIDE ERROR IF PRESENT #}
-  {% if error %}
-    <div class="alert alert-danger" role="alert">
-      {{ error }}
-    </div>
-  {% endif %}
-
   <div class="row g-3">
 
     <div class="col-md-6">
       <label class="form-label">Annual Salary ($)</label>
-      <input id="annual_salary" type="number" class="form-control" name="annual_salary"
-             step="0.01" min="0" required inputmode="decimal"
-             value="{{ values.get('annual_salary', '') }}">
+      <input type="number" class="form-control" name="annual_salary" step="0.01" min="0" required
+             value="{{ values.get('annual_salary', '') }}" inputmode="decimal">
     </div>
 
     <div class="col-md-6">
       <label class="form-label">Agency Match (%)</label>
-      <input id="match_percent" type="number" class="form-control" name="match_percent"
-             step="0.01" min="0" max="10" required inputmode="decimal"
-             value="{{ values.get('match_percent', '5') }}">
+      <input type="number" class="form-control" name="match_percent" step="0.01" min="0" max="10" required
+             value="{{ values.get('match_percent', '5') }}" inputmode="decimal">
       <div class="form-text text-muted">
         Typically 5% for most federal employees.
       </div>
@@ -38,20 +29,17 @@
 
     <div class="col-md-6">
       <label class="form-label">Annual Contribution Limit ($)</label>
-      <input id="target_investment" type="number" class="form-control" name="target_investment"
-             step="0.01" min="0" required inputmode="decimal"
-             value="{{ values.get('target_investment', '23500') }}">
-      <div class="form-text">
-        Example: $23,500 for 2025. This is your employee contribution target for the year (excludes agency match).<br>
-        <span id="minNeeded" class="text-muted"></span>
+      <input type="number" class="form-control" name="target_investment" step="0.01" min="0" required
+             value="{{ values.get('target_investment', '23500') }}" inputmode="decimal">
+      <div class="form-text text-muted">
+        Example: $23,500 for 2025. This is the total you want to contribute this year (excluding agency match).
       </div>
     </div>
 
     <div class="col-md-6">
       <label class="form-label">Max Per-Pay Contribution ($)</label>
-      <input type="number" class="form-control" name="max_biweekly"
-             step="0.01" min="0" required inputmode="decimal"
-             value="{{ values.get('max_biweekly', '9999') }}">
+      <input type="number" class="form-control" name="max_biweekly" step="0.01" min="0" required
+             value="{{ values.get('max_biweekly', '9999') }}" inputmode="decimal">
       <div class="form-text text-muted">
         The most you'd contribute in a single pay period. You can start with a high value (e.g. $9,999) to let the calculator find the front-load limit.
       </div>
@@ -59,18 +47,16 @@
 
     <div class="col-md-6">
       <label class="form-label">Estimated Annual Growth (%)</label>
-      <input type="number" class="form-control" name="growth_rate"
-             step="0.01" min="0" required inputmode="decimal"
-             value="{{ values.get('growth_rate', '6') }}">
+      <input type="number" class="form-control" name="growth_rate" step="0.01" min="0" required
+             value="{{ values.get('growth_rate', '6') }}" inputmode="decimal">
       <div class="form-text text-muted">
         Example: 6 for 6% expected annual return.
       </div>
     </div>
 
     <div class="col-md-6 form-check mt-4">
-      <input class="form-check-input" id="include_match_in_growth" type="checkbox"
-             name="include_match_in_growth" value="yes"
-             {% if values.get('include_match_in_growth') %}checked{% endif %}>
+      <input class="form-check-input" id="include_match_in_growth" type="checkbox" name="include_match_in_growth" value="yes"
+        {% if values.get('include_match_in_growth') %}checked{% endif %}>
       <label class="form-check-label" for="include_match_in_growth">
         Include agency match in growth calculations
       </label>
@@ -87,7 +73,6 @@
 <script>
 (function () {
   'use strict';
-  // Bootstrap-style client validation
   const forms = document.querySelectorAll('.needs-validation');
   Array.from(forms).forEach(form => {
     form.addEventListener('submit', e => {
@@ -98,26 +83,6 @@
       form.classList.add('was-validated');
     }, false);
   });
-
-  // Live hint: minimum annual employee dollars to earn full match
-  const salaryEl = document.getElementById('annual_salary');
-  const matchEl  = document.getElementById('match_percent');
-  const hintEl   = document.getElementById('minNeeded');
-
-  function fmt(n){ return n.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}); }
-  function updateHint() {
-    const s = parseFloat(salaryEl.value || '0');
-    const m = parseFloat(matchEl.value || '0');
-    const minYearEmployee = s * (m / 100); // base per PP * 26 simplified → annual employee dollars needed for full match
-    if (s > 0 && m > 0) {
-      hintEl.textContent = `To earn the full ${m}% agency match, you must contribute at least $${fmt(minYearEmployee)} (employee dollars) this year.`;
-    } else {
-      hintEl.textContent = '';
-    }
-  }
-  salaryEl && salaryEl.addEventListener('input', updateHint);
-  matchEl && matchEl.addEventListener('input', updateHint);
-  updateHint();
 })();
 </script>
 
@@ -165,9 +130,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <canvas id="frontloadChart" class="mb-5" height="160"></canvas>
 <script>
-  const labels = {{ chart_data.labels | tojson | safe }};
-  const front  = {{ chart_data.front  | tojson | safe }};
-  const even   = {{ chart_data.even   | tojson | safe }};
+  const labels = JSON.parse('{{ chart_data.labels | tojson | safe }}');
+  const front = JSON.parse('{{ chart_data.front | tojson | safe }}');
+  const even  = JSON.parse('{{ chart_data.even  | tojson | safe }}');
 
   const ctx = document.getElementById("frontloadChart").getContext('2d');
   new Chart(ctx, {
@@ -194,18 +159,28 @@
     options: {
       responsive: true,
       plugins: {
-        title: { display: true, text: 'TSP Growth Over Time' },
+        title: {
+          display: true,
+          text: 'TSP Growth Over Time'
+        },
         tooltip: {
           callbacks: {
-            label: function(ctx) { return `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`; }
+            label: function(ctx) {
+              return `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`;
+            }
           }
         },
-        legend: { position: 'bottom', labels: { boxWidth: 15, padding: 20 } }
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 15, padding: 20 }
+        }
       },
       scales: {
         y: {
           beginAtZero: false,
-          ticks: { callback: v => '$' + v.toLocaleString() }
+          ticks: {
+            callback: function(v) { return '$' + v.toLocaleString(); }
+          }
         }
       }
     }
@@ -238,9 +213,13 @@
       <td>${{ '{:,.2f}'.format(row['Even Contribution']|default(0)) }}</td>
       <td>
         <span class="
-          {% if row['Type'] == 'Front-Load (Max)' %}text-primary fw-bold
-          {% elif row['Type'] == 'One-Off Remainder' %}text-warning fw-bold
-          {% else %}text-muted{% endif %}
+          {% if row['Type'] == 'Front-Load (Max)' %}
+            text-primary fw-bold
+          {% elif row['Type'] == 'One-Off Remainder' %}
+            text-warning fw-bold
+          {% else %}
+            text-muted
+          {% endif %}
         ">{{ row['Type'] }}</span>
       </td>
       <td>${{ '{:,.2f}'.format(row['Cumulative Front']|default(0)) }}</td>
@@ -275,12 +254,10 @@
   </tbody>
 </table>
 
-<!-- Bootstrap Tooltip Activation (guarded) -->
+<!-- Bootstrap Tooltip Activation -->
 <script>
-  if (window.bootstrap) {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
-  }
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
 </script>
 
 <!-- Navigation Buttons -->
