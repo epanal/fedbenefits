@@ -4,36 +4,257 @@
 
 <h2 class="mb-3">TSP Growth Calculator 📈</h2>
 
+{% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
 {% if not result %}
-<!-- Input Form -->
-<form method="POST" class="mb-4">
-  <div class="mb-3">
-    <label for="current_balance" class="form-label">Current Account Balance ($)</label>
-    <input type="number" step="0.01" class="form-control" name="current_balance" min="0" required>
+<form method="POST" class="mb-4" id="tspGrowthForm">
+  <!-- Account & Pay (header removed for simplicity) -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="mb-3">
+        <label class="form-label">Current Account Balance ($)</label>
+        <input type="number" step="0.01" min="0" inputmode="decimal"
+               class="form-control" name="current_balance" required
+               value="{{ values.get('current_balance','') }}">
+        <div class="invalid-feedback">Enter your current TSP balance (≥ 0).</div>
+      </div>
+
+      <div class="mb-0">
+        <label class="form-label">Annual Salary ($)</label>
+        <input id="annual_salary" type="number" step="0.01" min="0" inputmode="decimal"
+               class="form-control" name="annual_salary" required
+               value="{{ values.get('annual_salary','') }}">
+        <div class="form-text">Used to compute %-based contributions and implied employer dollars.</div>
+        <div class="invalid-feedback">Enter annual salary (≥ 0).</div>
+      </div>
+    </div>
   </div>
-  <div class="mb-3">
-    <label for="annual_contribution" class="form-label">Annual Contribution + TSP Match ($)</label>
-    <input type="number" step="0.01" class="form-control" name="annual_contribution" min="0" required>
+
+  <!-- Planning Assumptions (kept header; not redundant with field labels) -->
+  <div class="card mb-4">
+    <div class="card-header py-2">
+      <h6 class="m-0 text-uppercase text-muted fw-semibold" style="letter-spacing:.02em;">Planning Assumptions</h6>
+    </div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label class="form-label">Years to Invest</label>
+        <input type="number" min="0" class="form-control" name="years" required
+               value="{{ values.get('years','') }}">
+        <div class="invalid-feedback">Enter years (≥ 0).</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Expected Annual Return (%)</label>
+        <input type="number" step="0.01" inputmode="decimal"
+               class="form-control" name="annual_rate" required
+               value="{{ values.get('annual_rate','') }}">
+        <div class="form-text">Example: 6 for 6% expected return.</div>
+        <div class="invalid-feedback">Enter an expected return (e.g., 6).</div>
+      </div>
+
+      <div class="mb-0">
+        <label class="form-label">Inflation (CPI) (%)</label>
+        <input type="number" step="0.01" inputmode="decimal"
+               class="form-control" name="inflation_rate" required
+               value="{{ values.get('inflation_rate','') }}">
+        <div class="form-text">Used to convert nominal results to today’s dollars.</div>
+        <div class="invalid-feedback">Enter an inflation estimate (e.g., 2.5).</div>
+      </div>
+    </div>
   </div>
-  <div class="mb-3">
-    <label for="years" class="form-label">Number of Years Until Retirement</label>
-    <input type="number" class="form-control" name="years" min="1" required>
+
+  <!-- Contributions (simplified labels) -->
+  <div class="card mb-4">
+    <div class="card-header py-2">
+      <h6 class="m-0 text-uppercase text-muted fw-semibold" style="letter-spacing:.02em;">Contributions</h6>
+    </div>
+    <div class="card-body">
+      <!-- Employee contribution type -->
+      <div class="mb-3">
+        <label class="form-label mb-2">Contribution Type</label><br>
+
+        <!-- Dollar first & default -->
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" id="modeDollar" type="radio" name="contribution_type" value="dollar"
+                 {% if values.get('contrib_mode','dollar') == 'dollar' %}checked{% endif %}>
+          <label class="form-check-label" for="modeDollar">Dollar Amount (annual)</label>
+        </div>
+
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" id="modePercent" type="radio" name="contribution_type" value="percent"
+                 {% if values.get('contrib_mode') == 'percent' %}checked{% endif %}>
+          <label class="form-check-label" for="modePercent">Percentage of Salary</label>
+        </div>
+      </div>
+
+      <!-- Employee: Dollar (no mini-headers) -->
+      <div id="employee-dollar" class="border rounded p-3 mb-3">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Annual Employee Dollars ($)</label>
+            <input id="contribution_dollar" type="number" step="0.01" min="0" inputmode="decimal"
+                   class="form-control" name="contribution_dollar"
+                   value="{{ values.get('contribution_dollar','') }}">
+            <div class="invalid-feedback">Enter a dollar amount (≥ 0).</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employee: Percent (no mini-headers) -->
+      <div id="employee-percent" class="border rounded p-3 mb-3">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Employee Contribution (%)</label>
+            <input id="employee_percent" type="number" step="0.01" min="0" max="100" inputmode="decimal"
+                   class="form-control" name="contribution_percent"
+                   value="{{ values.get('employee_percent','') }}">
+            <div class="form-text">Allowed range: 0–100.</div>
+            <div class="invalid-feedback">Enter a percent between 0 and 100.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employer: simplified -->
+      <div class="border rounded p-3">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Employer Match (%)</label>
+            <input id="employer_percent" type="number" step="0.01" min="0" max="100" inputmode="decimal"
+                   class="form-control" name="employer_percent"
+                   value="{{ values.get('employer_percent','') }}" required>
+            <div class="form-text">Typically ~5% for federal employees.</div>
+            <div class="invalid-feedback">Enter a percent between 0 and 100.</div>
+          </div>
+          <div class="col-12 col-md-6 d-flex align-items-end">
+            <div class="text-muted small" id="employerDollarPreview" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="mb-3">
-    <label for="annual_rate" class="form-label">Expected Annual Rate of Return (%)</label>
-    <input type="number" step="0.1" class="form-control" name="annual_rate" value="6.5" required>
-  </div>
-  <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+
+  <!-- Hidden: only for Dollar mode to send employer_amount -->
+  <input type="hidden" id="employer_amount" name="employer_amount" value="{{ values.get('employer_amount','') }}">
+
+  <div class="d-grid gap-2 d-md-flex">
     <button type="submit" class="btn btn-primary">Calculate</button>
     <a href="/" class="btn btn-outline-secondary">Back to Home</a>
   </div>
 </form>
 
+<script>
+(function () {
+  const form = document.getElementById('tspGrowthForm');
+
+  // Employee blocks
+  const percentWrap = document.getElementById('employee-percent');
+  const dollarWrap  = document.getElementById('employee-dollar');
+
+  // Employer fields (always percent)
+  const employerPercent = document.getElementById('employer_percent');
+  const employerAmountHidden = document.getElementById('employer_amount');
+  const employerDollarPreview = document.getElementById('employerDollarPreview');
+
+  // Salary for computing employer_amount in dollar mode
+  const annualSalaryInput = document.getElementById('annual_salary');
+
+  function setMode(mode) {
+    const activate = (el) => { el.querySelectorAll('input').forEach(i => { i.disabled = false; i.required = true; i.setCustomValidity(''); }); };
+    const deactivate = (el) => { el.querySelectorAll('input').forEach(i => { i.disabled = true; i.required = false; i.setCustomValidity(''); }); };
+
+    if (mode === 'percent') {
+      activate(percentWrap); deactivate(dollarWrap);
+      percentWrap.style.display = ''; dollarWrap.style.display = 'none';
+    } else {
+      activate(dollarWrap); deactivate(percentWrap);
+      percentWrap.style.display = 'none'; dollarWrap.style.display = '';
+    }
+
+    // Employer % always active/required
+    employerPercent.disabled = false;
+    employerPercent.required = true;
+
+    updateEmployerDollarPreview();
+  }
+
+  function formatMoney(n) {
+    return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function impliedEmployerDollars() {
+    const sal = parseFloat(annualSalaryInput.value || '0');
+    const pct = parseFloat(employerPercent.value || '0');
+    if (!isFinite(sal) || !isFinite(pct)) return 0;
+    if (sal <= 0 || pct < 0) return 0;
+    return sal * (pct / 100);
+  }
+
+  function updateEmployerDollarPreview() {
+    const mode = document.querySelector('input[name="contribution_type"]:checked')?.value || 'dollar';
+    if (mode === 'dollar') {
+      const amt = impliedEmployerDollars();
+      employerDollarPreview.textContent = `Implied Employer: $${formatMoney(amt)} / yr (from % × salary)`;
+    } else {
+      employerDollarPreview.textContent = '';
+    }
+  }
+
+  // Toggle by radio
+  const radios = document.querySelectorAll('input[name="contribution_type"]');
+  radios.forEach(r => r.addEventListener('change', () => setMode(r.value)));
+
+  // Live preview updates
+  [annualSalaryInput, employerPercent].forEach(el => {
+    el.addEventListener('input', updateEmployerDollarPreview);
+    el.addEventListener('change', updateEmployerDollarPreview);
+  });
+
+  // Initialize on load (default to 'dollar')
+  const selected = document.querySelector('input[name="contribution_type"]:checked');
+  setMode(selected ? selected.value : 'dollar');
+
+  // Validation + hidden field calc
+  form.addEventListener('submit', function (e) {
+    const mode = document.querySelector('input[name="contribution_type"]:checked')?.value || 'dollar';
+
+    if (mode === 'dollar') {
+      const sal = parseFloat(annualSalaryInput.value || '0');
+      const empPct = parseFloat(employerPercent.value || 'NaN');
+
+      if (!isFinite(sal) || sal <= 0) {
+        e.preventDefault();
+        annualSalaryInput.focus();
+        annualSalaryInput.reportValidity();
+        return;
+      }
+      if (!isFinite(empPct) || empPct < 0 || empPct > 100 || employerPercent.value === '') {
+        e.preventDefault();
+        employerPercent.focus();
+        employerPercent.reportValidity();
+        return;
+      }
+
+      const employerAmt = (empPct / 100) * sal;
+      employerAmountHidden.value = employerAmt.toFixed(2);
+    } else {
+      employerAmountHidden.value = '';
+    }
+
+    if (!form.checkValidity()) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    form.classList.add('was-validated');
+  });
+})();
+</script>
+
 {% else %}
-<!-- Results Section -->
 <!-- Disclaimer -->
 <p class="text-muted mt-3" style="font-size: 12px;">
-  *This is a simplified projection. It does not account for inflation, wage increases, changes in contribution limits, or tax implications.*
+  *This is a simplified projection. It does not account for changes in contribution limits, unexpected market events, or tax implications.*
 </p>
 
 <!-- Inputs Used -->
@@ -41,9 +262,19 @@
   <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
   <ul class="list-group list-group-flush">
     <li class="list-group-item">Current Balance: ${{ "{:,.2f}".format(current_balance) }}</li>
-    <li class="list-group-item">Annual Contribution + Match: ${{ "{:,.2f}".format(annual_contribution) }}</li>
-    <li class="list-group-item">Years Until Retirement: {{ years }}</li>
+    <li class="list-group-item">Annual Salary: ${{ "{:,.2f}".format(annual_salary) }}</li>
+
+    {% if contrib_mode == "percent" %}
+      <li class="list-group-item">Employee Contribution: {{ employee_percent }}% of salary</li>
+      <li class="list-group-item">Employer Match: {{ employer_percent }}% of salary</li>
+    {% else %}
+      <li class="list-group-item">Employee Contribution: ${{ "{:,.2f}".format(contribution_dollar) }} per year</li>
+      <li class="list-group-item">Employer Match: ${{ "{:,.2f}".format(employer_amount) }} per year</li>
+    {% endif %}
+
+    <li class="list-group-item">Years to Invest: {{ years }}</li>
     <li class="list-group-item">Expected Annual Return: {{ annual_rate }}%</li>
+    <li class="list-group-item">Inflation: {{ inflation_rate }}%</li>
   </ul>
 </div>
 
@@ -52,20 +283,23 @@
   <div class="card-header fw-bold fs-5">📊 Results</div>
   <ul class="list-group list-group-flush">
     <li class="list-group-item">
-      Estimated Future Balance:
-      <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.future_value) }}</span>
+      Future Balance (Nominal): 
+      <span class="fw-bold text-primary">${{ "{:,.2f}".format(result.future_value_nominal) }}</span>
+    </li>
+    <li class="list-group-item">
+      Future Balance (Today’s Dollars): 
+      <span class="fw-bold text-success">${{ "{:,.2f}".format(result.future_value_real) }}</span>
     </li>
     <li class="list-group-item">Total Contributions: ${{ "{:,.2f}".format(result.total_contributions) }}</li>
-    <li class="list-group-item">Growth: ${{ "{:,.2f}".format(result.growth) }}</li>
+    <li class="list-group-item">Total Growth: ${{ "{:,.2f}".format(result.growth) }}</li>
   </ul>
 </div>
 
-<!-- JSON Data for Chart -->
+<!-- Chart -->
 <script id="yearly-data" type="application/json">
   {{ result.yearly_data | tojson }}
 </script>
 
-<!-- Chart Container -->
 <div style="height: 400px;" class="mb-4">
   <canvas id="growthChart"></canvas>
 </div>
@@ -76,66 +310,32 @@ const labels = yearlyData.map(item => item.year);
 const contributions = yearlyData.map(item => item.contributions);
 const growth = yearlyData.map(item => item.growth);
 
-const ctx = document.getElementById('growthChart');
-new Chart(ctx, {
+new Chart(document.getElementById('growthChart'), {
   type: 'bar',
   data: {
     labels: labels,
     datasets: [
-      {
-        label: 'Contributions',
-        data: contributions,
-        backgroundColor: '#28a745',
-        stack: 'stack1'
-      },
-      {
-        label: 'Growth',
-        data: growth,
-        backgroundColor: '#ffc107',
-        stack: 'stack1'
-      }
+      { label: 'Contributions', data: contributions, backgroundColor: '#28a745', stack: 'stack1' },
+      { label: 'Growth', data: growth, backgroundColor: '#ffc107', stack: 'stack1' }
     ]
   },
   options: {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      title: {
-        display: true,
-        text: 'Year-by-Year TSP Growth (Stacked)'
-      },
-      tooltip: {
-        callbacks: {
-          title: function (tooltipItems) {
-            return `Year: ${tooltipItems[0].label}`;
-          },
-          label: function (context) {
-            return `${context.dataset.label}: $${context.parsed.y.toLocaleString()}`;
-          }
-        }
-      },
-      legend: {
-        position: 'bottom'
-      }
+      title: { display: true, text: 'Year-by-Year TSP Growth (Nominal)' },
+      tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}` } },
+      legend: { position: 'bottom' }
     },
     scales: {
-      x: {
-        stacked: true
-      },
-      y: {
-        stacked: true,
-        beginAtZero: true,
-        ticks: {
-          callback: value => '$' + value.toLocaleString()
-        }
-      }
+      x: { stacked: true },
+      y: { stacked: true, beginAtZero: true, ticks: { callback: v => '$' + v.toLocaleString() } }
     }
   }
 });
 </script>
 
-
-<!-- Navigation Buttons -->
+<!-- Navigation -->
 <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
   <a href="/tsp-growth" class="btn btn-outline-secondary">Back to Calculator</a>
   <a href="/" class="btn btn-outline-primary">Back to Home</a>

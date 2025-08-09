@@ -6,7 +6,8 @@ from calculations import (
     calculate_annual_leave_accrual,
     calculate_scd,
     calculate_tsp_growth,
-    calculate_tsp_loan
+    calculate_tsp_loan,
+    calculate_tsp_frontload
 )
 
 app = Flask(__name__)
@@ -75,27 +76,121 @@ def show_drp_comparison_form():
 @app.route("/tsp-growth", methods=["GET", "POST"])
 def tsp_growth():
     if request.method == "POST":
-        current_balance = float(request.form["current_balance"])
-        annual_contribution = float(request.form["annual_contribution"])
-        years = int(request.form["years"])
-        annual_rate = float(request.form["annual_rate"])
+        f = request.form
 
-        # Save inputs in session for displaying later
+        current_balance = float(f.get("current_balance", 0) or 0)
+        annual_salary   = float(f.get("annual_salary", 0) or 0)
+        years           = int(f.get("years", 0) or 0)
+        annual_rate     = float(f.get("annual_rate", 0) or 0)
+        inflation_rate  = float(f.get("inflation_rate", 0) or 0)
+        mode            = f.get("contribution_type", "percent")
+
+        # defaults for template
+        contribution_dollar = 0.0
+        employer_amount = 0.0
+
+        if mode == "percent":
+            # Only validate percent inputs
+            try:
+                employee_percent = float(f.get("contribution_percent", ""))
+                employer_percent = float(f.get("employer_percent", ""))
+            except ValueError:
+                return render_template("tsp_growth.html", result=None, values={
+                    **session.get("tsp_inputs", {}),
+                    "contrib_mode": "percent",
+                    "current_balance": current_balance,
+                    "annual_salary": annual_salary,
+                    "years": years,
+                    "annual_rate": annual_rate,
+                    "inflation_rate": inflation_rate,
+                }, error="Please enter valid percentages for employee and employer.")
+
+            if not (0 <= employee_percent <= 100 and 0 <= employer_percent <= 100):
+                return render_template("tsp_growth.html", result=None, values={
+                    "contrib_mode": "percent",
+                    "current_balance": current_balance,
+                    "annual_salary": annual_salary,
+                    "employee_percent": employee_percent,
+                    "employer_percent": employer_percent,
+                    "years": years,
+                    "annual_rate": annual_rate,
+                    "inflation_rate": inflation_rate,
+                }, error="Percent values must be between 0 and 100.")
+        else:
+            # Only validate dollar inputs
+            try:
+                contribution_dollar = float(f.get("contribution_dollar", ""))
+            except ValueError:
+                return render_template("tsp_growth.html", result=None, values={
+                    "contrib_mode": "dollar",
+                    "current_balance": current_balance,
+                    "annual_salary": annual_salary,
+                    "contribution_dollar": f.get("contribution_dollar", ""),
+                    "years": years,
+                    "annual_rate": annual_rate,
+                    "inflation_rate": inflation_rate,
+                }, error="Please enter a valid annual employee dollar contribution.")
+
+            employer_amount = float(f.get("employer_amount", 0) or 0)
+            if contribution_dollar < 0 or employer_amount < 0:
+                return render_template("tsp_growth.html", result=None, values={
+                    "contrib_mode": "dollar",
+                    "current_balance": current_balance,
+                    "annual_salary": annual_salary,
+                    "contribution_dollar": contribution_dollar,
+                    "employer_amount": employer_amount,
+                    "years": years,
+                    "annual_rate": annual_rate,
+                    "inflation_rate": inflation_rate,
+                }, error="Dollar contributions cannot be negative.")
+
+            # convert to percents (safe when annual_salary == 0)
+            employee_percent = (contribution_dollar / annual_salary * 100) if annual_salary else 0
+            employer_percent = (employer_amount / annual_salary * 100) if annual_salary else 0
+
+        # Calculate
+        result = calculate_tsp_growth(
+            current_balance=current_balance,
+            annual_salary=annual_salary,
+            employee_percent=employee_percent,
+            employer_percent=employer_percent,
+            years=years,
+            annual_rate=annual_rate,
+            inflation_rate=inflation_rate
+        )
+
+        # Persist for GET prefill
         session["tsp_inputs"] = {
+            "contrib_mode": mode,
             "current_balance": current_balance,
-            "annual_contribution": annual_contribution,
+            "annual_salary": annual_salary,
+            "employee_percent": employee_percent,
+            "employer_percent": employer_percent,
+            "contribution_dollar": round(contribution_dollar, 2),
+            "employer_amount": round(employer_amount, 2),
             "years": years,
-            "annual_rate": annual_rate
+            "annual_rate": annual_rate,
+            "inflation_rate": inflation_rate
         }
 
-        result = calculate_tsp_growth(current_balance, annual_contribution, years, annual_rate)
-        return render_template("tsp_growth.html", result=result,
-                               current_balance=current_balance,
-                               annual_contribution=annual_contribution,
-                               years=years,
-                               annual_rate=annual_rate)
+        return render_template(
+            "tsp_growth.html",
+            result=result,
+            current_balance=current_balance,
+            annual_salary=annual_salary,
+            employee_percent=employee_percent,
+            employer_percent=employer_percent,
+            contribution_dollar=round(contribution_dollar, 2),
+            employer_amount=round(employer_amount, 2),
+            years=years,
+            annual_rate=annual_rate,
+            inflation_rate=inflation_rate,
+            contrib_mode=mode
+        )
 
-    return render_template("tsp_growth.html", result=None)
+    # GET
+    values = session.get("tsp_inputs", {})
+    return render_template("tsp_growth.html", result=None, values=values)
 
 @app.route("/tsp-loan", methods=["GET", "POST"])
 def tsp_loan():
@@ -308,6 +403,57 @@ def scd_calculator():
             error = f"Error calculating SCD: {ex}"
 
     return render_template("scd.html", scd=scd, error=error)
+
+@app.route("/tsp-frontload", methods=["GET", "POST"])
+def tsp_frontload():
+    if request.method == "POST":
+        form = request.form
+        try:
+            annual_salary = float(form["annual_salary"])
+            target_investment = float(form["target_investment"])
+            max_biweekly = float(form["max_biweekly"])
+            match_percent = float(form["match_percent"])
+            growth_rate = float(form["growth_rate"])
+            include_match = "include_match_in_growth" in form  
+        except (ValueError, KeyError):
+            values = {
+                "annual_salary": form.get("annual_salary", ""),
+                "target_investment": form.get("target_investment", ""),
+                "max_biweekly": form.get("max_biweekly", ""),
+                "match_percent": form.get("match_percent", ""),
+                "growth_rate": form.get("growth_rate", ""),
+                "include_match_in_growth": "include_match_in_growth" in form  
+            }
+            return render_template("tsp_frontload.html", result=None, values=values, error="Invalid input")
+
+        values = {
+            "annual_salary": annual_salary,
+            "target_investment": target_investment,
+            "max_biweekly": max_biweekly,
+            "match_percent": match_percent,
+            "growth_rate": growth_rate,
+            "include_match_in_growth": include_match  
+        }
+
+        try:
+            result, table, chart_data = calculate_tsp_frontload(
+                annual_salary=annual_salary,
+                target_investment=target_investment,
+                max_biweekly=max_biweekly,
+                match_percent=match_percent,
+                annual_growth_percent=growth_rate,
+                include_match_in_growth=include_match
+            )
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return render_template("tsp_frontload.html", result=None, values=values, error=str(e))
+
+        return render_template("tsp_frontload.html", result=result, values=values, table=table, chart_data=chart_data)
+
+    # GET request
+    return render_template("tsp_frontload.html", result=None, values={})
+
 
 @app.errorhandler(404)
 def not_found(e):

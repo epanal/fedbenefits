@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+{% block title %}TSP Front-Loading Estimator{% endblock %}
+{% block content %}
+
+<h2 class="mb-3">TSP Front-Loading Estimator 🚀</h2>
+<p class="text-muted" style="font-size: 0.95rem;">
+  This tool compares two strategies for reaching your TSP investment goal: front-loading (maximizing early contributions) vs. evenly distributing your contributions over the year.
+  You’ll still contribute the minimum to earn the full agency match in both cases.
+</p>
+
+{% if not result %}
+<form method="POST" class="mb-4 needs-validation" novalidate>
+  <div class="row g-3">
+
+    <div class="col-md-6">
+      <label class="form-label">Annual Salary ($)</label>
+      <input type="number" class="form-control" name="annual_salary" step="0.01" min="0" required
+             value="{{ values.get('annual_salary', '') }}" inputmode="decimal">
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Agency Match (%)</label>
+      <input type="number" class="form-control" name="match_percent" step="0.01" min="0" max="10" required
+             value="{{ values.get('match_percent', '5') }}" inputmode="decimal">
+      <div class="form-text text-muted">
+        Typically 5% for most federal employees.
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Annual Contribution Limit ($)</label>
+      <input type="number" class="form-control" name="target_investment" step="0.01" min="0" required
+             value="{{ values.get('target_investment', '23500') }}" inputmode="decimal">
+      <div class="form-text text-muted">
+        Example: $23,500 for 2025. This is the total you want to contribute this year (excluding agency match).
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Max Per-Pay Contribution ($)</label>
+      <input type="number" class="form-control" name="max_biweekly" step="0.01" min="0" required
+             value="{{ values.get('max_biweekly', '9999') }}" inputmode="decimal">
+      <div class="form-text text-muted">
+        The most you're confortable contributing in a single pay period. You can start with a high value (e.g. $9,999) and adjust up or down as needed.
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Estimated Annual Growth (%)</label>
+      <input type="number" class="form-control" name="growth_rate" step="0.01" min="0" required
+             value="{{ values.get('growth_rate', '6') }}" inputmode="decimal">
+      <div class="form-text text-muted">
+        Example: 6 for 6% expected annual return.
+      </div>
+    </div>
+
+    <div class="col-md-6 form-check mt-4">
+      <input class="form-check-input" id="include_match_in_growth" type="checkbox" name="include_match_in_growth" value="yes"
+        {% if values.get('include_match_in_growth') %}checked{% endif %}>
+      <label class="form-check-label" for="include_match_in_growth">
+        Include agency match in growth calculations
+      </label>
+    </div>
+
+  </div>
+
+  <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+    <button type="submit" class="btn btn-primary">Estimate</button>
+    <a href="/" class="btn btn-outline-secondary">Back to Home</a>
+  </div>
+</form>
+
+<script>
+(function () {
+  'use strict';
+  const forms = document.querySelectorAll('.needs-validation');
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', e => {
+      if (!form.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    }, false);
+  });
+})();
+</script>
+
+{% else %}
+
+<!-- Inputs Used -->
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">📋 Inputs Used</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Annual Salary: ${{ '{:,.2f}'.format(values['annual_salary']) }}</li>
+    <li class="list-group-item">Agency Match %: {{ values['match_percent'] }}%</li>
+    <li class="list-group-item">Target Investment: ${{ '{:,.2f}'.format(values['target_investment']) }}</li>
+    <li class="list-group-item">Max Per-Pay Contribution: ${{ '{:,.2f}'.format(values['max_biweekly']) }}</li>
+    <li class="list-group-item">Annual Growth Estimate: {{ values['growth_rate'] }}%</li>
+  </ul>
+</div>
+
+<!-- Contribution Strategy Summary -->
+<div class="card mb-4">
+  <div class="card-header fw-bold fs-5">🧮 Contribution Strategy Summary</div>
+  <div class="card-body">
+    <div class="alert alert-info">
+      The projected TSP balance from front-loading is <strong>${{ '{:,.2f}'.format(result['front_ending_balance']) }}</strong> vs.
+      <strong>${{ '{:,.2f}'.format(result['even_ending_balance']) }}</strong> from even contributions —
+      a projected growth advantage of <strong>${{ '{:,.2f}'.format(result['advantage']) }}</strong> by the end of the year.
+    </div>
+
+    <ul class="mb-2">
+      {% for line in result["summary_lines"] %}
+        <li>{{ line }}</li>
+      {% endfor %}
+    </ul>
+
+    <p class="text-muted mb-0">
+      {% if values.get('include_match_in_growth') %}
+        Agency match contributions <strong>were included</strong> in growth calculations.
+      {% else %}
+        Agency match contributions <strong>were not included</strong> in growth calculations.
+      {% endif %}
+    </p>
+  </div>
+</div>
+
+<!-- Chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<canvas id="frontloadChart" class="mb-5" height="160"></canvas>
+<script>
+  const labels = JSON.parse('{{ chart_data.labels | tojson | safe }}');
+  const front = JSON.parse('{{ chart_data.front | tojson | safe }}');
+  const even  = JSON.parse('{{ chart_data.even  | tojson | safe }}');
+
+  const ctx = document.getElementById("frontloadChart").getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels.map(p => `PP ${p}`),
+      datasets: [
+        {
+          label: 'Front-Loaded Strategy',
+          data: front,
+          borderColor: '#0d6efd',
+          backgroundColor: 'rgba(13, 110, 253, 0.1)',
+          fill: true
+        },
+        {
+          label: 'Even Contributions',
+          data: even,
+          borderColor: '#198754',
+          backgroundColor: 'rgba(25, 135, 84, 0.1)',
+          fill: true
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: {
+          display: true,
+          text: 'TSP Growth Over Time'
+        },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`;
+            }
+          }
+        },
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 15, padding: 20 }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          ticks: {
+            callback: function(v) { return '$' + v.toLocaleString(); }
+          }
+        }
+      }
+    }
+  });
+</script>
+
+<!-- Contribution Comparison Table -->
+<h4 class="mt-4">🧾 Contribution Comparison</h4>
+<div class="mt-2 mb-4 small">
+  <div><span class="badge bg-primary">Front-Load (Max)</span> Max allowed contribution per pay period.  </div>
+  <div><span class="badge bg-warning text-dark">One-Off Remainder</span> Final small top-up to reach your goal.  </div>
+  <div><span class="badge bg-secondary">Match Only</span> Minimum to get full agency match.  </div>
+</div>
+<table class="table table-bordered table-striped table-sm align-middle">
+  <thead class="table-light sticky-top bg-white">
+    <tr>
+      <th>PP</th>
+      <th>Front Contribution</th>
+      <th>Cumulative Front</th>
+      <th>Even Contribution</th>
+      <th>Cumulative Even</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in table %}
+    <tr>
+      <td>{{ row['PP'] }}</td>
+
+      <!-- Front Contribution -->
+      <td class="
+        {% if row['Type'] == 'Front-Load (Max)' %}
+          text-primary fw-bold
+        {% elif row['Type'] == 'One-Off Remainder' %}
+          text-warning fw-bold
+        {% else %}
+          text-muted
+        {% endif %}
+      ">
+        ${{ '{:,.2f}'.format(row['Front Contribution']|default(0)) }}
+      </td>
+
+      <!-- Cumulative Front -->
+      <td class="
+        {% if row['Type'] == 'Front-Load (Max)' %}
+          text-primary fw-bold
+        {% elif row['Type'] == 'One-Off Remainder' %}
+          text-warning fw-bold
+        {% else %}
+          text-muted
+        {% endif %}
+      ">
+        ${{ '{:,.2f}'.format(row['Cumulative Front']|default(0)) }}
+      </td>
+
+      <!-- Even Contribution -->
+      <td>${{ '{:,.2f}'.format(row['Even Contribution']|default(0)) }}</td>
+
+      <!-- Cumulative Even -->
+      <td>${{ '{:,.2f}'.format(row['Cumulative Even']|default(0)) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Growth Comparison Table -->
+<h4 class="mt-4">📈 Growth Comparison</h4>
+<table class="table table-bordered table-striped table-sm align-middle">
+  <thead class="table-light sticky-top bg-white">
+    <tr>
+      <th>PP</th>
+      <th>Front Start Balance</th>
+      <th>Front End Balance</th>
+      <th>Even Start Balance</th>
+      <th>Even End Balance</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in table %}
+    <tr>
+      <td>{{ row['PP'] }}</td>
+      <td>${{ '{:,.2f}'.format(row['Front Begin']|default(0)) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Front End']|default(0)) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Even Begin']|default(0)) }}</td>
+      <td>${{ '{:,.2f}'.format(row['Even End']|default(0)) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Bootstrap Tooltip Activation -->
+<script>
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+</script>
+
+<!-- Navigation Buttons -->
+<div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+  <a href="/tsp-frontload" class="btn btn-outline-secondary">Back to Calculator</a>
+  <a href="/" class="btn btn-outline-primary">Back to Home</a>
+</div>
+
+{% endif %}
+{% endblock %}
