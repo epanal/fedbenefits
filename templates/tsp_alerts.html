@@ -2,11 +2,12 @@
 {% block title %}Daily TSP Alerts{% endblock %}
 {% block content %}
 
-<h2 class="mb-3">Daily TSP Alerts 📰</h2>
+<h2 class="mb-3">Daily TSP Prices 📰</h2>
 <p class="text-muted" style="font-size: 0.95rem;">
   Latest automated alerts from
   <a href="https://bsky.app/profile/tspalerts.bsky.social" target="_blank" rel="noopener">Bluesky</a>
-  (with links to X as well).
+  and 
+  <a href="https://x.com/tspalertsfeed" target="_blank" rel="noopener">X</a>
 </p>
 
 <!-- Buttons -->
@@ -29,26 +30,6 @@
   </div>
 </div>
 
-<!-- Optional: X embed (often flaky). Keep it, but don't depend on it. -->
-<div class="card mb-4">
-  <div class="card-header fw-bold">X Feed (may not render reliably)</div>
-  <div class="card-body p-2">
-    <div class="text-muted small px-2 pb-2">
-      If this looks blank, it’s usually an X embed limitation/blocking issue in browsers/ad blockers (not your code).
-    </div>
-    <a class="twitter-timeline"
-       data-height="600"
-       data-dnt="true"
-       data-theme="light"
-       href="https://x.com/tspalertsfeed">
-      Posts by @tspalertsfeed
-    </a>
-  </div>
-</div>
-
-<!-- X embed script -->
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
 <!-- Bluesky feed loader -->
 <script>
   (async function loadBsky() {
@@ -57,7 +38,7 @@
 
     // Public, no-auth Bluesky AppView API for author feeds
     const actor = "tspalerts.bsky.social";
-    const limit = 20;
+    const limit = 5;
     const url = `https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor=${encodeURIComponent(actor)}&limit=${limit}`;
 
     function escapeHtml(s) {
