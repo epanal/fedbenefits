@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Daily TSP Alerts{% endblock %}
+{% block content %}
+
+<h2 class="mb-3">Daily TSP Alerts 📰</h2>
+<p class="text-muted" style="font-size: 0.95rem;">
+  This page shows your latest automated TSP alerts from
+  <a href="https://x.com/tspalertsfeed" target="_blank" rel="noopener">@tspalertsfeed</a>.
+</p>
+
+<div class="card mb-4">
+  <div class="card-body p-2">
+    <a class="twitter-timeline"
+       data-height="760"
+       data-dnt="true"
+       data-theme="light"
+       href="https://x.com/tspalertsfeed">
+      Posts by @tspalertsfeed
+    </a>
+  </div>
+</div>
+
+<div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+  <a href="/" class="btn btn-outline-secondary">Back to Home</a>
+  <a href="https://x.com/tspalertsfeed" target="_blank" rel="noopener" class="btn btn-outline-primary">
+    Open on X
+  </a>
+</div>
+
+<!-- X (Twitter) embed script -->
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+{% endblock %}
