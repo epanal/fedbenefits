@@ -4,14 +4,40 @@
 
 <h2 class="mb-3">Daily TSP Alerts 📰</h2>
 <p class="text-muted" style="font-size: 0.95rem;">
-  This page shows your latest automated TSP alerts from
-  <a href="https://x.com/tspalertsfeed" target="_blank" rel="noopener">@tspalertsfeed</a>.
+  Latest automated alerts from
+  <a href="https://bsky.app/profile/tspalerts.bsky.social" target="_blank" rel="noopener">Bluesky</a>
+  (with links to X as well).
 </p>
 
+<!-- Buttons -->
+<div class="d-grid gap-2 d-md-flex justify-content-md-start mb-3">
+  <a href="/" class="btn btn-outline-secondary">Back to Home</a>
+  <a href="https://bsky.app/profile/tspalerts.bsky.social" target="_blank" rel="noopener" class="btn btn-outline-primary">
+    Open on Bluesky
+  </a>
+  <a href="https://x.com/tspalertsfeed" target="_blank" rel="noopener" class="btn btn-outline-primary">
+    Open on X
+  </a>
+</div>
+
+<!-- Bluesky Feed -->
 <div class="card mb-4">
+  <div class="card-header fw-bold">Bluesky Feed</div>
+  <div class="card-body">
+    <div id="bskyStatus" class="text-muted small mb-3">Loading latest posts…</div>
+    <div id="bskyFeed" class="d-grid gap-3"></div>
+  </div>
+</div>
+
+<!-- Optional: X embed (often flaky). Keep it, but don't depend on it. -->
+<div class="card mb-4">
+  <div class="card-header fw-bold">X Feed (may not render reliably)</div>
   <div class="card-body p-2">
+    <div class="text-muted small px-2 pb-2">
+      If this looks blank, it’s usually an X embed limitation/blocking issue in browsers/ad blockers (not your code).
+    </div>
     <a class="twitter-timeline"
-       data-height="760"
+       data-height="600"
        data-dnt="true"
        data-theme="light"
        href="https://x.com/tspalertsfeed">
@@ -20,14 +46,98 @@
   </div>
 </div>
 
-<div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
-  <a href="/" class="btn btn-outline-secondary">Back to Home</a>
-  <a href="https://x.com/tspalertsfeed" target="_blank" rel="noopener" class="btn btn-outline-primary">
-    Open on X
-  </a>
-</div>
-
-<!-- X (Twitter) embed script -->
+<!-- X embed script -->
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+<!-- Bluesky feed loader -->
+<script>
+  (async function loadBsky() {
+    const statusEl = document.getElementById("bskyStatus");
+    const feedEl = document.getElementById("bskyFeed");
+
+    // Public, no-auth Bluesky AppView API for author feeds
+    const actor = "tspalerts.bsky.social";
+    const limit = 20;
+    const url = `https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor=${encodeURIComponent(actor)}&limit=${limit}`;
+
+    function escapeHtml(s) {
+      return (s || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatDate(iso) {
+      try {
+        const d = new Date(iso);
+        return d.toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+      } catch {
+        return iso || "";
+      }
+    }
+
+    function postUrlFromUri(handle, uri) {
+      // uri looks like: at://did:plc:.../app.bsky.feed.post/<rkey>
+      const parts = (uri || "").split("/");
+      const rkey = parts[parts.length - 1] || "";
+      if (!rkey) return `https://bsky.app/profile/${handle}`;
+      return `https://bsky.app/profile/${handle}/post/${rkey}`;
+    }
+
+    try {
+      const res = await fetch(url, { headers: { "Accept": "application/json" }});
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const data = await res.json();
+      const items = (data.feed || []).slice(0, limit);
+
+      if (!items.length) {
+        statusEl.textContent = "No posts found yet.";
+        return;
+      }
+
+      statusEl.textContent = `Showing latest ${items.length} posts from @${actor}.`;
+
+      const html = items.map(item => {
+        const post = item.post || {};
+        const author = post.author || {};
+        const record = post.record || {};
+        const text = escapeHtml(record.text || "");
+        const handle = author.handle || actor;
+        const displayName = escapeHtml(author.displayName || handle);
+        const when = formatDate(post.indexedAt || record.createdAt);
+        const link = postUrlFromUri(handle, post.uri);
+
+        return `
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start gap-2">
+                <div>
+                  <div class="fw-bold">${displayName}</div>
+                  <div class="text-muted small">@${escapeHtml(handle)} • ${escapeHtml(when)}</div>
+                </div>
+                <a class="btn btn-sm btn-outline-primary" href="${link}" target="_blank" rel="noopener">View</a>
+              </div>
+              <div class="mt-3" style="white-space: pre-wrap;">${text}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      feedEl.innerHTML = html;
+
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = "Could not load Bluesky posts right now. Try refreshing, or open the profile directly.";
+      feedEl.innerHTML = `
+        <div class="alert alert-warning mb-0">
+          Feed failed to load. <a href="https://bsky.app/profile/${actor}" target="_blank" rel="noopener">Open on Bluesky</a>
+        </div>
+      `;
+    }
+  })();
+</script>
 
 {% endblock %}
