@@ -354,6 +354,10 @@ def process_drp_comparison():
         "better": "DRP" if total_drp > adjusted_severance else "Severance" if adjusted_severance > total_drp else "Equal"
     })
 
+@app.route("/tsp-alerts")
+def tsp_alerts():
+    return render_template("tsp_alerts.html")
+
 @app.route('/scd', methods=['GET', 'POST'])
 def scd_calculator():
     scd = None

@@ -1,14 +1,9 @@
-<!-- templates/index.html -->
-<meta name="description" content="Estimate your federal employee benefits including severance pay, Thrift Savings Plan (TSP) growth, lump sum leave, and annual leave accrual. Accurate tools built for government workers.">
-<meta name="keywords" content="federal benefits calculator, TSP growth calculator, thrift savings plan, severance pay, lump sum leave, government employee tools, OPM calculators">
-<meta name="author" content="FedBenefits.app">
-
 {% extends "base.html" %}
 {% block title %}Federal Benefits Tools{% endblock %}
 
 {% block content %}
 <div class="text-center">
-  <img src="{{ url_for('static', filename='fed_benefits_rwb.png') }}" 
+  <img src="{{ url_for('static', filename='fed_benefits_rwb.png') }}"
        alt="Fed Benefits Banner" class="img-fluid rounded mb-4">
 </div>
 
@@ -19,7 +14,9 @@
 <div class="d-grid gap-3 col-11 col-md-8 mx-auto mt-4">
   <a href="/tsp-growth" class="btn btn-outline-primary btn-lg">📈 TSP Growth Calculator</a>
   <a href="/tsp-frontload" class="btn btn-outline-primary btn-lg">🚀 TSP Front-Loading Estimator</a>
-  <a href="/tsp-loan" class="btn btn-outline-primary btn-lg">🏦 TSP Loan Calculator </a>
+  <a href="/tsp-loan" class="btn btn-outline-primary btn-lg">🏦 TSP Loan Calculator</a>
+
+  <a href="/tsp-alerts" class="btn btn-outline-primary btn-lg">📰 Daily TSP Prices (X and Bluesky)</a>
   <a href="/severance" class="btn btn-outline-primary btn-lg">💼 Severance Pay Estimator</a>
   <a href="/lump_sum" class="btn btn-outline-primary btn-lg">💰 Annual Leave Lump Sum</a>
   <a href="/leave_accrual" class="btn btn-outline-primary btn-lg">📅 Annual Leave Accrual</a>
